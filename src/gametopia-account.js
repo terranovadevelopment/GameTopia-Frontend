@@ -1,6 +1,6 @@
 /* GameTopia platform account helper — independent of ARMAGEDDON. */
 window.GameTopiaAccount = {
-  api: 'https://gametopia-render-test.onrender.com',
+  api: 'https://gametopia-backend.onrender.com',
   stored() {
     for (const store of [sessionStorage, localStorage]) {
       try { const a = JSON.parse(store.getItem('gt_account') || 'null'); if (a && a.token) return a; } catch (_) {}

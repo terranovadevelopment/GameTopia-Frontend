@@ -19,7 +19,7 @@
  // Receive production and maintenance RP changes without waiting for polling.
  let economyStream=null;
  if(typeof EventSource!=='undefined'){
-   economyStream=new EventSource('https://gametopia-render-test.onrender.com'+base+'/economy-events?token='+encodeURIComponent(ident.token));
+   economyStream=new EventSource('https://gametopia-backend.onrender.com'+base+'/economy-events?token='+encodeURIComponent(ident.token));
    economyStream.addEventListener('economy',event=>{
      try{
        const value=JSON.parse(event.data),city=window.ARMAGEDDON_M3?.cities;

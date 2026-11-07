@@ -7,14 +7,14 @@
   if(!gameId)return;
   let identity;try{identity=JSON.parse(sessionStorage.getItem('armageddon_identity_'+gameId)||'null');}catch(_){}
   if(!identity?.token)return;
-  fetch('https://gametopia-render-test.onrender.com/api/games/'+encodeURIComponent(gameId)+'/heartbeat',{
+  fetch('https://gametopia-backend.onrender.com/api/games/'+encodeURIComponent(gameId)+'/heartbeat',{
    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:identity.token}),cache:'no-store',keepalive:true
   }).catch(()=>{});
  };
  send();setInterval(send,10000);window.addEventListener('pageshow',send);
 })();
 window.armServerRequest=async function(path,options={}){
- const response=await fetch(path.startsWith('/api/')?'https://gametopia-render-test.onrender.com'+path:path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
+ const response=await fetch(path.startsWith('/api/')?'https://gametopia-backend.onrender.com'+path:path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
  const result=await response.json().catch(()=>({}));
  if(!response.ok)throw Error(result.error||('HTTP '+response.status));
  return result;
