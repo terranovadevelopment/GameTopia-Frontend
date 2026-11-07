@@ -286,7 +286,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
     // M6.136: two-stage server autosave browser. Credentials are local to this browser.
     loadButton.onclick=()=>window.GameTopiaShowSavedGames?.();
     window.GameTopiaShowSavedGames=async function(){
-      const apiRoot='https://gametopia-render-test.onrender.com';
+      const apiRoot='https://gametopia-backend.onrender.com';
       const backdrop=document.createElement('div');backdrop.style.cssText='position:fixed;inset:0;z-index:999990;background:#000b;display:flex;align-items:center;justify-content:center;padding:18px';
       const dialog=document.createElement('section');dialog.style.cssText='width:min(600px,95vw);max-height:85vh;overflow:auto;background:#10283c;color:#fff;border:2px solid #c59c5d;border-radius:12px;padding:22px;font:16px Arial;box-shadow:0 16px 40px #000c';
       const title=document.createElement('h2');title.style.margin='0 0 12px';dialog.append(title);
@@ -776,14 +776,14 @@ document.addEventListener('DOMContentLoaded',function(){
   if(!gameId)return;
   let identity;try{identity=JSON.parse(sessionStorage.getItem('armageddon_identity_'+gameId)||'null');}catch(_){}
   if(!identity?.token)return;
-  fetch('https://gametopia-render-test.onrender.com/api/games/'+encodeURIComponent(gameId)+'/heartbeat',{
+  fetch('https://gametopia-backend.onrender.com/api/games/'+encodeURIComponent(gameId)+'/heartbeat',{
    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:identity.token}),cache:'no-store',keepalive:true
   }).catch(()=>{});
  };
  send();setInterval(send,10000);window.addEventListener('pageshow',send);
 })();
 window.armServerRequest=async function(path,options={}){
- const response=await fetch(path.startsWith('/api/')?'https://gametopia-render-test.onrender.com'+path:path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
+ const response=await fetch(path.startsWith('/api/')?'https://gametopia-backend.onrender.com'+path:path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
  const result=await response.json().catch(()=>({}));
  if(!response.ok)throw Error(result.error||('HTTP '+response.status));
  return result;
@@ -979,7 +979,7 @@ window.armServerRequest=async function(path,options={}){
    Object.assign(city.treasury,value.treasury);city.render?.();
  }
  if(typeof EventSource!=='undefined'){
-   const stream=new EventSource('https://gametopia-render-test.onrender.com'+base+'/economy-events?token='+encodeURIComponent(ident.token));
+   const stream=new EventSource('https://gametopia-backend.onrender.com'+base+'/economy-events?token='+encodeURIComponent(ident.token));
    stream.addEventListener('economy',event=>{try{applyEconomyUpdate(JSON.parse(event.data));}catch(e){console.warn('Game RP synchronization:',e);}});
    window.addEventListener('pagehide',()=>stream.close(),{once:true});
  }
@@ -1734,5 +1734,5 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 <style>#readyButton{display:none!important}#tiLabel{display:none!important}#retreatSoundTest,#surrenderSoundTest{display:none!important}</style>
 
 <script>/* M6.59 personal-color roster for unit counter rendering */
-(async function(){const id=new URLSearchParams(location.search).get('gameId');if(!id)return;try{const r=await fetch('https://gametopia-render-test.onrender.com/api/games',{cache:'no-store'});if(!r.ok)return;const g=(await r.json()).find(x=>x.id===id);if(!g)return;window.ARMAGEDDON_GAME_PLAYERS=g.players||[];window.ARMAGEDDON_DEBUG_RENDERER?.render();}catch(e){console.warn('Player colors unavailable',e);}})();
+(async function(){const id=new URLSearchParams(location.search).get('gameId');if(!id)return;try{const r=await fetch('https://gametopia-backend.onrender.com/api/games',{cache:'no-store'});if(!r.ok)return;const g=(await r.json()).find(x=>x.id===id);if(!g)return;window.ARMAGEDDON_GAME_PLAYERS=g.players||[];window.ARMAGEDDON_DEBUG_RENDERER?.render();}catch(e){console.warn('Player colors unavailable',e);}})();
 </script>
