@@ -1,4 +1,4 @@
-# GameTopia M6.180
+# GameTopia M6.181
 
 - Individual acknowledgment required for new player joins and Kick; pending notices persist across reconnects.
 - Kick resets all remaining players to Not Ready; no automatic execution after Kick.
