@@ -1,0 +1,2 @@
+/* M6.59 personal-color roster for unit counter rendering */
+(async function(){const id=new URLSearchParams(location.search).get('gameId');if(!id)return;try{const r=await fetch('https://gametopia-render-test.onrender.com/api/games',{cache:'no-store'});if(!r.ok)return;const g=(await r.json()).find(x=>x.id===id);if(!g)return;window.ARMAGEDDON_GAME_PLAYERS=g.players||[];window.ARMAGEDDON_DEBUG_RENDERER?.render();}catch(e){console.warn('Player colors unavailable',e);}})();

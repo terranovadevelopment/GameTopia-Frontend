@@ -1,0 +1,1 @@
+if(new URLSearchParams(location.search).has("size"))document.body.className="game-started";
