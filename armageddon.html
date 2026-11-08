@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en">
-<head><script src="src/verify-backend.js?v=6.181"></script>
+<head><script src="src/verify-backend.js?v=6.185"></script>
 <script>
-// M6.181: account registration/login available via account.html; guests remain permitted for playtesting.
+// M6.185: account registration/login available via account.html; guests remain permitted for playtesting.
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.181</title>
+  <title>ARMAGEDDON — M6.185</title>
   <link rel="stylesheet" href="src/styles.css">
 <style>
 #endDayOverlay.day-overlay{position:fixed!important;left:5vw!important;top:5vh!important;right:5vw!important;bottom:5vh!important;width:90vw!important;height:90vh!important;max-width:none!important;max-height:none!important;box-sizing:border-box;z-index:15000!important;overflow-y:auto!important;background:#102432!important;border:3px solid #9fb8ce!important;border-radius:12px;padding:20px 26px!important;box-shadow:0 20px 80px #000c!important;color:#eef6ff}
@@ -32,11 +32,11 @@ if(location.protocol==='file:') {
 }
 </script>
 <style>#m639Version{position:fixed;right:8px;top:8px;z-index:99999;background:#111c2e;color:#fff;border:2px solid #e6b347;border-radius:5px;padding:5px 9px;font:bold 13px Arial;pointer-events:none}</style>
-<style>/* M6.181: expose music controls. The hidden stylesheet blocked users from enabling autoplay. */
+<style>/* M6.185: expose music controls. The hidden stylesheet blocked users from enabling autoplay. */
 #gtMusicError[hidden],#musicCreditsDialog:not([open]){display:none!important}
 #battleMusicToggle,#setupMusicToggle,#musicCreditsButton,#gtLegacyMusicSwitch,#gtLegacyMusicCredits{display:inline-flex!important;align-items:center;justify-content:center}
 </style><style>
-/* M6.181 — full-width map and independent reports */
+/* M6.185 — full-width map and independent reports */
 .layout{display:block!important;max-width:none!important;width:100%!important;padding:0!important;height:calc(100vh - 72px)!important;min-height:400px!important}
 .map-shell{height:100%!important;width:100%!important;border-radius:0!important}
 .sidebar{display:none!important}
@@ -59,7 +59,7 @@ if(location.protocol==='file:') {
 <div id="storyStage" aria-live="polite"><div class="story-card" id="storyCard"></div></div>
 
   <header class="topbar">
-    <div class="brand"><div><strong>ARMAGEDDON</strong><small>Blue vs Red · M6.181</small></div></div>
+    <div class="brand"><div><strong>ARMAGEDDON</strong><small>Blue vs Red</small></div></div>
     <a href="https://buymeacoffee.com/billbuttso" target="_blank" rel="noopener noreferrer" class="coffee-support" title="Support the game on Buy Me a Coffee">☕ Buy Me a Coffee</a>
     <div id="headerRp" aria-label="Resource points" style="display:flex;align-items:center;gap:8px;white-space:nowrap;font-weight:700;padding:6px 10px;border:1px solid #688293;border-radius:6px;background:#142838"></div>
     <div class="phase-pill" id="phaseLabel"><span class="status-dot"></span> PLANNING PHASE</div>
@@ -68,7 +68,7 @@ if(location.protocol==='file:') {
     <section class="map-shell" aria-label="Battlefield map">
       <div class="map-toolbar">
         <div class="toolbar-group" style="display:none"><strong style="white-space:nowrap"><span id="blueRpGroup">Blue RP: <span id="rpBlueTotal">0.0</span></span><span id="redRpGroup" hidden> · Red RP: <span id="rpRedTotal">0.0</span></span></strong><button id="deployReinforcement" class="text-button">Deploy Reinforcement (<span id="reinforcementCount">0</span>)</button></div>
-        <div class="toolbar-group"><button id="gtSoundTest" class="text-button" type="button">Test Sound</button><span id="gtSoundState" style="font:12px Arial;color:#ffdf99;max-width:190px">Sound not tested</span><button id="gtMusicTest" class="text-button" type="button" title="Test bundled music and show playback errors">Test Music</button><span id="gtMusicState" style="font:12px Arial;color:#ffdf99;max-width:200px">Music not tested</span><button id="battleMusicToggle" class="text-button" type="button" title="Toggle battlefield music">♫ Music: ON</button><button id="soundToggle" class="text-button" aria-pressed="true" title="Toggle game sound">🔊 Sound: ON</button><button id="retreatSoundTest" hidden type="button">Retreat SFX</button><button id="surrenderSoundTest" hidden type="button">Surrender SFX</button><button id="replayTurnButton" class="text-button" title="Restore the start of the last executed turn and replay its orders">Replay Turn ↺</button><button id="saveGameButton" class="text-button" title="Save current game">Save Game</button><span id="gameSpeedWrap" style="position:relative;display:inline-block"><button id="gameSpeedButton" class="text-button" aria-expanded="false" title="Change animation speed during execution">Speed: Normal 100% ▾</button><fieldset id="gameSpeedMenu" hidden style="position:absolute;top:100%;left:0;z-index:100;background:#162938;color:white;border:1px solid #688293;border-radius:6px;padding:9px;min-width:145px;box-shadow:0 3px 12px #0008"><legend style="font-size:11px">Game speed</legend><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="0.5"> Slow 50%</label><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="1" checked> Normal 100%</label><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="2"> Fast 200%</label></fieldset></span><button id="readyButton" class="text-button" hidden style="display:none" aria-hidden="true" tabindex="-1">READY</button><span id="tiLabel" style="font-weight:700;white-space:nowrap">Day 1 · Planning</span><span id="gameClock" style="font-weight:700;color:#5ced83;white-space:nowrap;padding:5px 9px;border:1px solid #688293;border-radius:5px" aria-live="polite">Turn 1 7:00</span><label id="playtestTopLabel" title="Choose the playtest view" style="font:12px Arial;color:#fff;white-space:nowrap">Playtest view <select id="playtestTopSelect" aria-label="Playtest side" style="background:#243e53;color:#fff;border:1px solid #8aa7bd;border-radius:5px;padding:5px"><option value="Blue">Bluenstein</option><option value="Red">Redonia</option><option value="Both">Both sides</option></select></label><button id="playtestMode" class="text-button" aria-pressed="true" style="background:#374858;color:white;min-width:195px">Playtest Mode: OFF — BLUE ONLY</button><button id="unitSymbolsToggle" class="text-button" aria-pressed="false" title="Switch NATO and illustrated counters (U)">Unit Symbols: NATO</button><button id="replacementToggle" class="text-button" aria-pressed="false" title="Replacement packet overlay (R)">Replacements: OFF</button><button id="endPositionsToggle" class="text-button" aria-pressed="false" title="End positions preview (E)" title="Show projected division positions after 10 hours; combat and traffic may change the result">End Positions: OFF</button><button id="zocToggle" class="text-button" aria-pressed="false">Show ZOCs: OFF</button><button id="citiesOverlayToggle" class="text-button" aria-pressed="false" title="Highlight cities producing divisions">Cities: OFF</button><button id="supplyOverlayToggle" class="text-button" aria-pressed="false" title="Color friendly divisions by supply rating">Supply: OFF</button><button id="hexControlToggle" class="text-button" aria-pressed="false">Hex Control: OFF</button><button id="mapControlsToggle" class="text-button" aria-pressed="false">Map Controls ?</button><button id="aiOrdersButton" class="text-button" title="Show the AI daily mission and movement diagnostics">AI Orders</button><button id="aiPlanButton" class="text-button" title="Preview cautious AI strategic missions (no orders issued)">AI Plan</button><button id="dayReportButton" class="text-button">Daily Situation Report</button><button id="mapSetupToggle" class="text-button">Map Setup ⚙</button></div>
+        <div class="toolbar-group"><button id="gtSoundTest" class="text-button" type="button">Test Sound</button><span id="gtSoundState" style="font:12px Arial;color:#ffdf99;max-width:190px">Sound not tested</span><button id="gtSpeakerTest" class="text-button" type="button" title="Check that browser sound reaches your selected speakers">Test Speakers</button><button id="gtMusicTest" class="text-button" type="button" title="Test bundled music and show playback errors">Test Music</button><span id="gtMusicState" style="font:12px Arial;color:#ffdf99;max-width:200px">Music not tested</span><button id="battleMusicToggle" class="text-button" type="button" title="Toggle battlefield music">♫ Music: ON</button><button id="soundToggle" class="text-button" aria-pressed="true" title="Toggle game sound">🔊 Sound: ON</button><button id="retreatSoundTest" hidden type="button">Retreat SFX</button><button id="surrenderSoundTest" hidden type="button">Surrender SFX</button><button id="replayTurnButton" class="text-button" title="Restore the start of the last executed turn and replay its orders">Replay Turn ↺</button><button id="saveGameButton" class="text-button" title="Save current game">Save Game</button><span id="gameSpeedWrap" style="position:relative;display:inline-block"><button id="gameSpeedButton" class="text-button" aria-expanded="false" title="Change animation speed during execution">Speed: Normal 100% ▾</button><fieldset id="gameSpeedMenu" hidden style="position:absolute;top:100%;left:0;z-index:100;background:#162938;color:white;border:1px solid #688293;border-radius:6px;padding:9px;min-width:145px;box-shadow:0 3px 12px #0008"><legend style="font-size:11px">Game speed</legend><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="0.5"> Slow 50%</label><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="1" checked> Normal 100%</label><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="2"> Fast 200%</label></fieldset></span><button id="readyButton" class="text-button" hidden style="display:none" aria-hidden="true" tabindex="-1">READY</button><span id="tiLabel" style="font-weight:700;white-space:nowrap">Day 1 · Planning</span><span id="gameClock" style="font-weight:700;color:#5ced83;white-space:nowrap;padding:5px 9px;border:1px solid #688293;border-radius:5px" aria-live="polite">Turn 1 7:00</span><label id="playtestTopLabel" title="Choose the playtest view" style="font:12px Arial;color:#fff;white-space:nowrap">Playtest view <select id="playtestTopSelect" aria-label="Playtest side" style="background:#243e53;color:#fff;border:1px solid #8aa7bd;border-radius:5px;padding:5px"><option value="Blue">Bluenstein</option><option value="Red">Redonia</option><option value="Both">Both sides</option></select></label><button id="playtestMode" class="text-button" aria-pressed="true" style="background:#374858;color:white;min-width:195px">Playtest Mode: OFF — BLUE ONLY</button><button id="unitSymbolsToggle" class="text-button" aria-pressed="false" title="Switch NATO and illustrated counters (U)">Unit Symbols: NATO</button><button id="replacementToggle" class="text-button" aria-pressed="false" title="Replacement packet overlay (R)">Replacements: OFF</button><button id="endPositionsToggle" class="text-button" aria-pressed="false" title="End positions preview (E)" title="Show projected division positions after 10 hours; combat and traffic may change the result">End Positions: OFF</button><button id="zocToggle" class="text-button" aria-pressed="false">Show ZOCs: OFF</button><button id="citiesOverlayToggle" class="text-button" aria-pressed="false" title="Highlight cities producing divisions">Cities: OFF</button><button id="supplyOverlayToggle" class="text-button" aria-pressed="false" title="Color friendly divisions by supply rating">Supply: OFF</button><button id="hexControlToggle" class="text-button" aria-pressed="false">Hex Control: OFF</button><button id="mapControlsToggle" class="text-button" aria-pressed="false">Map Controls ?</button><button id="aiOrdersButton" class="text-button" title="Show the AI daily mission and movement diagnostics">AI Orders</button><button id="aiPlanButton" class="text-button" title="Preview cautious AI strategic missions (no orders issued)">AI Plan</button><button id="dayReportButton" class="text-button">Daily Situation Report</button><button id="mapSetupToggle" class="text-button">Map Setup ⚙</button></div>
       </div>
       <div id="mapSetupPanel" hidden style="position:absolute;z-index:40;top:150px;left:50%;transform:translateX(-50%);background:#172634;color:#eaf4ff;border:2px solid #8ea5b5;border-radius:10px;padding:20px;width:min(1000px,96%);box-shadow:0 10px 45px #000b;max-height:70%;overflow:auto">
         <h2 style="margin:0 0 6px">Map Setup — Battlefield and Deployment</h2>
@@ -146,7 +146,7 @@ if(location.protocol==='file:') {
         <div class="control-row"><kbd>Wheel</kbd><span>Zoom in or out</span></div>
         <div class="control-row"><kbd>Right-click</kbd><span>Selected division: plot route. No selection: inspect city.</span></div><div class="control-row"><kbd>Shift + Right-click</kbd><span>Pause waypoint on existing route</span></div><div class="control-row"><kbd>Esc</kbd><span>Remove last waypoint or route hex</span></div><div class="control-row"><kbd>Click empty</kbd><span>Clear selection</span></div>
       </section>
-      <footer>ARMAGEDDON M6.181</footer>
+      <footer>ARMAGEDDON</footer>
     </aside>
   </main>
 <aside id="movementDebugPanel" style="display:none;position:fixed;right:12px;bottom:12px;z-index:99999;width:min(660px,90vw);height:300px;background:#101a24;color:#d7ecff;border:2px solid #7ea9cb;border-radius:8px;padding:10px;box-sizing:border-box;font:12px monospace"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Movement execution diagnostics (latest 400 entries)</b><span><button id="debugCopy">Copy Log</button> <button id="debugClear">Clear</button> <button id="debugClose">Close</button></span></div><pre id="movementDebugText" style="height:240px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin-top:8px"></pre></aside>
@@ -156,7 +156,7 @@ if(location.protocol==='file:') {
     <div id="cityBody"></div>
   </div>
   <script>
-// M6.181: a single safe path used by both local and server-driven execution.
+// M6.185: a single safe path used by both local and server-driven execution.
 window.ARMAGEDDON_CLOSE_EXECUTION_PANELS=function(){
   const city=document.getElementById('cityPanel');
   if(city)city.hidden=true;
@@ -178,10 +178,10 @@ window.addEventListener('unhandledrejection',function(e){const el=document.getEl
 document.getElementById('readyButton')?.addEventListener('click',function(){
   if(!window.ARMAGEDDON_READY_BOUND){const el=document.getElementById('routeStatus');if(el)el.textContent='Ready unavailable: game initialization failed. Check the displayed Game error and reload.';window.alert('Ready unavailable: the game did not initialize. Check Game error on the screen.');}
 });
-</script><script src="src/march.js?v=6.181"></script>
+</script><script src="src/march.js?v=6.185"></script>
   <script>
     if(new URLSearchParams(location.search).has("size")){
-      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.181"><\/script>');
+      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.185"><\/script>');
     }
   </script>
   <script>
@@ -644,7 +644,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById(id)?.addEventListener('click',()=>setTimeout(updateLabels,0));
  }
 
- // M6.181: the playtest viewpoint is configured from Options, not the top toolbar.
+ // M6.185: the playtest viewpoint is configured from Options, not the top toolbar.
  const playtestChoice=document.createElement('button');playtestChoice.className='overlays-option';
  playtestChoice.type='button';playtestChoice.textContent='Play Test…';
  overlayList.appendChild(playtestChoice);
@@ -700,7 +700,9 @@ document.addEventListener('DOMContentLoaded',function(){
 </style>
 
 <script>
-// M6.181: user-initiated test reports real browser audio errors, not just toggle state.
+// M6.185: Check browser speaker output independently of MP3 assets and microphone capture.
+(function(){function init(){const b=document.getElementById('gtSpeakerTest'),st=document.getElementById('gtMusicState');if(!b)return;b.onclick=async()=>{try{const AudioContextClass=window.AudioContext||window.webkitAudioContext;if(!AudioContextClass)throw Error('Web Audio not supported');const ctx=new AudioContextClass();await ctx.resume();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=440;gain.gain.value=0.08;osc.connect(gain).connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.35);osc.onended=()=>{ctx.close();};st.textContent='Speaker test tone requested. If silent, check the Windows output device and Chrome tab volume.';}catch(e){st.textContent='Speaker test failed: '+e.message;}};}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
+// M6.185: user-initiated test reports real browser audio errors, not just toggle state.
 (function(){function init(){const button=document.getElementById('gtSoundTest'),status=document.getElementById('gtSoundState');if(!button||!status)return;
  button.onclick=async()=>{status.textContent='Testing sound file…';try{const r=await fetch(new URL('sounds/infantry_fire.mp3',document.baseURI),{cache:'no-store'});if(!r.ok)throw Error('Sound file HTTP '+r.status);
  const a=new Audio(new URL('sounds/infantry_fire.mp3',document.baseURI).href);a.volume=.9;await a.play();status.textContent='Sound started · '+Math.round(Number(r.headers.get('content-length')||0)/1024)+' KB · check speakers';a.addEventListener('ended',()=>{status.textContent='Sound test complete';},{once:true});
@@ -898,9 +900,9 @@ window.armServerRequest=async function(path,options={}){
  const box=document.createElement('section');box.id='gtPlayersPanel';box.setAttribute('aria-label','Multiplayer player status');
  box.innerHTML='<div class="gt-drag" id="gtDragHandle"><span>Players · Planning</span><span title="Drag to move">⠿</span></div><div class="gt-body"><div id="gtLoginStatus" style="font-size:12px;color:#bfe4ff;margin-bottom:5px">Checking account…</div><div id="gtTurnStatus">Connecting…</div><div id="gtPlayersList"></div><div class="gt-controls"><button id="gtReadyToggle" class="gt-notready">Click when ready</button><button id="gtCommToggle" title="Communications" aria-label="Communications">COMM</button></div><div class="gt-note" id="gtSyncNote"></div></div>';
  document.body.appendChild(box);
- // M6.181: Execution Trace is no longer a player-facing window or reopen control.
+ // M6.185: Execution Trace is no longer a player-facing window or reopen control.
  function trace(step,data){ /* diagnostics intentionally hidden from the game interface */ }
- trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.181'});
+ trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.185'});
  const handle=box.querySelector('#gtDragHandle');let drag=null;
  handle.addEventListener('pointerdown',e=>{if(e.button!==0)return;const r=box.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};handle.setPointerCapture(e.pointerId);e.preventDefault()});
  handle.addEventListener('pointermove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(innerWidth-box.offsetWidth,drag.left+e.clientX-drag.x))+'px';box.style.top=Math.max(0,Math.min(innerHeight-box.offsetHeight,drag.top+e.clientY-drag.y))+'px';box.style.bottom='auto'});
@@ -1121,7 +1123,7 @@ window.armServerRequest=async function(path,options={}){
    const heading=document.createElement('p');heading.textContent='Turn '+(day-1)+' · TI '+event.ti+' · Combat at '+event.hex.col+', '+event.hex.row;body.append(heading);
    const battleLosses={Blue:0,Red:0};
    for(const loss of event.losses||[]){const unit=byId.get(String(loss.unitId));if(unit&&battleLosses[unit.side]!=null)battleLosses[unit.side]+=Number(loss.casualties)||0;}
-   // M6.181: a battle winner is the side inflicting at least 10% more
+   // M6.185: a battle winner is the side inflicting at least 10% more
    // casualties than it suffers. Compare *inflicted* casualties, not own losses.
    // Avoid claiming victory when both sides have zero recorded losses.
    const blueWins=battleLosses.Red>0 && battleLosses.Red*10>=battleLosses.Blue*11;
@@ -1366,7 +1368,7 @@ window.armServerRequest=async function(path,options={}){
    // M6.88: execution replay must never display Planning route overlays.
    // Server orders were submitted before Ready; clearing this map affects visuals only.
    game.planner?.routes?.clear();
-   // M6.181: close both Planning inspection popups before authoritative replay.
+   // M6.185: close both Planning inspection popups before authoritative replay.
    window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();
    replayBusy=true;replayPaused=false;replaySkip=false;replaySpeed=1;
    const executeButton=document.getElementById('readyButton');if(executeButton){executeButton.textContent='EXECUTING';executeButton.style.background='#eab308';executeButton.style.color='#101820';}const playerExecuteButton=document.getElementById('gtReadyToggle');if(playerExecuteButton){playerExecuteButton.textContent='EXECUTING';playerExecuteButton.className='gt-executing';}
@@ -1505,17 +1507,18 @@ window.armServerRequest=async function(path,options={}){
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
- // M6.181: per-player persisted roster changes; never dismiss without an acknowledgement.
+ // M6.185: per-player persisted roster changes; never dismiss without an acknowledgement.
  const memberAlert=document.createElement('section');memberAlert.id='gtMemberAlert';memberAlert.hidden=true;
  memberAlert.style.cssText='position:fixed;z-index:100500;top:18%;left:50%;transform:translateX(-50%);width:min(450px,90vw);background:#13293d;border:3px solid #f2b04a;border-radius:12px;padding:20px;color:#fff;box-shadow:0 15px 50px #000c;font:16px Arial';
- document.body.append(memberAlert);
- function showMemberNotices(st){const n=st.memberNotices?.[0];if(!n){memberAlert.hidden=true;return;}
+ memberAlert.setAttribute('role','alertdialog');memberAlert.setAttribute('aria-modal','true');memberAlert.setAttribute('aria-label','Game membership change requiring acknowledgment');
+ const memberBackdrop=document.createElement('div');memberBackdrop.id='gtMemberBackdrop';memberBackdrop.hidden=true;memberBackdrop.style.cssText='position:fixed;inset:0;background:#0009;z-index:100499';document.body.append(memberBackdrop);document.body.append(memberAlert);
+ let displayedMemberNoticeId=null;function showMemberNotices(st){const n=st.memberNotices?.[0];if(!n){memberAlert.hidden=true;memberBackdrop.hidden=true;displayedMemberNoticeId=null;return;}if(displayedMemberNoticeId===n.id&&!memberAlert.hidden)return;displayedMemberNoticeId=n.id;
   memberAlert.replaceChildren();const h=document.createElement('h2');h.style.margin='0 0 12px';h.textContent=n.kind==='kick'?'Player Removed from Game':'New Player Joined';
   const p=document.createElement('p');const nation=n.side==='Red'?'Redonia':'Bluenstein';p.textContent=n.name+(n.kind==='kick'?' has been kicked from the game.':' has joined '+nation+'.');p.style.borderLeft='8px solid '+(n.color||'#ccc');p.style.paddingLeft='10px';
-  const info=document.createElement('p');info.textContent=n.kind==='kick'?'All remaining players have been reset to Not Ready.':'Joining does not transfer existing divisions or cities.';
+  const info=document.createElement('p');info.textContent=n.kind==='kick'?'All remaining players have been reset to Not Ready.':'All players have been reset to Not Ready for the next Planning phase. Existing divisions, cities, and orders are retained.';
   const ack=document.createElement('button');ack.type='button';ack.textContent='Acknowledge';ack.style.cssText='font-weight:bold;padding:10px 22px;background:#296da2;color:#fff;border:1px solid #b0d5ed;border-radius:6px';
   ack.onclick=async()=>{ack.disabled=true;try{await api(base+'/member-ack',{method:'POST',body:JSON.stringify({token:ident.token,noticeId:n.id})});await refresh()}catch(err){ack.disabled=false;info.textContent='Acknowledgment failed: '+err.message;}};
-  memberAlert.append(h,p,info,ack);memberAlert.hidden=false;
+  memberAlert.append(h,p,info,ack);memberBackdrop.hidden=false;memberAlert.hidden=false;ack.focus({preventScroll:true});
  }
  async function refresh(){try{const st=await api(base+'/state?token='+encodeURIComponent(ident.token));current=st;showMemberNotices(st);applyEconomyUpdate(st);if(!window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC){window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC=true;modeSync=modeSync.then(syncPlaytestMode).catch(err=>trace('playtest-init-error',{error:err.message}));}const localPlayer=st.players.find(p=>p.id===ident.playerId);if(localPlayer){if(!window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_VIEW_MODE==='None')window.ARMAGEDDON_VIEW_MODE=localPlayer.side;window.ARMAGEDDON_SETUP=window.ARMAGEDDON_SETUP||{};window.ARMAGEDDON_SETUP.playerSide=localPlayer.side;}if(replayBusy){showPacificationNotices(st)}
    else if(st.day<=lastAppliedDay) {pacificationRevealTi=10;showPacificationNotices(st)}
@@ -1534,7 +1537,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
  ready.onclick=async()=>{try{if(!current||current.phase!=='planning')return;window.ARMAGEDDON_SOUND?.unlock?.();window.ARMAGEDDON_SOUND?.unlockMedia?.();ready.disabled=true;const me=current?.players.find(p=>p.id===ident.playerId);trace('ready-click',{day:current.day,readyBefore:!!me?.ready});if(!me?.ready)await submitPlottedRoutes();trace('sending-ready',{ready:!me?.ready});if(!me?.ready){ready.textContent='Waiting';ready.className='gt-ready';const bar=document.getElementById('readyButton');if(bar){bar.textContent='READY';bar.style.background='#15803d';}}await api(base+'/ready',{method:'POST',body:JSON.stringify({token:ident.token,ready:!me?.ready})});trace('ready-accepted',{ready:!me?.ready});await refresh()}catch(e){trace('ready-error',{error:e.message});alert(e.message);await refresh()}};
  // M6.136: WebRTC peer-to-peer live voice; the backend carries signaling ONLY.
  const voice=document.createElement('section');voice.id='gtVoiceWindow';voice.hidden=true;
- voice.innerHTML='<div id="gtVoiceDrag" class="gt-voice-title"><strong>Communications · Recorded Voice</strong><button type="button" id="gtVoiceClose" aria-label="Close communications">Close</button></div><div class="gt-voice-content"><p>Choose who can hear you:</p><div id="gtVoiceChannels"></div><p id="gtVoiceSelection" aria-live="polite">No channel selected.</p><button type="button" id="gtVoicePTT" disabled>Hold to Record</button> <button type="button" id="gtVoiceTestMic">Test Microphone</button> <button type="button" id="gtVoiceReplay" disabled>Play Last Recording</button><label style="display:block;margin:8px 0"><input id="gtVoiceEcho" type="checkbox" checked> Hear my recording after release</label><p id="gtVoiceWarning">Hold to record (maximum 15 seconds); release to send. Recordings are temporary, not archived. Enable echo to check your speakers.</p><div id="gtVoiceRemote"></div></div>';
+ voice.innerHTML='<div id="gtVoiceDrag" class="gt-voice-title"><strong>Communications · Recorded Voice</strong><button type="button" id="gtVoiceClose" aria-label="Close communications">Close</button></div><div class="gt-voice-content"><p>Choose who can hear you:</p><div id="gtVoiceChannels"></div><p id="gtVoiceSelection" aria-live="polite">No channel selected.</p><button type="button" id="gtVoicePTT" disabled>Hold to Record</button> <button type="button" id="gtVoiceTestMic">Test Microphone</button> <button type="button" id="gtVoiceReplay" disabled>Play Last Recording</button><label style="display:block;margin:8px 0"><input id="gtVoiceEcho" type="checkbox" checked> Hear my recording after release</label><p id="gtVoiceWarning">Hold to record (maximum 15 seconds); release to send. Recordings are temporary, not archived. Enable echo to check your speakers.</p><p style="margin:6px 0;font-size:12px">Local playback (choose your headset or speakers in Windows):</p><audio id="gtVoiceLocalAudio" controls preload="none" style="display:block;width:100%;max-width:400px" aria-label="Your last recorded message"></audio><div id="gtVoiceRemote"></div></div>';
  document.body.append(voice);
  const channels=voice.querySelector('#gtVoiceChannels'),selection=voice.querySelector('#gtVoiceSelection'),ptt=voice.querySelector('#gtVoicePTT'),voiceNote=voice.querySelector('#gtVoiceWarning');
  let selectedChannel=null,micStream=null,speaking=false,voiceCursor=0,voiceBusy=false,voicePressEpoch=0;
@@ -1554,12 +1557,22 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
   if(selectedChannel?.kind==='private'&&!players.some(p=>p.id===selectedChannel.recipient))selectedChannel=null;
   syncCommAvailability();
  }
- let lastAudio=null;function playClip(data,mime){voiceNote.textContent='Preparing audio playback ('+mime+')…';lastAudio={data,mime};const raw=atob(data);const bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);const url=URL.createObjectURL(new Blob([bytes],{type:mime}));voice.querySelector('#gtVoiceReplay').disabled=false;const sound=new Audio(url);sound.onended=()=>URL.revokeObjectURL(url);sound.onerror=()=>URL.revokeObjectURL(url);sound.play().then(()=>{voiceNote.textContent='Playback started ('+mime+'). Check Chrome output device and volume if silent.';}).catch(e=>{voiceNote.textContent='Audio playback blocked: '+e.message+' — click Communications to enable speakers.';URL.revokeObjectURL(url);});}
+ let lastAudio=null,localClipUrl=null;
+ function playClip(data,mime){
+  lastAudio={data,mime};const player=voice.querySelector('#gtVoiceLocalAudio');
+  try{const raw=atob(data),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+   if(localClipUrl){player.pause();URL.revokeObjectURL(localClipUrl);}
+   localClipUrl=URL.createObjectURL(new Blob([bytes],{type:mime}));player.src=localClipUrl;player.volume=1;player.load();
+   voice.querySelector('#gtVoiceReplay').disabled=false;
+   voiceNote.textContent='Recorded audio ready ('+Math.round(bytes.length/1024)+' KB). Press Play on the audio player if you hear nothing automatically.';
+   const result=player.play();if(result?.catch)result.catch(e=>{voiceNote.textContent='Chrome could not autoplay the recording: '+e.message+'. Click Play on the audio player.';});
+  }catch(e){voiceNote.textContent='Recording playback error: '+e.message;}
+ }
  let recorder=null,voiceChunks=[],recordStarted=0,recordStopper=null,pressPending=false;
  const preferredMime=()=>['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].find(m=>MediaRecorder.isTypeSupported(m))||'';
  async function startRecorder(){if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){voiceNote.textContent='Recording requires HTTPS or localhost and a browser with MediaRecorder support.';return;}
   if(speaking||pressPending||ptt.disabled)return;pressPending=true;const epoch=++voicePressEpoch;ptt.textContent='Opening microphone…';
-  try{micStream ||= await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});if(epoch!==voicePressEpoch){pressPending=false;ptt.textContent='Hold to Record';return;}
+  try{micStream ||= await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});if(epoch!==voicePressEpoch){pressPending=false;ptt.textContent='Hold to Record';voiceNote.textContent='Microphone is ready. Your press ended before recording started; hold the button again and watch for RECORDING.';return;}
    const mime=preferredMime();recorder=new MediaRecorder(micStream,mime?{mimeType:mime,audioBitsPerSecond:24000}:{});voiceChunks=[];recordStarted=Date.now();speaking=true;pressPending=false;
    const captured=recorder;captured.ondataavailable=e=>{if(e.data?.size)voiceChunks.push(e.data)};
    captured.onstop=()=>{const elapsed=Date.now()-recordStarted;const blob=new Blob(voiceChunks,{type:captured.mimeType||'audio/webm'});voiceChunks=[];void transmitRecording(blob,elapsed);};
@@ -1572,7 +1585,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
   try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(Error('Could not read recording'));reader.readAsDataURL(blob)});
    const mime=blob.type.split(';')[0];if(voice.querySelector('#gtVoiceEcho').checked){playClip(data,mime);}
    const targets=channel?others().filter(p=>channel.kind==='common'||channel.kind==='team'&&p.side===mePlayer()?.side||channel.kind==='private'&&p.id===channel.recipient):[];
-   if(!targets.length){voiceNote.textContent='Captured '+Math.round(blob.size/1024)+' KB / '+(duration/1000).toFixed(1)+'s. No remote recipients; click Play Last Recording to repeat.';return;}
+   if(!targets.length){voiceNote.textContent='Captured '+Math.round(blob.size/1024)+' KB / '+(duration/1000).toFixed(1)+'s. No remote recipients. Use the audio player above to hear the recording.';return;}
    voiceNote.textContent='Sending recording to '+targets.length+' player(s)…';const result=await api(voiceUrl+'/clip',{method:'POST',body:JSON.stringify({token:ident.token,channel:channel.kind,to:channel.recipient,mime,audio:data,duration:Math.min(16000,duration)})});
    voiceNote.textContent='Captured '+Math.round(blob.size/1024)+' KB / '+(duration/1000).toFixed(1)+'s; sent to '+result.recipients+' player(s). Click Play Last Recording to test speakers.';
   }catch(err){voiceNote.textContent='Voice delivery error: '+err.message;trace('recorded-voice-error',{error:String(err)});}
@@ -1588,7 +1601,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
  comm.onclick=()=>{if(comm.disabled)return;voice.hidden=!voice.hidden;if(!voice.hidden)renderChannels();};
  voice.querySelector('#gtVoiceClose').onclick=()=>{endTalk();voice.hidden=true};
  voice.querySelector('#gtVoiceReplay').onclick=()=>{if(lastAudio)playClip(lastAudio.data,lastAudio.mime);};
- voice.querySelector('#gtVoiceTestMic').onclick=async()=>{try{if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw Error('HTTPS or localhost is required');micStream ||= await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});voiceNote.textContent='Microphone permission granted. Choose a channel and hold to record; enable echo to hear yourself.';}catch(err){voiceNote.textContent='Microphone test failed: '+err.message;}};
+ voice.querySelector('#gtVoiceTestMic').onclick=async()=>{try{if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw Error('HTTPS or localhost is required');micStream ||= await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});const track=micStream.getAudioTracks()[0];voiceNote.textContent='Microphone: '+(track?.label||'selected input')+' · '+(track?.readyState||'unknown')+(track?.muted?' · MUTED':'')+'. Choose a channel and hold to record.';}catch(err){voiceNote.textContent='Microphone test failed: '+err.message;}};
  setInterval(pollVoice,850);
  const voiceHandle=voice.querySelector('#gtVoiceDrag');let voiceDrag=null;
  voiceHandle.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.button!==0)return;const r=voice.getBoundingClientRect();voiceDrag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};voiceHandle.setPointerCapture(e.pointerId);e.preventDefault()});
@@ -1656,7 +1669,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
  window.addEventListener('load',placeSetupControls);
 })();
 </script>
-<script src="src/version.js?v=6.181"></script></body>
+<script src="src/version.js?v=6.185"></script></body>
 </html>
 
 <style>
