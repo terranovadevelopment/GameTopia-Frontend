@@ -1,7 +1,7 @@
-/* GameTopia M6.193 website: requires matching M6.193 backend. */
+/* GameTopia M6.194 website: requires matching M6.194 backend. */
 (function(){
  'use strict';
- const EXPECTED='M6.193', ENDPOINT='https://gametopia-backend.onrender.com/api/health';
+ const EXPECTED='M6.194', ENDPOINT='https://gametopia-backend.onrender.com/api/health';
  const STYLE='position:fixed;inset:0;z-index:2147483647;background:rgba(5,15,29,.98);color:#fff;font:16px/1.5 system-ui,Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box';
  let confirmed=false, busy=false, modal, message, details, retry, retryTimer=null;
  const AUTO_RETRY_MS=10000;

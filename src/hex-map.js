@@ -514,22 +514,49 @@
           x+dx*.68-nx*side*.7,y+dy*.68-ny*side*.7,X,Y);
         g.strokeStyle=color;g.lineWidth=width;g.lineJoin='round';g.lineCap='round';g.stroke();g.restore();
       };
-      // Multiple seeded rivers, ending at map boundaries; streams run on hex sides.
+      // M6.194: Group adjacent water edges into continuous polylines and smooth
+      // turns through hex vertices, similar to roads. Original endpoints and
+      // crossing-edge topology remain authoritative and unchanged.
+      const connectedWaterPaths=(edges)=>{
+        const key=p=>p.x.toFixed(5)+','+p.y.toFixed(5);
+        const node=new Map(),unused=new Set();
+        edges.forEach(([a,b],i)=>{unused.add(i);for(const p of [a,b]){const k=key(p);if(!node.has(k))node.set(k,[]);node.get(k).push(i)}});
+        const paths=[];
+        while(unused.size){
+          const initial=unused.values().next().value;const [a,b]=edges[initial];unused.delete(initial);
+          const pts=[a,b],grow=(front)=>{
+            for(let guard=0;guard<edges.length;guard++){
+              const current=front?pts[0]:pts[pts.length-1];const choices=(node.get(key(current))||[]).filter(i=>unused.has(i));
+              if(choices.length!==1)break;
+              const idx=choices[0],segment=edges[idx],next=key(segment[0])===key(current)?segment[1]:segment[0];
+              unused.delete(idx);if(front)pts.unshift(next);else pts.push(next);
+            }
+          };
+          grow(false);grow(true);paths.push(pts);
+        }
+        return paths;
+      };
+      const drawSmoothWater=(paths,width,color)=>{
+        for(const pts of paths){if(pts.length<2)continue;
+          g.save();g.beginPath();g.moveTo(pts[0].x*S,pts[0].y*S);
+          for(let i=1;i<pts.length-1;i++){
+            const p=pts[i],n=pts[i+1];
+            g.quadraticCurveTo(p.x*S,p.y*S,(p.x+n.x)*S/2,(p.y+n.y)*S/2);
+          }
+          g.lineTo(pts[pts.length-1].x*S,pts[pts.length-1].y*S);
+          g.strokeStyle=color;g.lineWidth=width;g.lineCap='round';g.lineJoin='round';g.stroke();g.restore();
+        }
+      };
       const riverDensity=(window.ARMAGEDDON_DENSITY||{}).rivers||'normal';
       const riverWidth={low:7,normal:9,high:11}[riverDensity]||9;
-      // Major rivers use actual hex sides, just like streams.
-      for(const [a,b] of (window.ARMAGEDDON_RIVER_EDGES||[])){
-        waterCurve(a,b,riverWidth+3,'#234d67',1);
-        waterCurve(a,b,riverWidth,'#277ba9',1);
-        waterCurve(a,b,1.3,'#7fd2ee',1);
-      }
-      // Stream coordinates are shared hex vertices in normalized hex units.
-      // The entire polyline consists of actual hex sides; no center fragments.
-      for(const [a,b] of (window.ARMAGEDDON_STREAM_EDGES||[])){
-        waterCurve(a,b,5.2,'#103b59',2);
-        waterCurve(a,b,3.2,'#05aee5',2);
-        waterCurve(a,b,1.15,'#c6f7ff',2);
-      }
+      const riverPaths=connectedWaterPaths(window.ARMAGEDDON_RIVER_EDGES||[]);
+      drawSmoothWater(riverPaths,riverWidth+3,'#234d67');
+      drawSmoothWater(riverPaths,riverWidth,'#277ba9');
+      drawSmoothWater(riverPaths,1.3,'#7fd2ee');
+      const streamPaths=connectedWaterPaths(window.ARMAGEDDON_STREAM_EDGES||[]);
+      drawSmoothWater(streamPaths,5.2,'#103b59');
+      drawSmoothWater(streamPaths,3.2,'#05aee5');
+      drawSmoothWater(streamPaths,1.15,'#c6f7ff');
       // Roads connect city centers, including bridges over the river.
       const cityCenters=(window.ARMAGEDDON_CITIES||[]).map(c=>[c.c,c.r]);
       const center=(c,r)=>{const a=axialFromOffset(c,r);return axialToPixel(a.q,a.r,S);};
