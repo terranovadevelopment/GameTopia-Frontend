@@ -1,37 +1,37 @@
 {
-  "version": "M6.188",
+  "version": "M6.189",
   "component": "frontend",
-  "created_utc": "2026-11-09T21:25:40.541066+00:00",
+  "created_utc": "2026-11-09T21:35:58.798390+00:00",
   "files": [
-    {
-      "file": "README_M6_187.md",
-      "bytes": 815,
-      "sha256": "f3eada958243ac5030a3e1c51ad73879a2f275bc4def7a38096d89f0ded57274"
-    },
     {
       "file": "README_M6_188.md",
       "bytes": 770,
       "sha256": "51a5b34c1a1f5f0017cee027eb6cd8ede1e64ef44226277632c09dc12cac4667"
     },
     {
+      "file": "README_M6_189.md",
+      "bytes": 765,
+      "sha256": "8a4183cf1fbd8dcb32cdeb0ee2ed73c2903836c7753ebaef05b7e8798c2dc284"
+    },
+    {
       "file": "account.html",
       "bytes": 9853,
-      "sha256": "0e57c671741a40ded487421eb273ca014d7ac40c164cfc6758f3a4125c7d5435"
+      "sha256": "9409eaf1e1253bde15bfb6eee2ba02063de879fc09a09f46d534f0f166431dac"
     },
     {
       "file": "armageddon-backstory.html",
-      "bytes": 5332,
-      "sha256": "cf6bac31f832c906b8f633c9a14fe2e37935d045e640d1e96d51c4c480d99530"
+      "bytes": 6209,
+      "sha256": "753e18fedfe5f969293a3a1faf787f718c9821a273999b8522cd05269403e88b"
     },
     {
       "file": "armageddon-lobby.html",
       "bytes": 13526,
-      "sha256": "fa29db2373276f6a02ad76db3b69913cc8fbfeecc53b6b56f6d8eca675503606"
+      "sha256": "2387a1c755f8f52b388ae06884bcf45f95f86fd443349a7cfff854f0621e43b8"
     },
     {
       "file": "armageddon.html",
-      "bytes": 191000,
-      "sha256": "0f8ee79d2d1126fe3a581dde7d152726c2f2e8ebe266fd9d288df5672b75ea09"
+      "bytes": 193371,
+      "sha256": "b6e3e8836ee7b185b1a7f585f2afc53a21fec89a4566f718bb74feab6be0e7d2"
     },
     {
       "file": "assets/gametopia_splash.png",
@@ -41,12 +41,12 @@
     {
       "file": "games.html",
       "bytes": 2638,
-      "sha256": "62de7effe625f366149e6661367f24c9a7f8b51cdaa19de3f5ca3c82c6c418a7"
+      "sha256": "a5ec48f85b2856b689610535056052fd6b924fe3126d0139f2ae3acb9daffb0f"
     },
     {
       "file": "index.html",
       "bytes": 1276,
-      "sha256": "7a08eb903c1c4cef7fd312af9c112cd07de70270a00cc76dd703f2bb00a67a8a"
+      "sha256": "ad22ac8e33b705842cf3b49df7bd81e0ed3113e51210812e57d8466690585d73"
     },
     {
       "file": "music/at-launch.mp3",
@@ -131,7 +131,7 @@
     {
       "file": "src/app.js",
       "bytes": 112572,
-      "sha256": "02ebe5bb348d331b366c8532cf1f0a97bdb0ec43f1887c5afc686e9b16875d5a"
+      "sha256": "649ed6e3b8ddd974ce41a482815ac1fd7d17fff651179263ac1b594eb0774d12"
     },
     {
       "file": "src/backstory.png",
@@ -266,7 +266,7 @@
     {
       "file": "src/hex-map.js",
       "bytes": 67080,
-      "sha256": "ed7affb912ad7817578b974c78ed5f211d7f835dca8fc77ddb1b91cac858bae8"
+      "sha256": "0ca0e8fe1b5ad610c65734df0a93ebd2d6f797025764bb59030b0fabb8dbd375"
     },
     {
       "file": "src/inline-0.js",
@@ -311,7 +311,7 @@
     {
       "file": "src/inline-16.js",
       "bytes": 41155,
-      "sha256": "c826cc5ce181a3a36d1b978746422cbf08987f2405a07fad017badb98de571af"
+      "sha256": "b15c210bfbe62f93df9c0c74898eff684d63bf36e71f4a95e5a2efdaa274fd96"
     },
     {
       "file": "src/inline-17.js",
@@ -346,7 +346,7 @@
     {
       "file": "src/inline-5.js",
       "bytes": 325,
-      "sha256": "daf1c10bf339a700545695a16e3a6b4f310023cb93c172a2d490c8ffaf7c809c"
+      "sha256": "edf9319761e94e55157fafb894af2cea9fe6da88a04f26219fce8c76d70ee583"
     },
     {
       "file": "src/inline-6.js",
@@ -411,7 +411,7 @@
     {
       "file": "src/march.js",
       "bytes": 2643,
-      "sha256": "8b36d9086247b994d31275559d194bb83728b928d34ad13a556cfaa2f11559b9"
+      "sha256": "1e4297343413bebff6277bc6f863408bcd101abe43cf9838eabc3e112e7a6ee6"
     },
     {
       "file": "src/mountains_1.jpg",
@@ -591,12 +591,12 @@
     {
       "file": "src/verify-backend.js",
       "bytes": 5042,
-      "sha256": "f8eea7693c364e4716530f3c20b2c137da1a7689d2f4fe6dbeb92f715fa7e6f9"
+      "sha256": "6ef418dadc937885ef48e10ed6e0bc02364ee38918f024b9cc54f92bdb023156"
     },
     {
       "file": "src/version.js",
       "bytes": 1575,
-      "sha256": "e399d1b486359d06f986d400b90f72cf091567ff0f9a0c59aac408a52027fc74"
+      "sha256": "f73cbda141a8b9721a9736215851058dee486d46cd667cf86e014f45b23b7ad3"
     },
     {
       "file": "src/victory-blue.png",
