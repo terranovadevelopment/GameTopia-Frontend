@@ -1,4 +1,4 @@
-/* M6.189: restore bundled GameTopia music after M6.132 disabled playback.
+/* M6.190: restore bundled GameTopia music after M6.132 disabled playback.
    Browsers may block play until the first user gesture; never force autoplay. */
 (function(w){'use strict';
  const tracks=['music/exciting-trailer.mp3','music/at-launch.mp3','music/black-vortex.mp3','music/the-descent.mp3'];
