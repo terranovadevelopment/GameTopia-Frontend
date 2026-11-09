@@ -252,7 +252,7 @@
         if(Array.isArray(affected)&&affected.length){const details=make('details','report-supply');details.append(make('summary','',`View negative supply ratings (${affected.length})`));const ul=make('ul','');for(const unit of affected){const li=make('li','');li.append(reportUnitLink(unit.id,`${unit.name} — Supply ${unit.rating}`));ul.append(li);}details.append(ul);column.append(details);}
       }
       const routesRow=make('div','report-operation report-routes');routesRow.append(make('span','','Unfinished movement routes'),make('strong','',fmt(r.routes)));other.append(routesRow);
-      // M6.187: per-shot details remain in Battle Summary, not the Daily Situation Report.
+      // M6.188: per-shot details remain in Battle Summary, not the Daily Situation Report.
     }
     document.getElementById('dayCombatDetail').textContent=latestCombatDetail;
     dayOverlay.hidden=false;controlsOverlay.hidden=true;controlsButton.setAttribute('aria-pressed','false');

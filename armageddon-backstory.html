@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><script src="src/verify-backend.js?v=6.187"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><script src="src/verify-backend.js?v=6.188"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ARMAGEDDON — Backstory</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#08111c;color:#f5e7cf;font-family:Georgia,serif}
@@ -13,7 +13,7 @@ nav .group{display:flex;gap:10px;align-items:center}.button{color:white;cursor:p
 </style></head>
 <body><main id="stage" aria-label="ARMAGEDDON backstory"><img id="art" src="src/backstory.png" alt="ARMAGEDDON — Blue vs Red common backstory; click to continue" tabindex="0" role="button" aria-label="Continue to the next backstory"></main>
 <nav aria-label="Backstory navigation"><div class="group"><button id="back" class="button" type="button">← Back</button><span id="counter" aria-live="polite">1 of 3</span></div><div class="group"><button id="music" class="button" type="button" aria-pressed="false">♫ Play Music</button><span id="musicStatus" role="status" aria-live="polite" style="font:12px Arial,sans-serif;color:#f7dda8;max-width:290px">Click Play Music to begin</span></div></nav>
-<script src="src/march.js?v=6.187"></script>
+<script src="src/march.js?v=6.188"></script>
 <script>
 'use strict';
 const scenes=[
@@ -36,4 +36,4 @@ window.ARMAGEDDON_MARCH?.selectPage(page);
 
 window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();navigate(1);}else if(e.key==='ArrowLeft'){e.preventDefault();navigate(-1);}});
 render(); // Click anywhere on the image to advance; no Next button. Music starts with the first user gesture, in accordance with browser autoplay rules.
-</script><script src="src/version.js?v=6.187"></script></body></html>
+</script><script src="src/version.js?v=6.188"></script></body></html>
