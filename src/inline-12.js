@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded',function(){
  // Put the support link after every other toolbar item, at the far right.
  const coffee=header.querySelector('.coffee-support');
  if(coffee)header.appendChild(coffee);
- for(const id of ['soundToggle','gameClock','tiLabel','replayTurnButton','saveGameButton','gameSpeedWrap','readyButton','dayReportButton','mapSetupToggle']){
+ for(const id of ['gameClock','tiLabel','replayTurnButton','saveGameButton','gameSpeedWrap','readyButton','dayReportButton','mapSetupToggle']){
   const button=document.getElementById(id);if(button)actions.appendChild(button);
  }
  // Overlay menu uses the existing overlay toggle buttons so keyboard shortcuts
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded',function(){
  overlayList.className='overlays-list';
  overlayList.hidden=true;
  const entries=[
-  ['unitSymbolsToggle','NATO / Silhouettes','U'],
+  ['unitSymbolsToggle','NATO / Silhouettes',''],
   ['replacementToggle','Replacements','R'],
   ['endPositionsToggle','End Positions','E'],
   ['zocToggle','Zones of Control','Z'],
@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded',function(){
   ['supplyOverlayToggle','Supply','S'],
   ['hexControlToggle','Hex Control','H'],
   ['mapControlsToggle','Map Controls','M'],
-  ['battleMusicToggle','Music On/Off','']
+  ['soundToggle','Sound Effects','V'],
+  ['battleMusicToggle','Music','U']
  ];
  const updateLabels=()=>{
   for(const [id,label,key] of entries){
@@ -45,8 +46,9 @@ document.addEventListener('DOMContentLoaded',function(){
    const item=overlayList.querySelector('[data-overlay-id="'+id+'"]');
    if(!source||!item)continue;
    const pressed=source.getAttribute('aria-pressed')==='true';
-   if(id==='battleMusicToggle'){const m=window.ARMAGEDDON_MARCH;const on=!!m?.battleEnabled;item.textContent=(on?'☑ ':'☐ ')+'Music On/Off';item.setAttribute('aria-checked',String(on));continue;}
-   if(id==='unitSymbolsToggle'){item.textContent='Unit symbols: '+(pressed?'Silhouettes':'NATO')+' (U)';item.setAttribute('aria-checked',String(pressed));continue;}
+   if(id==='battleMusicToggle'){const m=window.ARMAGEDDON_MARCH;const on=!!m?.battleEnabled;item.textContent='Music: '+(on?'On':'Off')+' (U)';item.setAttribute('aria-checked',String(on));continue;}
+   if(id==='unitSymbolsToggle'){item.textContent='Unit symbols: '+(pressed?'Silhouettes':'NATO');item.setAttribute('aria-checked',String(pressed));continue;}
+   if(id==='soundToggle'){const on=!!window.ARMAGEDDON_SOUND?.enabled;item.textContent='Sound Effects: '+(on?'On':'Off')+' (V)';item.setAttribute('aria-checked',String(on));continue;}
    const visible=id==='mapControlsToggle'?!document.getElementById('mapControlsOverlay')?.hidden:pressed;
    item.textContent=(visible?'☑ ':'☐ ')+label+' ('+key+')';
    item.setAttribute('aria-checked',String(visible));
@@ -77,7 +79,7 @@ document.addEventListener('DOMContentLoaded',function(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlaysMenu();});
  updateLabels();
  const deploy=document.getElementById('deployReinforcement');if(deploy){deploy.style.display='none';deploy.title='Deploy reinforcements (D)';}
- for(const id of ['battleMusicToggle','unitSymbolsToggle','replacementToggle','endPositionsToggle','zocToggle','citiesOverlayToggle','hexControlToggle','mapControlsToggle']){
+ for(const id of ['soundToggle','battleMusicToggle','unitSymbolsToggle','replacementToggle','endPositionsToggle','zocToggle','citiesOverlayToggle','hexControlToggle','mapControlsToggle']){
   const button=document.getElementById(id);if(button)button.style.display='none';
  }
 });

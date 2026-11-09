@@ -127,21 +127,11 @@
   // During testing both visible toolbar controls and keyboard shortcuts call the same handlers.
   // Keyboard controls remain when the temporary test toolbar is eventually removed.
   window.addEventListener('keydown',event=>{
-    if(event.altKey||event.ctrlKey||event.metaKey||event.repeat||executing)return;
+    if(event.altKey||event.ctrlKey||event.metaKey||event.repeat)return;
+    if(executing&&!['u','v'].includes(event.key.toLowerCase()))return;
     const tag=event.target?.tagName?.toLowerCase();
     if(['input','textarea','select'].includes(tag)||event.target?.isContentEditable)return;
-    const shortcuts={e:'endPositionsToggle',r:'replacementToggle',z:'zocToggle',c:'citiesOverlayToggle',s:'supplyOverlayToggle',h:'hexControlToggle',m:'mapControlsToggle',d:'deployReinforcement',u:'unitSymbolsToggle'};
-    // V: display canonical river/stream crossing sides and report selected route costs.
-    if(event.key.toLowerCase()==='v'){
-      event.preventDefault();renderer.showWaterCrossings=!renderer.showWaterCrossings;renderer.render();
-      if(selectedId){const unit=byId(selectedId),route=planner.get(selectedId),steps=[];let from={col:unit.col,row:unit.row};
-        for(const to of route){const t=data.terrainAt(to.col,to.row);
-          steps.push(window.ARMAGEDDON_MOVEMENT.explainCost(unit,t,from,to,data.terrainAt));from=to;}
-        console.table(steps);
-      }
-      status.textContent='Water crossing diagnostic '+(renderer.showWaterCrossings?'ON (red=river, yellow=stream)':'OFF')+'. Press V to toggle.';
-      return;
-    }
+    const shortcuts={e:'endPositionsToggle',r:'replacementToggle',z:'zocToggle',c:'citiesOverlayToggle',s:'supplyOverlayToggle',h:'hexControlToggle',m:'mapControlsToggle',d:'deployReinforcement',u:'battleMusicToggle',v:'soundToggle'};
     const id=shortcuts[event.key.toLowerCase()];
     if(id){event.preventDefault();document.getElementById(id)?.click();}
     else if(event.key==='Escape'){replacementPanel.hidden=true;hidePreview();}
@@ -252,7 +242,7 @@
         if(Array.isArray(affected)&&affected.length){const details=make('details','report-supply');details.append(make('summary','',`View negative supply ratings (${affected.length})`));const ul=make('ul','');for(const unit of affected){const li=make('li','');li.append(reportUnitLink(unit.id,`${unit.name} — Supply ${unit.rating}`));ul.append(li);}details.append(ul);column.append(details);}
       }
       const routesRow=make('div','report-operation report-routes');routesRow.append(make('span','','Unfinished movement routes'),make('strong','',fmt(r.routes)));other.append(routesRow);
-      // M6.190: per-shot details remain in Battle Summary, not the Daily Situation Report.
+      // M6.191: per-shot details remain in Battle Summary, not the Daily Situation Report.
     }
     document.getElementById('dayCombatDetail').textContent=latestCombatDetail;
     dayOverlay.hidden=false;controlsOverlay.hidden=true;controlsButton.setAttribute('aria-pressed','false');
