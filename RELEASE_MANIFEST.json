@@ -1,621 +1,498 @@
 {
   "version": "M6.189",
   "component": "frontend",
-  "created_utc": "2026-11-09T21:35:58.798390+00:00",
+  "variant": "cache-corrected",
   "files": [
     {
-      "file": "README_M6_188.md",
-      "bytes": 770,
-      "sha256": "51a5b34c1a1f5f0017cee027eb6cd8ede1e64ef44226277632c09dc12cac4667"
+      "path": "README_M6_189.md",
+      "sha256": "f5188069465ae5cbf1aa4e1461921ff78feefe6afe8b8f9bbb1443182d4cf47a"
     },
     {
-      "file": "README_M6_189.md",
-      "bytes": 765,
-      "sha256": "8a4183cf1fbd8dcb32cdeb0ee2ed73c2903836c7753ebaef05b7e8798c2dc284"
+      "path": "account.html",
+      "sha256": "72793015ae9864ffcf3177893fbafc49bab8a2e537b97d7043c23cb9f7799ef0"
     },
     {
-      "file": "account.html",
-      "bytes": 9853,
-      "sha256": "9409eaf1e1253bde15bfb6eee2ba02063de879fc09a09f46d534f0f166431dac"
+      "path": "armageddon-backstory.html",
+      "sha256": "b480b5cdb15634f9d51d5ad1b4478cadf864b7a05300656f2449972a2577475b"
     },
     {
-      "file": "armageddon-backstory.html",
-      "bytes": 6209,
-      "sha256": "753e18fedfe5f969293a3a1faf787f718c9821a273999b8522cd05269403e88b"
+      "path": "armageddon-lobby.html",
+      "sha256": "bc0c9dfc4b73d2c19b7ee0711ea3c5dd9605a676b983d1813843ab0b25d84d1e"
     },
     {
-      "file": "armageddon-lobby.html",
-      "bytes": 13526,
-      "sha256": "2387a1c755f8f52b388ae06884bcf45f95f86fd443349a7cfff854f0621e43b8"
+      "path": "armageddon.html",
+      "sha256": "a41d4ff8c7716ac0a512ae7eba660fb69891af56494e47bafb08a9da612ebde1"
     },
     {
-      "file": "armageddon.html",
-      "bytes": 193371,
-      "sha256": "b6e3e8836ee7b185b1a7f585f2afc53a21fec89a4566f718bb74feab6be0e7d2"
-    },
-    {
-      "file": "assets/gametopia_splash.png",
-      "bytes": 3650451,
+      "path": "assets/gametopia_splash.png",
       "sha256": "f94e9d47e35620f79f5f2f39a43f25ed209d3c80154ff38a1ef2d0e6fe97dfd1"
     },
     {
-      "file": "games.html",
-      "bytes": 2638,
-      "sha256": "a5ec48f85b2856b689610535056052fd6b924fe3126d0139f2ae3acb9daffb0f"
+      "path": "games.html",
+      "sha256": "9b437dd78ae238760c129d1ce0c0aab1496b49990ed0398e9d56ff2a09b49ea5"
     },
     {
-      "file": "index.html",
-      "bytes": 1276,
-      "sha256": "ad22ac8e33b705842cf3b49df7bd81e0ed3113e51210812e57d8466690585d73"
+      "path": "index.html",
+      "sha256": "8c6c43db0c0ee49f35bf41e3ad50a6b3ec0a1573d55a7a416a1076b63f466ebc"
     },
     {
-      "file": "music/at-launch.mp3",
-      "bytes": 7533048,
+      "path": "music/at-launch.mp3",
       "sha256": "52215f8ad85bfbced05752052adadd58bffa5caef16696f6cea4d9d49a647a8e"
     },
     {
-      "file": "music/black-vortex.mp3",
-      "bytes": 6790920,
+      "path": "music/black-vortex.mp3",
       "sha256": "a00af27dc5d6daa2d6f00c417c921f077c9092a986ad279323ce457689b5cad8"
     },
     {
-      "file": "music/exciting-trailer.mp3",
-      "bytes": 3097270,
+      "path": "music/exciting-trailer.mp3",
       "sha256": "11876fdee63d983fe9cb6dd4e3140d49b53055f47f04480e1ddacbde4628b7c8"
     },
     {
-      "file": "music/five-armies.mp3",
-      "bytes": 6235982,
+      "path": "music/five-armies.mp3",
       "sha256": "f56746c90756db04675a80ebd29e22253177a6fcc16f56602da62af9eae8d733"
     },
     {
-      "file": "music/the-descent.mp3",
-      "bytes": 7672813,
+      "path": "music/the-descent.mp3",
       "sha256": "f097d51700b970efffc62499473ea3a31e09aad4172e787978bc9c2a644d53a2"
     },
     {
-      "file": "sounds/armored_division.mp3",
-      "bytes": 322664,
+      "path": "sounds/armored_division.mp3",
       "sha256": "b1ce493bcc87d87720a804bbd58664dc39b20a6a8674f25af6a688f6ea18ccd7"
     },
     {
-      "file": "sounds/armored_fire.mp3",
-      "bytes": 161280,
+      "path": "sounds/armored_fire.mp3",
       "sha256": "cecfede9caa133d5a89c9775e4e639bd822f797a122a0c49f0cb27c5036144bc"
     },
     {
-      "file": "sounds/army-marching.mp3",
-      "bytes": 290614,
+      "path": "sounds/army-marching.mp3",
       "sha256": "24773fa2277185604fc0d87c8ae4660932f452a7d2e578213b7badb97a9d6f64"
     },
     {
-      "file": "sounds/infantry_fire.mp3",
-      "bytes": 33092,
+      "path": "sounds/infantry_fire.mp3",
       "sha256": "74560970310660945fb900623dc31aef86e9f3db1d7e07d90be59366da469713"
     },
     {
-      "file": "sounds/mechanized_fire.mp3",
-      "bytes": 19244,
+      "path": "sounds/mechanized_fire.mp3",
       "sha256": "1e01bf4c844c20924b196c03c716d803d39067db705cefb9821bd980f69bc72d"
     },
     {
-      "file": "sounds/motorized_fire.mp3",
-      "bytes": 30596,
+      "path": "sounds/motorized_fire.mp3",
       "sha256": "41770603139c030f5dd42991fc74a0c1232affb6d4c2a933c95d92c497a74b59"
     },
     {
-      "file": "sounds/moving_halftrack.mp3",
-      "bytes": 159744,
+      "path": "sounds/moving_halftrack.mp3",
       "sha256": "7477de14e0a60ec5a7b56982b29fc0db375c76692b3365cd4ad19d9fe96314ab"
     },
     {
-      "file": "sounds/moving_truck.mp3",
-      "bytes": 98901,
+      "path": "sounds/moving_truck.mp3",
       "sha256": "b74ced386580234bcb32a65ff110e4affbf9a1ae9bcd98199bde3aa7d5c911ed"
     },
     {
-      "file": "sounds/retreat.mp3",
-      "bytes": 35876,
+      "path": "sounds/retreat.mp3",
       "sha256": "323995146da8fad0d65e395d7c34e5c322bca264b36ea4ec8ce432e04eb39339"
     },
     {
-      "file": "sounds/surrender.mp3",
-      "bytes": 38013,
+      "path": "sounds/surrender.mp3",
       "sha256": "a773fc35214c533a6df922890123ef8b377b936ba4d859eff2efde558be4095c"
     },
     {
-      "file": "src/ai-operations.js",
-      "bytes": 10322,
+      "path": "src/ai-operations.js",
       "sha256": "f05995d56f6a8be81d362acce8f2f38f269cdf1a7c5fcd0fe828cb0c4449354b"
     },
     {
-      "file": "src/app.js",
-      "bytes": 112572,
+      "path": "src/app.js",
       "sha256": "649ed6e3b8ddd974ce41a482815ac1fd7d17fff651179263ac1b594eb0774d12"
     },
     {
-      "file": "src/backstory.png",
-      "bytes": 2810372,
+      "path": "src/backstory.png",
       "sha256": "072d386123c8ffeaf0fc9241161efdbd001d48dec540cc67fbe910501ec47af5"
     },
     {
-      "file": "src/blue-military.png",
-      "bytes": 85701,
+      "path": "src/blue-military.png",
       "sha256": "8d10cfd878b6312470b1ea0e9804fa2409739d65fd4c14afd3220e6eae4ef90a"
     },
     {
-      "file": "src/blue-political.png",
-      "bytes": 88203,
+      "path": "src/blue-political.png",
       "sha256": "9adcd44c0480750948f98bf9819869519679141e773fc425c6c897dcc2016163"
     },
     {
-      "file": "src/bluenstein_backstory.png",
-      "bytes": 3908775,
+      "path": "src/bluenstein_backstory.png",
       "sha256": "9808987907c366c8f0ac35fc5c9eb205c9e606cf3505d875a11c1763fc8aea06"
     },
     {
-      "file": "src/city.js",
-      "bytes": 16068,
+      "path": "src/city.js",
       "sha256": "4e43ff14881cc8e2b2727ab1677e886c1ee09e9e874334ffba72e075a617ad65"
     },
     {
-      "file": "src/city_1.jpg",
-      "bytes": 308538,
+      "path": "src/city_1.jpg",
       "sha256": "dbff93aec36af6a6c176d4a401a7ebc2e14942d391f81ad883b12054fe6a0bda"
     },
     {
-      "file": "src/city_2.jpg",
-      "bytes": 314074,
+      "path": "src/city_2.jpg",
       "sha256": "7640f34c92841d204ee61e545071239cc4003870a5fbd97b9f2eb29d682ce99f"
     },
     {
-      "file": "src/city_3.jpg",
-      "bytes": 323338,
+      "path": "src/city_3.jpg",
       "sha256": "940522a0d5eb820d98524d99be13b308934419cd5be58b15a7d6b72a0fcf28c0"
     },
     {
-      "file": "src/city_4.jpg",
-      "bytes": 303360,
+      "path": "src/city_4.jpg",
       "sha256": "c9758b9990d4b92e2f2c776b03e2ab6644ab774492d64b65c741fcfa9903f9b0"
     },
     {
-      "file": "src/city_5.jpg",
-      "bytes": 293549,
+      "path": "src/city_5.jpg",
       "sha256": "56bea9efcfc54c49c3fc6b20aab9203b0feacff5cbc45fe5ba6e08222cfd88a3"
     },
     {
-      "file": "src/city_hex.png",
-      "bytes": 220784,
+      "path": "src/city_hex.png",
       "sha256": "3a135cd9a34e0a72ac2809a729adefd3fe61afc097fd09babf96d5455f5368fb"
     },
     {
-      "file": "src/city_town_hex.png",
-      "bytes": 3304125,
+      "path": "src/city_town_hex.png",
       "sha256": "220108631082dc7297241b3608456cd30a0d9f8952253e46411b62daff0d5fb2"
     },
     {
-      "file": "src/clear_1.jpg",
-      "bytes": 394922,
+      "path": "src/clear_1.jpg",
       "sha256": "02525deee7a54287e17765140417545c0cfce817d739c387bcd4078d898fab86"
     },
     {
-      "file": "src/clear_2.jpg",
-      "bytes": 83790,
+      "path": "src/clear_2.jpg",
       "sha256": "a3f58840d4ae961834bd0d1b1babb30b19f1f85dafdd0e887efecd8bffd9b15d"
     },
     {
-      "file": "src/clear_3.jpg",
-      "bytes": 88629,
+      "path": "src/clear_3.jpg",
       "sha256": "8618d6a48a1d32f6d02178fdb69cd31f6fef00c23164ad4a680d32ab2e0ac2bf"
     },
     {
-      "file": "src/clear_4.jpg",
-      "bytes": 83777,
+      "path": "src/clear_4.jpg",
       "sha256": "c5cb39d3fac70feeb386820299c85a30a2f9281f01d73390d30d6e82d0d2fa85"
     },
     {
-      "file": "src/clear_5.jpg",
-      "bytes": 84977,
+      "path": "src/clear_5.jpg",
       "sha256": "77d8540c931bdf79b88542930660ac4fef0b45df5399ee78583090b8bb031652"
     },
     {
-      "file": "src/combat.js",
-      "bytes": 22134,
+      "path": "src/combat.js",
       "sha256": "020280df8dae1c1995fe0027a0d7b4afeb6d97bfb5f963ab81e60509f53f6a55"
     },
     {
-      "file": "src/combined_backstory.png",
-      "bytes": 3616752,
+      "path": "src/combined_backstory.png",
       "sha256": "0b7cb06ce00a454e1eb4115761e472c0a936f51d541d4d264f5de6b23b8b2595"
     },
     {
-      "file": "src/forest_1.jpg",
-      "bytes": 557915,
+      "path": "src/forest_1.jpg",
       "sha256": "daf41d10e6657bfc677a0b2fa9f50156438cd0489b6822803a188247b7e27bed"
     },
     {
-      "file": "src/forest_2.jpg",
-      "bytes": 649061,
+      "path": "src/forest_2.jpg",
       "sha256": "c8170b25f583c3a989e5773fbb7563a839949bd376b24dcc3f86acc7f63c0510"
     },
     {
-      "file": "src/forest_3.jpg",
-      "bytes": 616373,
+      "path": "src/forest_3.jpg",
       "sha256": "7a80f5269984636882359e46971f31944c29086c66bc94ef45ce6eafa5bae8e7"
     },
     {
-      "file": "src/forest_4.jpg",
-      "bytes": 657666,
+      "path": "src/forest_4.jpg",
       "sha256": "75d3e4f7be07d57a5c9188e00373cc42eb876b9aa31b297252328fdcef3c5b02"
     },
     {
-      "file": "src/forest_5.jpg",
-      "bytes": 165969,
+      "path": "src/forest_5.jpg",
       "sha256": "d2e2b59b7676805ebda9b4be75322b0d80d7deb0f54e4d66fa14c5c1fa45d3e3"
     },
     {
-      "file": "src/game-data.js",
-      "bytes": 26562,
+      "path": "src/game-data.js",
       "sha256": "19a8d9d7961d34f853df7742c394e4ec564e5aee251f533d11a7575e2b3d0631"
     },
     {
-      "file": "src/gametopia-account.js",
-      "bytes": 1091,
+      "path": "src/gametopia-account.js",
       "sha256": "8a395c9eebd5963c5bbca39561c722c657190e7ae6bcc4ed0d6b8a20ef370310"
     },
     {
-      "file": "src/hex-map.js",
-      "bytes": 67080,
+      "path": "src/hex-map.js",
       "sha256": "0ca0e8fe1b5ad610c65734df0a93ebd2d6f797025764bb59030b0fabb8dbd375"
     },
     {
-      "file": "src/inline-0.js",
-      "bytes": 1353,
+      "path": "src/inline-0.js",
       "sha256": "39c71528ea9e32a4d956d72ff045aa85a2136aec3c047fbd641219fd56981a21"
     },
     {
-      "file": "src/inline-1.js",
-      "bytes": 91,
+      "path": "src/inline-1.js",
       "sha256": "49fc7c2a38459b44d7b5693e3c22cf1db2b8126f7d31240f570ca9e27a23281d"
     },
     {
-      "file": "src/inline-10.js",
-      "bytes": 465,
+      "path": "src/inline-10.js",
       "sha256": "92d2bc5964668ecb7bc8989660ac59bcd4aa835b8f7d4f835358b5c41f0f44c5"
     },
     {
-      "file": "src/inline-11.js",
-      "bytes": 1201,
+      "path": "src/inline-11.js",
       "sha256": "12884ee09164580fc71984b0c50f2b5708a3b36c848e37f94e37e71eb3a1054b"
     },
     {
-      "file": "src/inline-12.js",
-      "bytes": 4532,
+      "path": "src/inline-12.js",
       "sha256": "334aba2fa21a7d65c7234cb8ccb3ea950263c518af1297bbbe152252c8aee54b"
     },
     {
-      "file": "src/inline-13.js",
-      "bytes": 1858,
+      "path": "src/inline-13.js",
       "sha256": "454fd57bd57d1bcbcc253f010c2ae14ed2399f847f216571817543828f6acf58"
     },
     {
-      "file": "src/inline-14.js",
-      "bytes": 13470,
+      "path": "src/inline-14.js",
       "sha256": "544a9071c07085b73525eca413ed273537480de53d03b5b04fe38f8c84419518"
     },
     {
-      "file": "src/inline-15.js",
-      "bytes": 3127,
+      "path": "src/inline-15.js",
       "sha256": "95aff86dbc698a9af0a7ed67b308c034b8d991a2843b0293588580bacb0dd482"
     },
     {
-      "file": "src/inline-16.js",
-      "bytes": 41155,
+      "path": "src/inline-16.js",
       "sha256": "b15c210bfbe62f93df9c0c74898eff684d63bf36e71f4a95e5a2efdaa274fd96"
     },
     {
-      "file": "src/inline-17.js",
-      "bytes": 1293,
+      "path": "src/inline-17.js",
       "sha256": "9ab3fb7c7751ba0358b916ad4b30d52d106dce54184a9de4acf9aac3708c39f8"
     },
     {
-      "file": "src/inline-19.js",
-      "bytes": 653,
+      "path": "src/inline-19.js",
       "sha256": "d25e21d2724b2074dc62178f00f7230044fa297d6715c7073b687061c1f9f8a5"
     },
     {
-      "file": "src/inline-2.js",
-      "bytes": 359,
+      "path": "src/inline-2.js",
       "sha256": "1f770aa5473ec1da17f9d5b7ca7c2245a244f20037e723f6d60a48675d77c85d"
     },
     {
-      "file": "src/inline-20.js",
-      "bytes": 1721,
+      "path": "src/inline-20.js",
       "sha256": "b135f2fe50f539c3287d00639137dc4fc71dee3dc59e9c54ed01039334263342"
     },
     {
-      "file": "src/inline-21.js",
-      "bytes": 470,
+      "path": "src/inline-21.js",
       "sha256": "8f3d2cc002049b2ebae506ef401d10d821a054503b04b746db635b91fc1abd8b"
     },
     {
-      "file": "src/inline-3.js",
-      "bytes": 378,
+      "path": "src/inline-3.js",
       "sha256": "13eefb038e60e04f48c60d56134a50a6d0d01694d9261993b75d400a79b5ce77"
     },
     {
-      "file": "src/inline-5.js",
-      "bytes": 325,
+      "path": "src/inline-5.js",
       "sha256": "edf9319761e94e55157fafb894af2cea9fe6da88a04f26219fce8c76d70ee583"
     },
     {
-      "file": "src/inline-6.js",
-      "bytes": 13506,
+      "path": "src/inline-6.js",
       "sha256": "e47327990c1ebbbba13fa40afc935afd95e810fb63268526cee02faa4916efe8"
     },
     {
-      "file": "src/inline-7.js",
-      "bytes": 784,
+      "path": "src/inline-7.js",
       "sha256": "31c431cbd3910ec39c8b76ae45db6a8c93d2c430443bc29e6733827e35cea0c5"
     },
     {
-      "file": "src/inline-8.js",
-      "bytes": 2505,
+      "path": "src/inline-8.js",
       "sha256": "1965048251b0e486b618c2ca598859ff59b82dbdaa8ec3a402665e8a8611ed0f"
     },
     {
-      "file": "src/inline-9.js",
-      "bytes": 759,
+      "path": "src/inline-9.js",
       "sha256": "a02d05b969cbf3e1ab09d640b67f8b43cc933371381458d742358d895c8b398c"
     },
     {
-      "file": "src/intro-2.jpg",
-      "bytes": 105866,
+      "path": "src/intro-2.jpg",
       "sha256": "afc3f70bbd505d554d17d428284e931d3ec49bb570e2a0653d7896873bb83f23"
     },
     {
-      "file": "src/intro-3.jpg",
-      "bytes": 100543,
+      "path": "src/intro-3.jpg",
       "sha256": "8f16fea3a481139f280fd492db62bf122d2c94c9bcc5b4576a11f2d487fe141d"
     },
     {
-      "file": "src/lake_1.png",
-      "bytes": 210596,
+      "path": "src/lake_1.png",
       "sha256": "068cd1dfc0b107bf97e4ea6236c77dd4e9579a77cf40ae57173a3bdb3b747b9a"
     },
     {
-      "file": "src/lake_2.png",
-      "bytes": 210596,
+      "path": "src/lake_2.png",
       "sha256": "068cd1dfc0b107bf97e4ea6236c77dd4e9579a77cf40ae57173a3bdb3b747b9a"
     },
     {
-      "file": "src/lake_3.png",
-      "bytes": 210596,
+      "path": "src/lake_3.png",
       "sha256": "068cd1dfc0b107bf97e4ea6236c77dd4e9579a77cf40ae57173a3bdb3b747b9a"
     },
     {
-      "file": "src/lake_4.png",
-      "bytes": 210596,
+      "path": "src/lake_4.png",
       "sha256": "068cd1dfc0b107bf97e4ea6236c77dd4e9579a77cf40ae57173a3bdb3b747b9a"
     },
     {
-      "file": "src/lake_hex.png",
-      "bytes": 210596,
+      "path": "src/lake_hex.png",
       "sha256": "068cd1dfc0b107bf97e4ea6236c77dd4e9579a77cf40ae57173a3bdb3b747b9a"
     },
     {
-      "file": "src/lake_texture.png",
-      "bytes": 210596,
+      "path": "src/lake_texture.png",
       "sha256": "068cd1dfc0b107bf97e4ea6236c77dd4e9579a77cf40ae57173a3bdb3b747b9a"
     },
     {
-      "file": "src/march.js",
-      "bytes": 2643,
+      "path": "src/march.js",
       "sha256": "1e4297343413bebff6277bc6f863408bcd101abe43cf9838eabc3e112e7a6ee6"
     },
     {
-      "file": "src/mountains_1.jpg",
-      "bytes": 338080,
+      "path": "src/mountains_1.jpg",
       "sha256": "0d114e53d6b7f92071e16b408987827d36a95176f712329dc7d7c7abb0a324d9"
     },
     {
-      "file": "src/mountains_2.jpg",
-      "bytes": 330317,
+      "path": "src/mountains_2.jpg",
       "sha256": "dfd2f9743eed42fe20e860301e607a30b5a47ac772d6977b629ce3f6c54d41e1"
     },
     {
-      "file": "src/mountains_3.jpg",
-      "bytes": 310950,
+      "path": "src/mountains_3.jpg",
       "sha256": "181cfe3263e41fb7817e1ba8160330bdd7c559c337d88e63e3e0439b43f44179"
     },
     {
-      "file": "src/mountains_4.jpg",
-      "bytes": 323621,
+      "path": "src/mountains_4.jpg",
       "sha256": "62a56922c4076d83f6cdf5e9fd56a75f5047bb599169b7caeb813a00d41285c8"
     },
     {
-      "file": "src/mountains_5.jpg",
-      "bytes": 345390,
+      "path": "src/mountains_5.jpg",
       "sha256": "81adda4cb4a6e221835ea8329f5a7013fdf3759128a39e6ac943aeac0fd5f749"
     },
     {
-      "file": "src/movement.js",
-      "bytes": 14924,
+      "path": "src/movement.js",
       "sha256": "7bcd7002648d3be50266145a04ebdb1391f31b50ed23cb97d1678dcdae1eef3e"
     },
     {
-      "file": "src/plains_texture.jpg",
-      "bytes": 83790,
+      "path": "src/plains_texture.jpg",
       "sha256": "a3f58840d4ae961834bd0d1b1babb30b19f1f85dafdd0e887efecd8bffd9b15d"
     },
     {
-      "file": "src/recovery-state.js",
-      "bytes": 1721,
+      "path": "src/recovery-state.js",
       "sha256": "29ba853bd953c4769daf43e0a638f9a4d3c8b6b893a8662b730ffc8fc326556d"
     },
     {
-      "file": "src/red-military.png",
-      "bytes": 82050,
+      "path": "src/red-military.png",
       "sha256": "f1c9a55f4f116836ad0809b441d4a790ba4fd4feece3601ce8c1e547c5936992"
     },
     {
-      "file": "src/red-political.png",
-      "bytes": 86357,
+      "path": "src/red-political.png",
       "sha256": "508bd3519e29dc8e761d89b82db5cb04d05b996d4592d8d0a3f63a8971dcbf1d"
     },
     {
-      "file": "src/redonia_backstory.png",
-      "bytes": 3036461,
+      "path": "src/redonia_backstory.png",
       "sha256": "54d11a1f01f8fb206bd28c311af8c26a106d72d534ae7d8355b0ea7872f7fd50"
     },
     {
-      "file": "src/replacements.js",
-      "bytes": 5983,
+      "path": "src/replacements.js",
       "sha256": "c8dcb5490c7be609f22124ebf664e9a6d478510cba889dd53e63431afb1b0445"
     },
     {
-      "file": "src/rough_1.jpg",
-      "bytes": 166710,
+      "path": "src/rough_1.jpg",
       "sha256": "de12dcb5661698d9a5468987520c8c37bcf0246f518a5dd83954c6ca739743cf"
     },
     {
-      "file": "src/rough_2.jpg",
-      "bytes": 161546,
+      "path": "src/rough_2.jpg",
       "sha256": "54cae40c388d36f06d29e83a272c68c0a9f8a0038dd03876a687c731a5bab9f5"
     },
     {
-      "file": "src/rough_3.jpg",
-      "bytes": 162378,
+      "path": "src/rough_3.jpg",
       "sha256": "9af591d7f9d21f3e2c0820ab4ff2e12a66985fd9385a21744efc9fdaa44c7f72"
     },
     {
-      "file": "src/rough_4.jpg",
-      "bytes": 171074,
+      "path": "src/rough_4.jpg",
       "sha256": "4ff98645ad8d2b385002b79e03d52004c40b0e51dc466e8a6605b5c4c80f7dfb"
     },
     {
-      "file": "src/rough_5.jpg",
-      "bytes": 169036,
+      "path": "src/rough_5.jpg",
       "sha256": "0771dc75d03736de1bb5b9217915136438bacaf28fb5d8b68171c8ffd775c591"
     },
     {
-      "file": "src/routes.js",
-      "bytes": 6816,
+      "path": "src/routes.js",
       "sha256": "cfbf2f8fec06e66688ea65a1e27f3c51cdd4badeeda14a9ebc7539354323388b"
     },
     {
-      "file": "src/sound.js",
-      "bytes": 16320,
+      "path": "src/sound.js",
       "sha256": "1dee0c352e8f57346370384221eed8223e1c0e9cf1832ce13e4c464a9df5a01a"
     },
     {
-      "file": "src/strategic-ai.js",
-      "bytes": 4573,
+      "path": "src/strategic-ai.js",
       "sha256": "a4544242a275d46150fe2034b43afece69a68a0644d039b6a0b9495b2825e11f"
     },
     {
-      "file": "src/styles.css",
-      "bytes": 21199,
+      "path": "src/styles.css",
       "sha256": "d208586f7803b6b08f1092270dd32d21dadc089b989154fcadb7ca2c68ce5828"
     },
     {
-      "file": "src/supply.js",
-      "bytes": 1972,
+      "path": "src/supply.js",
       "sha256": "c64d93e445f6fffe6ff661dc167831a131b62c451fac9bcdc78cf20d7430b67f"
     },
     {
-      "file": "src/swamp_1.jpg",
-      "bytes": 383894,
+      "path": "src/swamp_1.jpg",
       "sha256": "22a19fb4f36f00115f6be3db1fce0495f55fec3671ec31a4c247062e299293c5"
     },
     {
-      "file": "src/swamp_2.jpg",
-      "bytes": 384026,
+      "path": "src/swamp_2.jpg",
       "sha256": "969fd1cbcad39a8fcbf5b0a9e35b702d5ba40de06fe6554ef57983e35ee5f1b0"
     },
     {
-      "file": "src/swamp_3.jpg",
-      "bytes": 400202,
+      "path": "src/swamp_3.jpg",
       "sha256": "4664ca4009b28a9fdd3a8eee99b16c4cbb9d4c3aac7969cbf0f037473504f8b3"
     },
     {
-      "file": "src/swamp_4.jpg",
-      "bytes": 444627,
+      "path": "src/swamp_4.jpg",
       "sha256": "6a718f1028ebb4af6fb8f08339d91606ed4c3421d1616f8b8b8ff67582d6df86"
     },
     {
-      "file": "src/swamp_5.jpg",
-      "bytes": 436460,
+      "path": "src/swamp_5.jpg",
       "sha256": "4ce836b5c3e2d45775bc37b4c74f0ce09cfd540f305f897bfa41c19d13149ae1"
     },
     {
-      "file": "src/unit_blue_armored.png",
-      "bytes": 940,
+      "path": "src/unit_blue_armored.png",
       "sha256": "384b161ac17a4eb5b6678048adf716eb1e25a9b0816ac51f0116170c198e9fea"
     },
     {
-      "file": "src/unit_blue_infantry.png",
-      "bytes": 1267,
+      "path": "src/unit_blue_infantry.png",
       "sha256": "ea6a66f82a5f8fd7d12906e875370131a61c5218199e2e4c8cc3b995ed96c702"
     },
     {
-      "file": "src/unit_blue_mechanized.png",
-      "bytes": 1264,
+      "path": "src/unit_blue_mechanized.png",
       "sha256": "9a38aee37abd1334287e8481ce85acc9f898c9a9b4eaa2df79be71611ca0269a"
     },
     {
-      "file": "src/unit_blue_motorized.png",
-      "bytes": 933,
+      "path": "src/unit_blue_motorized.png",
       "sha256": "8d63a2f4cd78438f5376cbbd81a73f2ad27c7c0f6937af4809fb0f45ff76000f"
     },
     {
-      "file": "src/unit_red_armored.png",
-      "bytes": 1056,
+      "path": "src/unit_red_armored.png",
       "sha256": "8af6b67201b28bb3dd587e2464e416f39a16ed414735205ab34160266be8fc5b"
     },
     {
-      "file": "src/unit_red_infantry.png",
-      "bytes": 1303,
+      "path": "src/unit_red_infantry.png",
       "sha256": "002463e28ea96cc90b781770bf93585f4314e12ecc1ea85b7a49a484112c65e4"
     },
     {
-      "file": "src/unit_red_mechanized.png",
-      "bytes": 1268,
+      "path": "src/unit_red_mechanized.png",
       "sha256": "236c2dddf6f7ca940e7c2ca72f00def5c7cdec1a6498def8b9fbdeab04bdd2db"
     },
     {
-      "file": "src/unit_red_motorized.png",
-      "bytes": 891,
+      "path": "src/unit_red_motorized.png",
       "sha256": "734bc26e63fbf73de0cfcccf80323ec925e7089a1fb764233619f625fc8160f2"
     },
     {
-      "file": "src/verify-backend.js",
-      "bytes": 5042,
+      "path": "src/verify-backend-m6189.js",
       "sha256": "6ef418dadc937885ef48e10ed6e0bc02364ee38918f024b9cc54f92bdb023156"
     },
     {
-      "file": "src/version.js",
-      "bytes": 1575,
+      "path": "src/verify-backend.js",
+      "sha256": "6ef418dadc937885ef48e10ed6e0bc02364ee38918f024b9cc54f92bdb023156"
+    },
+    {
+      "path": "src/version.js",
       "sha256": "f73cbda141a8b9721a9736215851058dee486d46cd667cf86e014f45b23b7ad3"
     },
     {
-      "file": "src/victory-blue.png",
-      "bytes": 3229755,
+      "path": "src/victory-blue.png",
       "sha256": "a193b8e893b6eea0f4e1537464708712a374e31650edd4db6601d9d9d4f16c3f"
     },
     {
-      "file": "src/victory-red(1).png",
-      "bytes": 3567795,
+      "path": "src/victory-red(1).png",
       "sha256": "b2e99cf4c4d59a831dbf6eac23f79baf9cd388ec024f36075910fab72628a56c"
     },
     {
-      "file": "src/zoc.js",
-      "bytes": 1526,
+      "path": "src/zoc.js",
       "sha256": "d6f6242a170c6604ed7d88063fa8e5e2849bfde458818697b39f8ee70d6481c3"
     },
     {
-      "file": "test-m678-planning-zoc.js",
-      "bytes": 855,
+      "path": "test-m678-planning-zoc.js",
       "sha256": "980cb91c132bc1e338395912b8e850c1dcad08205bf18106a015bfbd5b5b9e85"
     }
   ]
