@@ -131,7 +131,7 @@
     if(executing&&!['u','v'].includes(event.key.toLowerCase()))return;
     const tag=event.target?.tagName?.toLowerCase();
     if(['input','textarea','select'].includes(tag)||event.target?.isContentEditable)return;
-    const shortcuts={e:'endPositionsToggle',r:'replacementToggle',z:'zocToggle',c:'citiesOverlayToggle',s:'supplyOverlayToggle',h:'hexControlToggle',m:'mapControlsToggle',d:'deployReinforcement',u:'battleMusicToggle',v:'soundToggle'};
+    const shortcuts={e:'endPositionsToggle',r:'replacementToggle',z:'zocToggle',c:'citiesOverlayToggle',s:'supplyOverlayToggle',h:'hexControlToggle',m:'mapControlsToggle',d:'deployReinforcement',v:'soundToggle'};
     const id=shortcuts[event.key.toLowerCase()];
     if(id){event.preventDefault();document.getElementById(id)?.click();}
     else if(event.key==='Escape'){replacementPanel.hidden=true;hidePreview();}

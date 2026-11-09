@@ -37,8 +37,7 @@ document.addEventListener('DOMContentLoaded',function(){
   ['supplyOverlayToggle','Supply','S'],
   ['hexControlToggle','Hex Control','H'],
   ['mapControlsToggle','Map Controls','M'],
-  ['soundToggle','Sound Effects','V'],
-  ['battleMusicToggle','Music','U']
+  ['soundToggle','Sound Effects','V']
  ];
  const updateLabels=()=>{
   for(const [id,label,key] of entries){
