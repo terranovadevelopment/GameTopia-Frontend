@@ -110,7 +110,7 @@
       if(mode==='Both')return {visible:true,reason:'both-playtest'};
       const side=mode==='Red'?'Red':mode==='Blue'?'Blue':(window.ARMAGEDDON_SETUP?.playerSide||'Blue');
       if(d.side===side)return {visible:true,reason:'friendly',side};
-      // M6.185: civilian intelligence from controlled countryside. An enemy
+      // M6.187: civilian intelligence from controlled countryside. An enemy
       // division next to ANY hex controlled by the viewing nation is visible,
       // regardless of terrain or friendly division proximity. Enemy-controlled,
       // contested and out-of-bounds hexes never grant the viewer this sighting.
@@ -309,7 +309,7 @@
           const ownerId=owners['city:'+entry.city.name];
           const playerColor=colors[ownerId]||sideColor; // AI: same as its nation
           const pt=this.worldPixel(col,row),verts=hexPoints(pt.x,pt.y,this.size*.955);
-          // M6.185: one X per city, on its center hex; repeated markers on adjoining urban hexes were redundant.
+          // M6.187: one X per city, on its center hex; repeated markers on adjoining urban hexes were redundant.
           if(col===entry.city.c&&row===entry.city.r){ctx.save();ctx.strokeStyle='#06111e';ctx.lineWidth=Math.max(6,6*this.zoom);ctx.lineCap='round';
           const d=Math.max(5,this.size*.20);ctx.beginPath();ctx.moveTo(pt.x-d,pt.y-d);ctx.lineTo(pt.x+d,pt.y+d);ctx.moveTo(pt.x+d,pt.y-d);ctx.lineTo(pt.x-d,pt.y+d);ctx.stroke();
           ctx.strokeStyle=playerColor;ctx.lineWidth=Math.max(3,3.6*this.zoom);ctx.stroke();ctx.restore();}

@@ -8,7 +8,7 @@
  const box=document.createElement('section');box.id='gtPlayersPanel';box.setAttribute('aria-label','Multiplayer player status');
  box.innerHTML='<div class="gt-drag" id="gtDragHandle"><span>Players · Planning</span><span title="Drag to move">⠿</span></div><div class="gt-body"><div id="gtTurnStatus">Connecting…</div><div id="gtPlayersList"></div><div class="gt-controls"><button id="gtReadyToggle" class="gt-notready">Planning</button><button id="gtCommToggle" title="Communications" aria-label="Communications">COMM</button></div><div class="gt-note" id="gtSyncNote">M6.119 combat engine: movement, firing, morale, retreats, surrenders, production, and maintenance.</div></div>';
  document.body.appendChild(box);
- // M6.185: Execution Trace is no longer a player-facing window or reopen control.
+ // M6.187: Execution Trace is no longer a player-facing window or reopen control.
  function trace(step,data){ /* diagnostics intentionally hidden from the game interface */ }
  trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.119'});
  const handle=box.querySelector('#gtDragHandle');let drag=null;
