@@ -42,7 +42,7 @@
 'use strict';
 const API='https://gametopia-backend.onrender.com';
 const rows=document.getElementById('gameRows'),status=document.getElementById('status');
-const snapshot={public:[],enrolled:[],saves:[],errors:[]};
+const snapshot={public:[],enrolled:[],saves:[],errors:[],saveCatalogOk:false};
 let refreshToken=0;
 function accountInfo(){try{return JSON.parse(sessionStorage.getItem('gt_account')||localStorage.getItem('gt_account')||'null')}catch(_){return null}}
 const account=accountInfo();
@@ -71,7 +71,7 @@ function openSavePicker(group){
 
 if(!account?.token)document.getElementById('gtAccountStatus').textContent='Please log in to join or resume a game';
 document.getElementById('gtAccountStatus').textContent=account?.number?'Signed in: '+(account.screenName||account.name||'Player')+' · ID '+account.number:'Please log in or register to play';
-async function request(url,options){const response=await fetch(API+url,options||{cache:'no-store'});const payload=await response.json();if(!response.ok)throw Error(payload.error||'Server returned '+response.status);return payload}
+async function request(url,options){const response=await fetch(API+url,options||{cache:'no-store'});const payload=await response.json().catch(()=>({}));if(!response.ok)throw Error((payload.error||payload.message||'Server returned '+response.status)+' (HTTP '+response.status+')');return payload}
 function pushCell(row,text){const el=document.createElement('span');el.textContent=text;el.title=text;row.append(el)}
 function actionButton(row,entry){
  const btn=document.createElement(entry.action==='Join'?'a':'button');btn.className='btn';btn.textContent=entry.action==='Autosaves'?'View Saves':entry.action;
@@ -101,13 +101,13 @@ function render(){
   all.push({id,name:g.name||'Unnamed game',turn:g.turn??g.day??mine?.turn??'—',status:g.phase||mine?.phase||g.status||'Active',action,side:mine?.side||'',created:g.created||mine?.created||'',host:g.creator||'',sort:0});
  }
  const saveGroups=new Map();
- for(const save of snapshot.saves){const id=String(save.gameId);if(!saveGroups.has(id))saveGroups.set(id,{id,name:save.name||'ARMAGEDDON',saves:[],sort:1,status:'Autosaves',action:'Autosaves'});saveGroups.get(id).saves.push(save)}
+ for(const save of snapshot.saves){const id=String(save.gameId||save.game_id||save.id||'');if(!id)continue;if(!saveGroups.has(id))saveGroups.set(id,{id,name:save.name||'ARMAGEDDON',saves:[],sort:1,status:'Autosaves',action:'Autosaves'});saveGroups.get(id).saves.push(save)}
  for(const group of saveGroups.values()){group.turn=Math.max(...group.saves.map(x=>Number(x.turn)||0));all.push(group)}
  all.sort((a,b)=>a.sort-b.sort||(Date.parse(b.created||b.save?.created||0)||0)-(Date.parse(a.created||a.save?.created||0)||0)||a.name.localeCompare(b.name));
  rows.replaceChildren();
  for(const entry of all){const row=document.createElement('div');row.className='game-row';row.setAttribute('role','listitem');if(entry.action==='Autosaves'){row.style.cursor='pointer';row.tabIndex=0;row.setAttribute('aria-label','View autosaves for '+entry.name);row.addEventListener('click',e=>{if(e.target.closest('button'))return;openSavePicker(entry)});row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSavePicker(entry)}})}pushCell(row,entry.name+(entry.host?' · '+entry.host:'')+(entry.sort===0&&entry.created?' · '+new Date(entry.created).toLocaleString():''));pushCell(row,String(entry.turn));pushCell(row,entry.status==='lobby'||entry.status==='initiation'?'Initiation':entry.status==='planning'?'Planning':(entry.status==='executing'||entry.status==='execution')?'Executing':(entry.status==='replaying'||entry.status==='replay')?'Replaying':entry.status==='Autosaves'?'Autosaves':'Active');actionButton(row,entry);rows.append(row)}
- if(!all.length){const row=document.createElement('div');row.className='game-row';pushCell(row,'No active games or saved games are available for this account');rows.append(row)}
- status.textContent=all.length+' game entr'+(all.length===1?'y':'ies')+' · '+active.size+' active · '+saveGroups.size+' games with autosaves ('+snapshot.saves.length+' saves)'+(snapshot.errors.length?' · '+snapshot.errors.join('; '):'');
+ if(!all.length){const row=document.createElement('div');row.className='game-row';pushCell(row,snapshot.errors.length?'Could not retrieve the complete games/autosaves catalog — see status below':'No games or autosaves were returned by the server for this account');rows.append(row)}
+ status.textContent=(snapshot.saveCatalogOk&&snapshot.saves.length===0?'The backend returned zero autosaves for this account; earlier saves may be stored under another account or may require backend recovery. · ':(!snapshot.saveCatalogOk?'Autosave availability could not be verified. · ':''))+all.length+' game entr'+(all.length===1?'y':'ies')+' · '+active.size+' active · '+saveGroups.size+' games with autosaves ('+snapshot.saves.length+' saves)'+(snapshot.errors.length?' · '+snapshot.errors.join('; '):'');
 }
 async function resumeGame(id){
  if(!account?.token)throw Error('Log in to resume your existing game.');
@@ -131,9 +131,9 @@ async function refresh(){
  const myToken=++refreshToken;const errors=[];
  const tasks=[request('/api/games',{cache:'no-store'}).then(g=>({key:'public',value:Array.isArray(g)?g:[]})),
  account?.token?request('/api/accounts/games',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'enrolled',value:g.games||[]})):Promise.resolve({key:'enrolled',value:[]}),
- account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:g.saves||[]})):Promise.resolve({key:'saves',value:[]})];
+ account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:Array.isArray(g)?g:Array.isArray(g.saves)?g.saves:Array.isArray(g.games)?g.games.flatMap(x=>Array.isArray(x.saves)?x.saves.map(save=>({...save,gameId:save.gameId||x.gameId||x.id,name:save.name||x.name})):[]):[]})):Promise.resolve({key:'saves',value:[]})];
  const results=await Promise.allSettled(tasks);if(myToken!==refreshToken)return;
- results.forEach((r,i)=>{if(r.status==='fulfilled')snapshot[r.value.key]=r.value.value;else errors.push(['Active games','My games','Autosaves'][i]+' unavailable')});snapshot.errors=errors;render();
+ results.forEach((r,i)=>{if(r.status==='fulfilled'){snapshot[r.value.key]=r.value.value;if(i===2)snapshot.saveCatalogOk=true;}else{if(i===2)snapshot.saveCatalogOk=false;errors.push(['Active games','My games','Autosaves'][i]+' request failed: '+(r.reason?.message||'network or CORS error'));}});snapshot.errors=errors;render();
 }
 refresh();setInterval(()=>{if(!document.hidden)refresh()},10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
-</script><script src="src/version.js?v=6.198"></script></body></html>
+</script><script src="src/version.js?v=6.199"></script></body></html>
