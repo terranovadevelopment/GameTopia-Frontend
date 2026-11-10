@@ -17,7 +17,7 @@ nav .group{display:flex;gap:10px;align-items:center}.button{color:white;cursor:p
 <script src="src/march.js?v=6.192"></script>
 <script>
 'use strict';
-// M6.202: no backstory is shown until the account is validated by the backend.
+// M6.203: no backstory is shown until the account is validated by the backend.
 // The permanent player ID is required for later game/autosave association.
 let gameAccount=null;
 try {gameAccount=JSON.parse(sessionStorage.getItem('gt_account')||localStorage.getItem('gt_account')||'null');} catch(_) {}

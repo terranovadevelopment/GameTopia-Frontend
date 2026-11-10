@@ -1,33 +1,21 @@
-GAMETOPIA M6.202 FRONTEND — GITHUB DESKTOP INSTALLATION
-=======================================================
+GAMETOPIA M6.203 - COMPLETE FRONTEND
+=================================
 
-IMPORTANT: If GitHub Desktop displays "Newer commits on remote", DO NOT force push.
-Do the following IN THIS ORDER:
+This ZIP contains the complete frontend, starting from your uploaded M6.202 ZIP.
+Do NOT mix files from different releases. Backend remains M6.198.
 
-1. In GitHub Desktop select the TerraNovaDevelopment/GameTopia-Frontend repository.
-2. First click Fetch origin. If "Pull origin" appears, click Pull origin.
-3. If you have an unpushed local commit, GitHub Desktop may ask to merge or rebase.
-   Use GitHub Desktop's normal merge/pull workflow. If there is a conflict,
-   resolve it before continuing; DO NOT discard local work, reset, or force push.
-4. Extract this M6.202 ZIP to a separate temporary folder. Open its INSIDE
-   GameTopia-Frontend-main folder.
-5. Open your LOCAL GitHub Desktop repository: Repository > Show in Explorer.
-6. Copy the CONTENTS from the extracted GameTopia-Frontend-main folder into the
-   local GitHub repository root, replacing matching frontend files. Do NOT copy
-   the enclosing folder, and do NOT commit the ZIP file instead of its contents.
-7. Return to GitHub Desktop. Review "Changes". You should see modifications to
-   src/version.js, games.html, account.html, armageddon-backstory.html,
-   release-check.html and documentation. Commit them as "GameTopia M6.202".
-8. Click Push origin. Confirm the push succeeds. Wait until Render deployment
-   reports "Live" for the correct connected frontend service.
-9. On the ACTUAL game website, visit /release-check.html. It must say
-   GT-FRONTEND-M6-202-LOGIN-BEFORE-BACKSTORY.
-10. Refresh the game (Ctrl+Shift+R) and confirm the top-left label M6.202.
-11. Click ARMAGEDDON on game selection. You must log in / confirm your
-    registered account before the FIRST backstory image. Then continue to
-    the Available Games screen, where your permanent player ID is shown.
+HOW TO DEPLOY
+1. Extract this ZIP on your computer.
+2. Open the INNER folder named GameTopia-Frontend-main.
+3. Copy all its CONTENTS into your local GameTopia-Frontend repository folder, replacing the matching files.
+4. In GitHub Desktop, check Changes and commit as GameTopia M6.203.
+5. If GitHub Desktop reports newer commits on the remote, use Fetch/Pull first; do not force push or discard changes. Resolve any conflicts before committing.
+6. Push origin. Allow Render to finish deployment.
+7. Open https://gametopia-frontend.onrender.com/release-check.html
+   The page must show GameTopia Frontend M6.203 and the M6-203 build marker.
+8. Refresh your GameTopia screen with Ctrl+Shift+R and confirm the top-left label M6.203.
 
-NOTE: Uploading a ZIP to GitHub without extracting its contents will NOT deploy
-these changes. This update changes ONLY frontend files. Existing server data,
-autosaves and AI production have not been modified. Backend compatibility
-is still M6.198: do not change this to M6.202 merely to match the UI version.
+LOGIN TEST
+Select ARMAGEDDON. A player not yet authenticated must log in BEFORE seeing the first backstory page. A returning valid session can be verified and proceed without entering a password again.
+
+NOTE: This release preserves the supplied login flow; it has not been live-tested against backend authentication. It does not restore autosaves or fix AI production.
