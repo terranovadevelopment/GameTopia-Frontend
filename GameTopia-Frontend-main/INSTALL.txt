@@ -1,17 +1,15 @@
-GAMETOPIA FRONTEND — M6.198 HOW TO PLAY UI UPDATE
+GAMETOPIA M6.200 — COMPLETE FRONTEND RELEASE
 
-This ZIP is a COMPLETE frontend source package, not a patch.
+IMPORTANT: THIS ZIP IS NOT AN AUTOMATIC DEPLOYMENT.
 
-To publish: Open TerraNovaDevelopment/GameTopia-Frontend in GitHub.
-Upload the contents INSIDE the GameTopia-Frontend-main folder, preserving subfolders.
-Commit the changes to the deployment branch, and allow your normal frontend deployment to finish.
-Do not upload just the ZIP as a GitHub file; extract its contents.
-Do not replace your backend, database, or backend version verification file.
+1. EXTRACT the ZIP. Open the INSIDE folder GameTopia-Frontend-main.
+2. UPLOAD THE CONTENTS OF THAT FOLDER (not ZIP, not folder itself) to the root of TerraNovaDevelopment/GameTopia-Frontend on the deployment branch.
+3. Replace the existing files, including src/version.js, index.html, games.html, account.html, and armageddon-backstory.html. Commit changes.
+4. Confirm your live website's deployment service picked up that commit.
+5. Visit YOUR-LIVE-SITE/release-check.html — it must say GT-FRONTEND-M6-200-LOGIN-FIRST.
+6. Visit the same site's games.html: clicking ARMAGEDDON must lead to login before backstory.
 
-Test:
-1. On index.html, click the visible How to Play button near top-right of splash.
-2. Go to ARMAGEDDON game screen and click How to Play in the existing top bar.
-3. Verify both open the README.txt guide and Close/Escape dismisses them.
-4. Hard refresh (Ctrl+Shift+R) if a browser shows an older cached version.
+If release-check.html returns 404, the new files have NOT reached the site. Do not diagnose the game UI until this is resolved.
 
-Backend compatibility requirement remains M6.198.
+Frontend build: M6.200. Backend API compatibility remains M6.198.
+Existing backend saves and AI production are NOT altered by this package.
