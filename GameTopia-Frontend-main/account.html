@@ -4,7 +4,7 @@
 (function(){'use strict';
  const params=new URLSearchParams(location.search),requested=params.get('next')||'armageddon-lobby.html';
  // Only same-origin game destinations, never external links or special schemes.
- const allowed=/^armageddon\.html\?(?:createLobby=1|joinGame=[a-zA-Z0-9_-]+)$/;
+ const allowed=/^(?:armageddon-lobby\.html|armageddon\.html\?(?:createLobby=1|joinGame=[a-zA-Z0-9_-]+))$/;
  const next=allowed.test(requested)?requested:'armageddon-lobby.html';
  const isStart=next.includes('createLobby=1');document.getElementById('intent').textContent=isStart?'Create a game: sign in or register.':next.includes('joinGame=')?'Join a game: sign in or register.':'Sign in or register.';
  const $=id=>document.getElementById(id),error=$('error'),success=$('success');
