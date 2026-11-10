@@ -1,21 +1,34 @@
-GAMETOPIA M6.203 - COMPLETE FRONTEND
-=================================
+GAMETOPIA M6.205 - FRONTEND (NO NESTED FOLDER)
+================================================
 
-This ZIP contains the complete frontend, starting from your uploaded M6.202 ZIP.
-Do NOT mix files from different releases. Backend remains M6.198.
+FRONTEND: M6.205
+BACKEND REQUIRED: M6.198 (unchanged)
+LIVE PLAYTEST: https://gametopia-playtest.onrender.com/
 
-HOW TO DEPLOY
-1. Extract this ZIP on your computer.
-2. Open the INNER folder named GameTopia-Frontend-main.
-3. Copy all its CONTENTS into your local GameTopia-Frontend repository folder, replacing the matching files.
-4. In GitHub Desktop, check Changes and commit as GameTopia M6.203.
-5. If GitHub Desktop reports newer commits on the remote, use Fetch/Pull first; do not force push or discard changes. Resolve any conflicts before committing.
-6. Push origin. Allow Render to finish deployment.
-7. Open https://gametopia-frontend.onrender.com/release-check.html
-   The page must show GameTopia Frontend M6.203 and the M6-203 build marker.
-8. Refresh your GameTopia screen with Ctrl+Shift+R and confirm the top-left label M6.203.
+IMPORTANT: This ZIP opens DIRECTLY to index.html, games.html, src, assets, etc.
+It DOES NOT contain an inner GameTopia-Frontend-main folder.
 
-LOGIN TEST
-Select ARMAGEDDON. A player not yet authenticated must log in BEFORE seeing the first backstory page. A returning valid session can be verified and proceed without entering a password again.
+INSTALL USING WINDOWS EXPLORER AND GITHUB DESKTOP
+1. Extract this ZIP to a temporary folder outside your repository (for example Downloads\GameTopia_M6_205).
+2. In GitHub Desktop, select GameTopia-Frontend; use Repository > Show in Explorer.
+   The destination should be C:\Projects\Gametopia\GameTopia-Frontend
+3. In the temporary extracted folder, Ctrl+A to select ALL top-level files
+   and folders (index.html, src, assets, README.txt, etc.). Ctrl+C.
+4. In the destination repository folder, Ctrl+V and choose Replace files.
+   Do NOT copy a whole outer extracted folder into the repository.
+   Do NOT touch or delete the .git directory.
+5. Confirm in the destination itself that src\version.js says M6.205.
+6. In GitHub Desktop review the changes. If it reports remote commits, Fetch/Pull and
+   reconcile them before pushing; never use Force Push. Commit as GameTopia M6.205.
+7. Push origin to TerraNovaDevelopment/GameTopia-Frontend.
+8. After Render's GameTopia-Playtest deployment says Live, open
+   https://gametopia-playtest.onrender.com/release-check.html
+   and confirm M6.205. Then Ctrl+Shift+R on the playtest homepage.
 
-NOTE: This release preserves the supplied login flow; it has not been live-tested against backend authentication. It does not restore autosaves or fix AI production.
+CLEANUP (OPTIONAL, AFTER CONFIRMING THE LIVE SITE WORKS)
+An old C:\Projects\Gametopia\GameTopia-Frontend\GameTopia-Frontend-main
+folder may remain from earlier extracts. That folder is NOT the repository root.
+Do not delete it until you confirm the root files and the live website are correct.
+
+This packaging release does not modify gameplay, login behavior, autosaves, or
+backend services. It has not been live tested.

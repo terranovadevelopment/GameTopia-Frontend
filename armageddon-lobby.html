@@ -13,27 +13,27 @@
 .autosave-actions .btn{font-size:14px;padding:8px 13px}
 @media(max-width:580px){.autosave-header,.autosave-row{grid-template-columns:minmax(90px,2fr) 50px minmax(108px,1fr);gap:5px;font-size:12px}.autosave-expires{display:none}}
 
-/* M6.198: unified scrollable game list */
+/* M6.205: one row per permanent game ID, with saves only in the picker */
 .game-catalog{border:1px solid #6a849c;border-radius:10px;overflow:hidden;background:#10283c}
-.game-head,.game-row{display:grid;grid-template-columns:minmax(120px,2.4fr) minmax(64px,.6fr) minmax(80px,1fr) 88px;gap:10px;align-items:center;padding:9px 12px}
+.game-head,.game-row{display:grid;grid-template-columns:minmax(115px,2fr) minmax(70px,.8fr) minmax(110px,1.2fr) 55px minmax(77px,.85fr) 95px minmax(145px,1.8fr);gap:10px;align-items:center;padding:9px 12px}
 .game-head{background:#203b53;color:#e4edfa;font:700 13px system-ui,Arial,sans-serif}
 .game-scroll{height:min(53vh,390px);min-height:185px;overflow-y:auto;overscroll-behavior:contain}
 .game-row{border-top:1px solid #35516d;color:#e8eef9;font:14px system-ui,Arial,sans-serif}
 .game-row:nth-child(even){background:#142e45}
 .game-row:hover{background:#22405c}
-.game-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.game-row .description{white-space:normal;line-height:1.3;color:#bcd2e5}.game-row .btn:focus-visible{outline:2px solid #ffdf8c}
 .game-row .btn{font-size:13px;padding:7px 7px;min-width:69px}
 .game-row .btn[disabled]{opacity:.6;cursor:wait}
 #savePicker[hidden]{display:none!important}#savePicker{position:fixed;inset:0;z-index:10000;background:#000c;display:flex;align-items:center;justify-content:center;padding:16px}#savePickerPanel{background:#10283c;border:2px solid #d6ac66;border-radius:12px;padding:20px;width:min(730px,100%);max-height:85vh;display:flex;flex-direction:column;gap:12px;color:#f5e9cf;box-shadow:0 12px 40px #000b}#savePickerPanel h2{margin:0}#savePickerList{overflow-y:auto;min-height:90px;max-height:56vh;border:1px solid #66829c;border-radius:7px}#savePickerList .game-row{grid-template-columns:100px 1fr 98px}#savePickerList .game-row span{white-space:normal}#savePickerClose{align-self:flex-end} .autosave-label{font-size:12px;color:#ffe2a9;font-weight:bold}
 .game-note{color:#b8cbdb;font:12px system-ui,Arial,sans-serif;margin:8px 0 0}
-@media(max-width:560px){main{padding:16px 10px 30px}.game-head,.game-row{grid-template-columns:minmax(105px,2fr) 46px 62px 76px;gap:4px;padding:8px 5px;font-size:12px}.game-row .btn{font-size:12px;padding:7px 3px;min-width:0}.toolbar{margin:12px 0}}
+@media(max-width:760px){main{padding:16px 10px 30px}.game-catalog{overflow-x:auto}.game-head,.game-scroll .game-row{min-width:800px}.game-scroll{max-height:55vh}.game-row .btn{font-size:12px;padding:7px 3px;min-width:0}.toolbar{margin:12px 0}}
 </style></head><body><main>
 <div class="top"><a class="btn" href="armageddon-backstory.html?step=3">← Back</a><a class="btn" href="index.html">GameTopia Welcome</a></div>
 <h1>ARMAGEDDON</h1>
 <div class="toolbar"><a class="btn" href="account.html?next=armageddon.html%3FcreateLobby%3D1">Start New Game</a><span id="gtAccountStatus" class="muted"></span><a class="btn" href="account.html">Account / Log In</a></div>
 <h2 style="margin:10px 0 9px">Available Games</h2>
 <div class="game-catalog" aria-label="Games available to resume, join, or load">
- <div class="game-head"><span>Game</span><span>Turn</span><span>Status</span><span>Action</span></div>
+ <div class="game-head"><span>Game</span><span>Player</span><span>Date</span><span>Turn</span><span>Status</span><span>Action</span><span>Description</span></div>
  <div id="gameRows" class="game-scroll" role="list" aria-live="polite"><div class="game-row"><span>Loading games…</span></div></div>
 </div>
 <p id="status" role="status" class="game-note">Checking games and autosaves…</p>
@@ -53,15 +53,18 @@ function closeSavePicker(){picker.hidden=true;}
 document.getElementById('savePickerClose').addEventListener('click',closeSavePicker);
 picker.addEventListener('click',e=>{if(e.target===picker)closeSavePicker();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!picker.hidden)closeSavePicker();});
+function saveTime(save){return Date.parse(save.createdAt||save.savedAt||save.saved_at||save.timestamp||save.created||save.date||0)||0;}
+function displayDate(value){const ms=Date.parse(value||0);return Number.isFinite(ms)&&ms>0?new Date(ms).toLocaleString():'—';}
+function permanentGameId(item){const id=item.gameId??item.game_id??item.originalGameId??item.sourceGameId??item.game?.id??item.id;return id===undefined||id===null||id===''?'':String(id);}
 function openSavePicker(group){
  document.getElementById('savePickerTitle').textContent=(group.name||'ARMAGEDDON')+' — Autosaves';
  document.getElementById('savePickerSubtitle').textContent=group.saves.length+' autosave(s). Select a turn to restore. Original ownership is preserved.';
  pickerList.replaceChildren();
- const saves=[...group.saves].sort((a,b)=>(Number(b.turn)||0)-(Number(a.turn)||0)||(Date.parse(b.created||0)||0)-(Date.parse(a.created||0)||0));
+ const saves=[...group.saves].sort((a,b)=>saveTime(b)-saveTime(a)||(Number(b.turn)||0)-(Number(a.turn)||0));
  for(const save of saves){
   const row=document.createElement('div');row.className='game-row';
   pushCell(row,'Turn '+(save.turn??'—'));
-  pushCell(row,save.created?new Date(save.created).toLocaleString():'Autosave');
+  pushCell(row,displayDate(save.createdAt||save.savedAt||save.saved_at||save.timestamp||save.created||save.date));
   const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='Load';
   btn.addEventListener('click',async()=>{btn.disabled=true;btn.textContent='Loading…';try{await loadSave(save)}catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent='Load'}});
   row.append(btn);pickerList.append(row);
@@ -79,7 +82,7 @@ function actionButton(row,entry){
   btn.href='account.html?next='+encodeURIComponent('armageddon.html?joinGame='+entry.id);
  }else{
   btn.type='button';btn.addEventListener('click',async()=>{
-   btn.disabled=true;btn.textContent=entry.action==='Load'?'Loading…':'Resuming…';
+   btn.disabled=true;btn.textContent=entry.action==='Autosaves'?'View Saves':entry.action==='Load'?'Loading…':'Resuming…';
    try{if(entry.action==='Autosaves'){openSavePicker(entry);btn.disabled=false;btn.textContent='View Saves';return;}if(entry.action==='Load')await loadSave(entry.save);else await resumeGame(entry.id,entry.side)}
    catch(e){alert(e.message);btn.disabled=false;btn.textContent=entry.action}
   });
@@ -87,27 +90,67 @@ function actionButton(row,entry){
  row.append(btn);
 }
 function render(){
- const enrolled=new Map(snapshot.enrolled.map(g=>[String(g.id),g]));
- const active=new Map();
+ const enrolled=new Map(snapshot.enrolled.map(g=>[permanentGameId(g),g]));
+ // One catalog entry per permanent game ID. Never merge different IDs merely
+ // because people reused the same game name.
+ const byGame=new Map();
+ function getGame(id){if(!byGame.has(id))byGame.set(id,{id,name:'ARMAGEDDON',saves:[],live:null,mine:null});return byGame.get(id)}
  for(const g of snapshot.public){
-  if(!['lobby','planning','executing'].includes(g.status)||!Array.isArray(g.players)||!g.players.some(p=>p.role==='active'))continue;
-  active.set(String(g.id),g);
+  if(!['lobby','planning','executing','replaying','initiation'].includes(g.status))continue;
+  const id=permanentGameId(g);if(!id)continue;
+  if(!Array.isArray(g.players)||!g.players.some(p=>p.role==='active'))continue;
+  const record=getGame(id);record.live=g;record.name=g.name||record.name;
  }
- // An enrolled game gets one Resume row, not a second Join row.
- for(const g of snapshot.enrolled){if(!active.has(String(g.id)))active.set(String(g.id),g)}
- const all=[];
- for(const [id,g] of active){
-  const mine=enrolled.get(id);const action=mine?'Resume':'Join';
-  all.push({id,name:g.name||'Unnamed game',turn:g.turn??g.day??mine?.turn??'—',status:g.phase||mine?.phase||g.status||'Active',action,side:mine?.side||'',created:g.created||mine?.created||'',host:g.creator||'',sort:0});
+ for(const g of snapshot.enrolled){const id=permanentGameId(g);if(!id)continue;const record=getGame(id);record.mine=g;record.name=record.live?.name||g.name||record.name;}
+ let unmatched=0;
+ for(const save of snapshot.saves){
+  // The catalog must identify which game owns each save; an individual save
+  // ID is not a substitute for its game ID.
+  const id=String(save.gameId??save.game_id??save.originalGameId??save.sourceGameId??save.game?.id??'');
+  if(!id){unmatched++;continue;}
+  const record=getGame(id);record.saves.push(save);
+  record.name=record.live?.name||record.mine?.name||save.name||record.name;
  }
- const saveGroups=new Map();
- for(const save of snapshot.saves){const id=String(save.gameId||save.game_id||save.id||'');if(!id)continue;if(!saveGroups.has(id))saveGroups.set(id,{id,name:save.name||'ARMAGEDDON',saves:[],sort:1,status:'Autosaves',action:'Autosaves'});saveGroups.get(id).saves.push(save)}
- for(const group of saveGroups.values()){group.turn=Math.max(...group.saves.map(x=>Number(x.turn)||0));all.push(group)}
- all.sort((a,b)=>a.sort-b.sort||(Date.parse(b.created||b.save?.created||0)||0)-(Date.parse(a.created||a.save?.created||0)||0)||a.name.localeCompare(b.name));
+ const records=[...byGame.values()].filter(r=>r.live||r.mine||r.saves.length);
+ records.sort((a,b)=>Number(!!b.live)-Number(!!a.live)||Math.max(saveTime(b.saves[0]||{}),Date.parse(b.live?.created||b.mine?.created||0)||0)-Math.max(saveTime(a.saves[0]||{}),Date.parse(a.live?.created||a.mine?.created||0)||0)||a.name.localeCompare(b.name));
  rows.replaceChildren();
- for(const entry of all){const row=document.createElement('div');row.className='game-row';row.setAttribute('role','listitem');if(entry.action==='Autosaves'){row.style.cursor='pointer';row.tabIndex=0;row.setAttribute('aria-label','View autosaves for '+entry.name);row.addEventListener('click',e=>{if(e.target.closest('button'))return;openSavePicker(entry)});row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSavePicker(entry)}})}pushCell(row,entry.name+(entry.host?' · '+entry.host:'')+(entry.sort===0&&entry.created?' · '+new Date(entry.created).toLocaleString():''));pushCell(row,String(entry.turn));pushCell(row,entry.status==='lobby'||entry.status==='initiation'?'Initiation':entry.status==='planning'?'Planning':(entry.status==='executing'||entry.status==='execution')?'Executing':(entry.status==='replaying'||entry.status==='replay')?'Replaying':entry.status==='Autosaves'?'Autosaves':'Active');actionButton(row,entry);rows.append(row)}
- if(!all.length){const row=document.createElement('div');row.className='game-row';pushCell(row,snapshot.errors.length?'Could not retrieve the complete games/autosaves catalog — see status below':'No games or autosaves were returned by the server for this account');rows.append(row)}
- status.textContent=(snapshot.saveCatalogOk&&snapshot.saves.length===0?'The backend returned zero autosaves for this account; earlier saves may be stored under another account or may require backend recovery. · ':(!snapshot.saveCatalogOk?'Autosave availability could not be verified. · ':''))+all.length+' game entr'+(all.length===1?'y':'ies')+' · '+active.size+' active · '+saveGroups.size+' games with autosaves ('+snapshot.saves.length+' saves)'+(snapshot.errors.length?' · '+snapshot.errors.join('; '):'');
+ let activeCount=0, savedGameCount=0;
+ for(const entry of records){
+  const live=entry.live||entry.mine;
+  const hasLive=!!live;
+  if(hasLive)activeCount++;
+  if(entry.saves.length)savedGameCount++;
+  const mine=entry.mine;
+  const canResume=hasLive&&!!mine;
+  const canJoin=hasLive&&!mine;
+  const action=canResume?'Resume':canJoin?'Join':'Autosaves';
+  const turn=live?.turn??live?.day??(entry.saves.length?Math.max(...entry.saves.map(x=>Number(x.turn)||0)):'—');
+  const player=live?.creatorName||live?.hostName||live?.creator||live?.host||entry.saves[0]?.playerName||entry.saves[0]?.creator||'';
+  const date=live?.created||live?.createdAt||(entry.saves.length&&entry.saves.some(x=>saveTime(x)>0)?new Date(Math.max(...entry.saves.map(saveTime))).toISOString():null);
+  const phase=String(live?.phase||live?.status||'').toLowerCase();
+  const state=hasLive?(phase==='lobby'||phase==='initiation'?'Initiation':phase==='planning'?'Planning':phase==='executing'||phase==='execution'?'Executing':phase==='replaying'||phase==='replay'?'Replaying':'Active'):'Saved';
+  const description=entry.saves.length?entry.saves.length+' autosave'+(entry.saves.length===1?'':'s')+(hasLive?' available':''):(hasLive?'Game in progress':'No autosaves');
+  const row=document.createElement('div');row.className='game-row';row.setAttribute('role','listitem');
+  pushCell(row,entry.name);pushCell(row,player||'—');pushCell(row,displayDate(date));pushCell(row,String(turn));pushCell(row,state);
+  // Resume takes priority for an active enrolled game. Its saved states remain
+  // accessible via an additional View Saves button in the Description cell.
+  actionButton(row,{...entry,action,side:mine?.side||''});
+  const desc=document.createElement('span');desc.className='description';desc.textContent=description;
+  if(hasLive&&entry.saves.length){
+   desc.append(' · ');
+   const view=document.createElement('button');view.type='button';view.className='btn';view.style.cssText='padding:5px 8px;font-size:12px;margin-top:3px';view.textContent='View Saves';
+   view.addEventListener('click',()=>openSavePicker(entry));desc.append(view);
+  }
+  row.append(desc);
+  if(!hasLive&&entry.saves.length){
+   row.style.cursor='pointer';row.tabIndex=0;row.setAttribute('aria-label','View autosaves for '+entry.name);
+   row.addEventListener('click',e=>{if(e.target.closest('button,a'))return;openSavePicker(entry)});
+   row.addEventListener('keydown',e=>{if(e.target!==row)return;if(e.key==='Enter'||e.key===' '){e.preventDefault();openSavePicker(entry)}});
+  }
+  rows.append(row);
+ }
+ if(!records.length){const row=document.createElement('div');row.className='game-row';const cell=document.createElement('span');cell.style.gridColumn='1 / -1';cell.textContent=snapshot.errors.length?'Could not retrieve the complete games/autosaves catalog — see status below':'No games or autosaves were returned by the server for this account';row.append(cell);rows.append(row)}
+ status.textContent=(snapshot.saveCatalogOk&&snapshot.saves.length===0?'The backend returned zero autosaves for this account. · ':(!snapshot.saveCatalogOk?'Autosave availability could not be verified. · ':''))+records.length+' game'+(records.length===1?'':'s')+' · '+activeCount+' active · '+savedGameCount+' with autosaves ('+snapshot.saves.length+' saves)'+(unmatched?' · '+unmatched+' autosaves missing a game ID and omitted; backend catalog correction required':'')+(snapshot.errors.length?' · '+snapshot.errors.join('; '):'');
 }
 async function resumeGame(id){
  if(!account?.token)throw Error('Log in to resume your existing game.');
@@ -136,4 +179,4 @@ async function refresh(){
  results.forEach((r,i)=>{if(r.status==='fulfilled'){snapshot[r.value.key]=r.value.value;if(i===2)snapshot.saveCatalogOk=true;}else{if(i===2)snapshot.saveCatalogOk=false;errors.push(['Active games','My games','Autosaves'][i]+' request failed: '+(r.reason?.message||'network or CORS error'));}});snapshot.errors=errors;render();
 }
 refresh();setInterval(()=>{if(!document.hidden)refresh()},10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
-</script><script src="src/version.js?v=6.202"></script></body></html>
+</script><script src="src/version.js?v=6.204"></script></body></html>
