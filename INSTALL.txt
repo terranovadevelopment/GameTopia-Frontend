@@ -1,23 +1,21 @@
-GAMETOPIA — HOW TO PLAY BUTTON UPDATE
-===================================
-Target: Current GameTopia-Frontend source, including M6.198.
-This is a targeted patch, NOT a full replacement frontend release.
+GAMETOPIA M6.203 - COMPLETE FRONTEND
+=================================
 
-1. Download or open the current GameTopia-Frontend project folder.
-2. Extract all files in this patch ZIP into that frontend folder.
-3. Open Windows Command Prompt in the frontend folder.
-4. Run: py apply_update.py
-   (or: python apply_update.py)
-5. Confirm index.html and armageddon.html were updated.
-6. Commit and push README.txt, how-to-play.js, index.html, armageddon.html.
-7. Render/GitHub Pages will deploy according to your existing setup.
+This ZIP contains the complete frontend, starting from your uploaded M6.202 ZIP.
+Do NOT mix files from different releases. Backend remains M6.198.
 
-Result: How to Play button on opening splash and main battle page.
-Both load the same README.txt in a scrollable popup. Close or Escape to dismiss.
-The patch does not touch backend or change backend compatibility version.
-Backups: index.html.before-how-to-play and armageddon.html.before-how-to-play.
+HOW TO DEPLOY
+1. Extract this ZIP on your computer.
+2. Open the INNER folder named GameTopia-Frontend-main.
+3. Copy all its CONTENTS into your local GameTopia-Frontend repository folder, replacing the matching files.
+4. In GitHub Desktop, check Changes and commit as GameTopia M6.203.
+5. If GitHub Desktop reports newer commits on the remote, use Fetch/Pull first; do not force push or discard changes. Resolve any conflicts before committing.
+6. Push origin. Allow Render to finish deployment.
+7. Open https://gametopia-frontend.onrender.com/release-check.html
+   The page must show GameTopia Frontend M6.203 and the M6-203 build marker.
+8. Refresh your GameTopia screen with Ctrl+Shift+R and confirm the top-left label M6.203.
 
-Alternative manual integration:
-Copy README.txt and how-to-play.js into frontend root; insert
-<script src="how-to-play.js?v=howto1" defer></script>
-immediately before </body> in BOTH index.html and armageddon.html.
+LOGIN TEST
+Select ARMAGEDDON. A player not yet authenticated must log in BEFORE seeing the first backstory page. A returning valid session can be verified and proceed without entering a password again.
+
+NOTE: This release preserves the supplied login flow; it has not been live-tested against backend authentication. It does not restore autosaves or fix AI production.

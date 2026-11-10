@@ -8,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ARMAGEDDON — M6.198</title>
   <link rel="stylesheet" href="src/styles.css">
+<script src="how-to-play.js?v=6.202" defer></script>
 <style>
 #endDayOverlay.day-overlay{position:fixed!important;left:5vw!important;top:5vh!important;right:5vw!important;bottom:5vh!important;width:90vw!important;height:90vh!important;max-width:none!important;max-height:none!important;box-sizing:border-box;z-index:15000!important;overflow-y:auto!important;background:#102432!important;border:3px solid #9fb8ce!important;border-radius:12px;padding:20px 26px!important;box-shadow:0 20px 80px #000c!important;color:#eef6ff}
 #endDayOverlay[hidden]{display:none!important}
@@ -73,6 +74,7 @@ if(location.protocol==='file:') {
     <div class="brand"><div><strong>ARMAGEDDON</strong><small>Blue vs Red</small></div></div>
     <a href="https://buymeacoffee.com/billbuttso" target="_blank" rel="noopener noreferrer" class="coffee-support" title="Support the game on Buy Me a Coffee">☕ Buy Me a Coffee</a>
     <div id="headerRp" aria-label="Resource points" style="display:flex;align-items:center;gap:8px;white-space:nowrap;font-weight:700;padding:6px 10px;border:1px solid #688293;border-radius:6px;background:#142838"></div>
+    <button id="gametopia-howto-battle" data-gametopia-howto class="text-button" type="button" title="Read the new player guide">How to Play</button>
     <div class="phase-pill" id="phaseLabel"><span class="status-dot"></span> PLANNING PHASE</div>
   </header>
   <main class="layout">
@@ -604,7 +606,7 @@ document.addEventListener('DOMContentLoaded',function(){
  // Put the support link after every other toolbar item, at the far right.
  const coffee=header.querySelector('.coffee-support');
  if(coffee)header.appendChild(coffee);
- for(const id of ['soundToggle','gameClock','tiLabel','replayTurnButton','saveGameButton','gameSpeedWrap','readyButton','dayReportButton','mapSetupToggle']){
+ for(const id of ['soundToggle','gameClock','tiLabel','replayTurnButton','saveGameButton','gameSpeedWrap','readyButton','dayReportButton','mapSetupToggle','gametopia-howto-battle']){
   const button=document.getElementById(id);if(button)actions.appendChild(button);
  }
  // Overlay menu uses the existing overlay toggle buttons so keyboard shortcuts
@@ -1787,7 +1789,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.198"></script>
+<script src="src/version.js?v=6.202"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>

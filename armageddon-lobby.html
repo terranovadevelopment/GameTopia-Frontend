@@ -24,6 +24,7 @@
 .game-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .game-row .btn{font-size:13px;padding:7px 7px;min-width:69px}
 .game-row .btn[disabled]{opacity:.6;cursor:wait}
+#savePicker[hidden]{display:none!important}#savePicker{position:fixed;inset:0;z-index:10000;background:#000c;display:flex;align-items:center;justify-content:center;padding:16px}#savePickerPanel{background:#10283c;border:2px solid #d6ac66;border-radius:12px;padding:20px;width:min(730px,100%);max-height:85vh;display:flex;flex-direction:column;gap:12px;color:#f5e9cf;box-shadow:0 12px 40px #000b}#savePickerPanel h2{margin:0}#savePickerList{overflow-y:auto;min-height:90px;max-height:56vh;border:1px solid #66829c;border-radius:7px}#savePickerList .game-row{grid-template-columns:100px 1fr 98px}#savePickerList .game-row span{white-space:normal}#savePickerClose{align-self:flex-end} .autosave-label{font-size:12px;color:#ffe2a9;font-weight:bold}
 .game-note{color:#b8cbdb;font:12px system-ui,Arial,sans-serif;margin:8px 0 0}
 @media(max-width:560px){main{padding:16px 10px 30px}.game-head,.game-row{grid-template-columns:minmax(105px,2fr) 46px 62px 76px;gap:4px;padding:8px 5px;font-size:12px}.game-row .btn{font-size:12px;padding:7px 3px;min-width:0}.toolbar{margin:12px 0}}
 </style></head><body><main>
@@ -36,26 +37,50 @@
  <div id="gameRows" class="game-scroll" role="list" aria-live="polite"><div class="game-row"><span>Loading games…</span></div></div>
 </div>
 <p id="status" role="status" class="game-note">Checking games and autosaves…</p>
+<div id="savePicker" hidden role="presentation"><section id="savePickerPanel" role="dialog" aria-modal="true" aria-labelledby="savePickerTitle"><h2 id="savePickerTitle">Autosaves</h2><p class="game-note" id="savePickerSubtitle">Choose an autosave to restore.</p><div id="savePickerList" aria-label="Available autosaves" tabindex="0"></div><button type="button" class="btn" id="savePickerClose">Close</button></section></div>
 </main><script>
 'use strict';
 const API='https://gametopia-backend.onrender.com';
 const rows=document.getElementById('gameRows'),status=document.getElementById('status');
-const snapshot={public:[],enrolled:[],saves:[],errors:[]};
+const snapshot={public:[],enrolled:[],saves:[],errors:[],saveCatalogOk:false};
 let refreshToken=0;
 function accountInfo(){try{return JSON.parse(sessionStorage.getItem('gt_account')||localStorage.getItem('gt_account')||'null')}catch(_){return null}}
 const account=accountInfo();
+// Entry to game catalog requires a registered identity. Preserve the catalog destination.
+if(!account?.token){location.replace('account.html?next=armageddon-lobby.html');}
+const picker=document.getElementById('savePicker'),pickerList=document.getElementById('savePickerList');
+function closeSavePicker(){picker.hidden=true;}
+document.getElementById('savePickerClose').addEventListener('click',closeSavePicker);
+picker.addEventListener('click',e=>{if(e.target===picker)closeSavePicker();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!picker.hidden)closeSavePicker();});
+function openSavePicker(group){
+ document.getElementById('savePickerTitle').textContent=(group.name||'ARMAGEDDON')+' — Autosaves';
+ document.getElementById('savePickerSubtitle').textContent=group.saves.length+' autosave(s). Select a turn to restore. Original ownership is preserved.';
+ pickerList.replaceChildren();
+ const saves=[...group.saves].sort((a,b)=>(Number(b.turn)||0)-(Number(a.turn)||0)||(Date.parse(b.created||0)||0)-(Date.parse(a.created||0)||0));
+ for(const save of saves){
+  const row=document.createElement('div');row.className='game-row';
+  pushCell(row,'Turn '+(save.turn??'—'));
+  pushCell(row,save.created?new Date(save.created).toLocaleString():'Autosave');
+  const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='Load';
+  btn.addEventListener('click',async()=>{btn.disabled=true;btn.textContent='Loading…';try{await loadSave(save)}catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent='Load'}});
+  row.append(btn);pickerList.append(row);
+ }
+ picker.hidden=false;document.getElementById('savePickerClose').focus();
+}
+
 if(!account?.token)document.getElementById('gtAccountStatus').textContent='Please log in to join or resume a game';
 document.getElementById('gtAccountStatus').textContent=account?.number?'Signed in: '+(account.screenName||account.name||'Player')+' · ID '+account.number:'Please log in or register to play';
-async function request(url,options){const response=await fetch(API+url,options||{cache:'no-store'});const payload=await response.json();if(!response.ok)throw Error(payload.error||'Server returned '+response.status);return payload}
+async function request(url,options){const response=await fetch(API+url,options||{cache:'no-store'});const payload=await response.json().catch(()=>({}));if(!response.ok)throw Error((payload.error||payload.message||'Server returned '+response.status)+' (HTTP '+response.status+')');return payload}
 function pushCell(row,text){const el=document.createElement('span');el.textContent=text;el.title=text;row.append(el)}
 function actionButton(row,entry){
- const btn=document.createElement(entry.action==='Join'?'a':'button');btn.className='btn';btn.textContent=entry.action;
+ const btn=document.createElement(entry.action==='Join'?'a':'button');btn.className='btn';btn.textContent=entry.action==='Autosaves'?'View Saves':entry.action;
  if(entry.action==='Join'){
   btn.href='account.html?next='+encodeURIComponent('armageddon.html?joinGame='+entry.id);
  }else{
   btn.type='button';btn.addEventListener('click',async()=>{
    btn.disabled=true;btn.textContent=entry.action==='Load'?'Loading…':'Resuming…';
-   try{if(entry.action==='Load')await loadSave(entry.save);else await resumeGame(entry.id,entry.side)}
+   try{if(entry.action==='Autosaves'){openSavePicker(entry);btn.disabled=false;btn.textContent='View Saves';return;}if(entry.action==='Load')await loadSave(entry.save);else await resumeGame(entry.id,entry.side)}
    catch(e){alert(e.message);btn.disabled=false;btn.textContent=entry.action}
   });
  }
@@ -75,12 +100,14 @@ function render(){
   const mine=enrolled.get(id);const action=mine?'Resume':'Join';
   all.push({id,name:g.name||'Unnamed game',turn:g.turn??g.day??mine?.turn??'—',status:g.phase||mine?.phase||g.status||'Active',action,side:mine?.side||'',created:g.created||mine?.created||'',host:g.creator||'',sort:0});
  }
- for(const save of snapshot.saves){all.push({id:'save:'+save.gameId+':'+save.turn,name:save.name||'ARMAGEDDON',turn:save.turn,status:'Autosave',action:'Load',save,sort:1})}
+ const saveGroups=new Map();
+ for(const save of snapshot.saves){const id=String(save.gameId||save.game_id||save.id||'');if(!id)continue;if(!saveGroups.has(id))saveGroups.set(id,{id,name:save.name||'ARMAGEDDON',saves:[],sort:1,status:'Autosaves',action:'Autosaves'});saveGroups.get(id).saves.push(save)}
+ for(const group of saveGroups.values()){group.turn=Math.max(...group.saves.map(x=>Number(x.turn)||0));all.push(group)}
  all.sort((a,b)=>a.sort-b.sort||(Date.parse(b.created||b.save?.created||0)||0)-(Date.parse(a.created||a.save?.created||0)||0)||a.name.localeCompare(b.name));
  rows.replaceChildren();
- for(const entry of all){const row=document.createElement('div');row.className='game-row';row.setAttribute('role','listitem');pushCell(row,entry.name+(entry.host?' · '+entry.host:'')+(entry.sort===0&&entry.created?' · '+new Date(entry.created).toLocaleString():''));pushCell(row,String(entry.turn));pushCell(row,entry.status==='lobby'||entry.status==='initiation'?'Initiation':entry.status==='planning'?'Planning':(entry.status==='executing'||entry.status==='execution')?'Executing':(entry.status==='replaying'||entry.status==='replay')?'Replaying':entry.status==='Autosave'?'Saved':'Active');actionButton(row,entry);rows.append(row)}
- if(!all.length){const row=document.createElement('div');row.className='game-row';pushCell(row,'No active games available — load an autosave to restart a fully disconnected game');rows.append(row)}
- status.textContent=all.length+' game entr'+(all.length===1?'y':'ies')+' · '+active.size+' active · '+snapshot.saves.length+' saved'+(snapshot.errors.length?' · '+snapshot.errors.join('; '):'');
+ for(const entry of all){const row=document.createElement('div');row.className='game-row';row.setAttribute('role','listitem');if(entry.action==='Autosaves'){row.style.cursor='pointer';row.tabIndex=0;row.setAttribute('aria-label','View autosaves for '+entry.name);row.addEventListener('click',e=>{if(e.target.closest('button'))return;openSavePicker(entry)});row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSavePicker(entry)}})}pushCell(row,entry.name+(entry.host?' · '+entry.host:'')+(entry.sort===0&&entry.created?' · '+new Date(entry.created).toLocaleString():''));pushCell(row,String(entry.turn));pushCell(row,entry.status==='lobby'||entry.status==='initiation'?'Initiation':entry.status==='planning'?'Planning':(entry.status==='executing'||entry.status==='execution')?'Executing':(entry.status==='replaying'||entry.status==='replay')?'Replaying':entry.status==='Autosaves'?'Autosaves':'Active');actionButton(row,entry);rows.append(row)}
+ if(!all.length){const row=document.createElement('div');row.className='game-row';pushCell(row,snapshot.errors.length?'Could not retrieve the complete games/autosaves catalog — see status below':'No games or autosaves were returned by the server for this account');rows.append(row)}
+ status.textContent=(snapshot.saveCatalogOk&&snapshot.saves.length===0?'The backend returned zero autosaves for this account; earlier saves may be stored under another account or may require backend recovery. · ':(!snapshot.saveCatalogOk?'Autosave availability could not be verified. · ':''))+all.length+' game entr'+(all.length===1?'y':'ies')+' · '+active.size+' active · '+saveGroups.size+' games with autosaves ('+snapshot.saves.length+' saves)'+(snapshot.errors.length?' · '+snapshot.errors.join('; '):'');
 }
 async function resumeGame(id){
  if(!account?.token)throw Error('Log in to resume your existing game.');
@@ -104,9 +131,9 @@ async function refresh(){
  const myToken=++refreshToken;const errors=[];
  const tasks=[request('/api/games',{cache:'no-store'}).then(g=>({key:'public',value:Array.isArray(g)?g:[]})),
  account?.token?request('/api/accounts/games',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'enrolled',value:g.games||[]})):Promise.resolve({key:'enrolled',value:[]}),
- account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:g.saves||[]})):Promise.resolve({key:'saves',value:[]})];
+ account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:Array.isArray(g)?g:Array.isArray(g.saves)?g.saves:Array.isArray(g.games)?g.games.flatMap(x=>Array.isArray(x.saves)?x.saves.map(save=>({...save,gameId:save.gameId||x.gameId||x.id,name:save.name||x.name})):[]):[]})):Promise.resolve({key:'saves',value:[]})];
  const results=await Promise.allSettled(tasks);if(myToken!==refreshToken)return;
- results.forEach((r,i)=>{if(r.status==='fulfilled')snapshot[r.value.key]=r.value.value;else errors.push(['Active games','My games','Autosaves'][i]+' unavailable')});snapshot.errors=errors;render();
+ results.forEach((r,i)=>{if(r.status==='fulfilled'){snapshot[r.value.key]=r.value.value;if(i===2)snapshot.saveCatalogOk=true;}else{if(i===2)snapshot.saveCatalogOk=false;errors.push(['Active games','My games','Autosaves'][i]+' request failed: '+(r.reason?.message||'network or CORS error'));}});snapshot.errors=errors;render();
 }
 refresh();setInterval(()=>{if(!document.hidden)refresh()},10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
-</script><script src="src/version.js?v=6.198"></script></body></html>
+</script><script src="src/version.js?v=6.202"></script></body></html>
