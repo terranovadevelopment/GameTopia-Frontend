@@ -1,7 +1,7 @@
-/* GameTopia M6.197 website: requires matching M6.197 backend. */
+/* GameTopia M6.198 website: requires matching M6.198 backend. */
 (function(){
  'use strict';
- const EXPECTED='M6.197', ENDPOINT='https://gametopia-backend.onrender.com/api/health';
+ const EXPECTED='M6.198', ENDPOINT='https://gametopia-backend.onrender.com/api/health';
  const STYLE='position:fixed;inset:0;z-index:2147483647;background:rgba(5,15,29,.98);color:#fff;font:16px/1.5 system-ui,Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box';
  let confirmed=false, busy=false, modal, message, details, retry, retryTimer=null;
  const AUTO_RETRY_MS=10000;
@@ -37,7 +37,7 @@
    try{response=await fetch(ENDPOINT+'?verify='+encodeURIComponent(Date.now()),{cache:'no-store',mode:'cors',signal:controller.signal})}finally{clearTimeout(abort)}
    if(!response.ok)throw new Error('HTTP '+response.status);
    const info=await response.json();actual=String(info.version||'missing');commit=info.gitCommit||'not reported';mode=String(info.mode||'missing');
-   if(info.ok!==true||actual!==EXPECTED||mode!=='sequential-player-ids-guest-enabled')throw new Error('Website and backend versions or modes do not match.');
+   if(info.ok!==true||actual!==EXPECTED||mode!=='sequential-player-ids-registered-only')throw new Error('Website and backend versions or modes do not match.');
    confirmed=true;cancelAutoRetry();freeze.disabled=true;if(modal){modal.hidden=true;modal.style.display='none';}
    window.GAMETOPIA_BACKEND_VERIFIED={version:actual,gitCommit:commit,verifiedAt:Date.now()};
    document.dispatchEvent(new CustomEvent('gametopia-backend-verified',{detail:window.GAMETOPIA_BACKEND_VERIFIED}));

@@ -893,7 +893,7 @@
       const symbolColor=(blue&&fill===nationalColor)?'#ffffff':(lum>.179?'#080b10':'#ffffff');
       const w=Math.max(26,s*1.14),h=Math.max(27,s*.88),top=c.y-h/2;
       ctx.save();ctx.shadowColor='#000b';ctx.shadowBlur=4;ctx.fillStyle=fill;ctx.strokeStyle=stroke;
-      ctx.lineWidth=Math.max(2.2,this.zoom*2.2);ctx.beginPath();ctx.roundRect(c.x-w/2,top,w,h,3);ctx.fill();ctx.stroke();ctx.shadowBlur=0;if(ownerColor){ctx.beginPath();ctx.arc(c.x+w/2-2,top+h-2,Math.max(4,4.5*this.zoom),0,Math.PI*2);ctx.fillStyle=ownerColor;ctx.fill();ctx.lineWidth=1.6;ctx.strokeStyle='#101820';ctx.stroke();}
+      ctx.lineWidth=Math.max(2.2,this.zoom*2.2);ctx.beginPath();ctx.roundRect(c.x-w/2,top,w,h,3);ctx.fill();ctx.stroke();ctx.shadowBlur=0; // M6.198: player-color counter is sufficient; legacy owner corner dot removed.
       // The solid background alone identifies its owning player; no inset stripe
       // or left-hand separator is drawn on either NATO or silhouette counters.
       if(this.unitSymbolStyle==='silhouettes'){

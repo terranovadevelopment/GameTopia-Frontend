@@ -35,7 +35,7 @@ window.armServerRequest=async function(path,options={}){
  function error(e){const p=document.createElement('p');p.className='mp-error';p.textContent=e.message||String(e);panel.appendChild(p);}
  function home(){stopLobbyWatch();location.href='armageddon-lobby.html';}
 
- const palette=['#e53935','#f57c00','#fbc02d','#7cb342','#00897b','#00acc1','#1e88e5','#3949ab','#8e24aa','#d81b60','#6d4c41','#78909c','#b0bec5','#ffffff','#263238','#9ccc65'];
+ const palette=['#e53935','#f57c00','#fbc02d','#00ff00','#00897b','#00acc1','#1e88e5','#3949ab','#8e24aa','#d81b60','#6d4c41','#78909c','#b0bec5','#ffffff','#263238','#9ccc65'];
  function colorPicker(taken,callback){
   clear('Choose Your Unit Color','Available colors are selectable. An X marks colors already taken; each occupied color shows its player name.');
   const grid=document.createElement('div');grid.className='gt-colors';panel.append(grid);

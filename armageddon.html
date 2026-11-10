@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en">
-<head><script src="src/verify-backend-m6197.js?v=197-release1"></script>
+<head><script src="src/verify-backend-m6198.js?v=198-release1"></script>
 <script>
 // M6.197: account registration/login available via account.html; registered accounts required for play.
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.197</title>
+  <title>ARMAGEDDON — M6.198</title>
   <link rel="stylesheet" href="src/styles.css">
 <style>
 #endDayOverlay.day-overlay{position:fixed!important;left:5vw!important;top:5vh!important;right:5vw!important;bottom:5vh!important;width:90vw!important;height:90vh!important;max-width:none!important;max-height:none!important;box-sizing:border-box;z-index:15000!important;overflow-y:auto!important;background:#102432!important;border:3px solid #9fb8ce!important;border-radius:12px;padding:20px 26px!important;box-shadow:0 20px 80px #000c!important;color:#eef6ff}
@@ -330,7 +330,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
     const musicSwitch=document.createElement('button');musicSwitch.type='button';musicSwitch.id='gtLegacyMusicSwitch';musicSwitch.textContent='♫ Music On/Off';musicSwitch.style.cssText='position:fixed;top:12px;right:12px;z-index:9999;padding:9px 14px;border:1px solid #a4b4c5;border-radius:6px;background:#142636;color:#fff;cursor:pointer;font-weight:bold';
     musicSwitch.addEventListener('click',e=>{e.stopPropagation();const m=window.ARMAGEDDON_MARCH;if(!m)return;if(m.enabled){m.setEnabled(false);}else{m.setEnabled(true);m.selectPage(page<4?page:3);m.start();}updateIntroMusic();});
     // One Options dropdown follows the player between all three stories and Game Setup.
-    const introOptions=document.createElement('details');introOptions.id='gtIntroOptions';introOptions.innerHTML='<summary>Options ▾</summary><div id="gtIntroOptionsPanel"></div>';
+    const introOptions=document.createElement('details');introOptions.id='gtIntroOptions';introOptions.open=true;introOptions.innerHTML='<summary>Options ▾</summary><div id="gtIntroOptionsPanel"></div>';
     introOptions.querySelector('#gtIntroOptionsPanel').appendChild(musicSwitch);
     function updateIntroMusic(){const enabled=!!window.ARMAGEDDON_MARCH?.enabled;musicSwitch.textContent='♫ Music: '+(enabled?'On':'Off');musicSwitch.setAttribute('aria-pressed',String(enabled));}
     updateIntroMusic();
@@ -902,7 +902,7 @@ window.armServerRequest=async function(path,options={}){
 </script>
 
 <style>
-#gtPlayersPanel{position:fixed;left:12px;bottom:12px;width:310px;max-width:calc(100vw - 24px);z-index:35000;background:#10283c;color:#f4f8ff;border:2px solid #86b9df;border-radius:9px;box-shadow:0 3px 14px #0009;font:13px Arial,sans-serif;overflow:hidden}
+#gtPlayersPanel{position:fixed;left:12px;bottom:12px;width:358px;max-width:calc(100vw - 24px);z-index:35000;background:#10283c;color:#f4f8ff;border:2px solid #86b9df;border-radius:9px;box-shadow:0 3px 14px #0009;font:13px Arial,sans-serif;overflow:hidden}
 #gtPlayersPanel .gt-drag{cursor:move;touch-action:none;background:#193e5b;padding:10px 12px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;user-select:none}
 #gtKickOverlay[hidden],#gtTopKick[hidden]{display:none!important}#gtPlayersPanel .gt-body{padding:10px 12px}#gtPlayersPanel .gt-member{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #476176}#gtPlayersPanel .gt-controls{display:flex;gap:8px;margin-top:10px;align-items:stretch}#gtPlayersPanel #gtReadyToggle{flex:1 1 auto;min-width:100px;white-space:nowrap}#gtPlayersPanel #gtCommToggle{flex:0 0 65px;white-space:nowrap}#gtPlayersPanel button{border:1px solid #a9c9e6;border-radius:5px;padding:7px 9px;color:white;cursor:pointer;background:#235c8b}#gtPlayersPanel .gt-notready{background:#ca8213}#gtPlayersPanel .gt-ready{background:#27864b}#gtPlayersPanel .gt-executing{background:#eab308;color:#172334}#gtPlayersPanel .gt-note{font-size:11px;opacity:.85;margin-top:8px}
 #gtChatPanel{display:none;margin-top:10px;border-top:1px solid #7899b8;padding-top:9px}#gtChatPanel[aria-hidden=false]{display:block}#gtChatPanel textarea{width:100%;box-sizing:border-box;background:#081d2e;color:white;border:1px solid #7295b5;border-radius:4px;resize:vertical}#gtChatPanel select{width:100%;margin:5px 0}#gtChatMessages{max-height:125px;overflow:auto;white-space:pre-wrap;background:#081d2e;padding:7px;min-height:35px}
@@ -925,6 +925,8 @@ window.armServerRequest=async function(path,options={}){
  // M6.197: Senior-only Kick (including voluntary departure) in the same top bar.
  const topKick=document.createElement('button');topKick.id='gtTopKick';topKick.type='button';topKick.textContent='KICK';topKick.title='Senior player: remove a teammate or leave the game';topKick.className='text-button';topKick.style.cssText='margin-left:5px;white-space:nowrap;min-height:32px;padding:5px 10px;background:#8b2635;color:#fff;border:1px solid #f5acac;border-radius:5px;cursor:pointer';topKick.hidden=true;
  if(topbar)topbar.appendChild(topKick);
+ const topLeave=document.createElement('button');topLeave.id='gtTopLeave';topLeave.type='button';topLeave.textContent='Leave Game';topLeave.title='Leave the game voluntarily (your membership and commands will be removed)';topLeave.className='text-button';topLeave.style.cssText='margin-left:5px;min-height:32px;padding:5px 10px;background:#6e4059;color:white;border:1px solid #e4b4cf;border-radius:5px;cursor:pointer';topLeave.hidden=true;if(topbar)topbar.appendChild(topLeave);
+ topLeave.onclick=async()=>{if(membershipRevoked||!current)return;if(current.phase!=='planning'){alert('Leave Game is available during Planning only.');return;}if(!confirm('Leave this game? Your divisions and cities will pass to the next senior teammate, or AI if none remains. This cannot be undone.'))return;topLeave.disabled=true;try{await api(base+'/leave',{method:'POST',body:JSON.stringify({token:ident.token})});membershipRevoked=true;location.href='armageddon-lobby.html';}catch(err){alert('Could not leave game: '+err.message);topLeave.disabled=false;}};
  const kickOverlay=document.createElement('div');kickOverlay.id='gtKickOverlay';kickOverlay.hidden=true;kickOverlay.style.cssText='position:fixed;inset:0;z-index:100070;background:#000b;display:grid;place-items:center;padding:16px';
  kickOverlay.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="gtKickTitle" style="background:#10283c;color:white;border:2px solid #f5acac;border-radius:9px;max-width:440px;width:100%;max-height:80vh;overflow:auto;padding:18px;font:15px Arial"><h2 id="gtKickTitle">Kick Player / Leave Game</h2><p style="font-size:13px">Select a player on your side, including yourself. Only the senior player may do this.</p><div id="gtKickTargets"></div><p id="gtKickInfo" aria-live="polite"></p><div style="display:flex;gap:8px;justify-content:flex-end"><button id="gtKickCancel" type="button">Cancel</button><button id="gtKickConfirm" type="button" style="background:#8b2635;color:#fff">Confirm Kick</button></div></section>';
  document.body.append(kickOverlay);kickOverlay.hidden=true;
@@ -942,7 +944,7 @@ window.armServerRequest=async function(path,options={}){
 
  // M6.197: Execution Trace is no longer a player-facing window or reopen control.
  function trace(step,data){ /* diagnostics intentionally hidden from the game interface */ }
- trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.197'});
+ trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.198'});
  const handle=box.querySelector('#gtDragHandle');let drag=null;
  handle.addEventListener('pointerdown',e=>{if(e.button!==0)return;const r=box.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};handle.setPointerCapture(e.pointerId);e.preventDefault()});
  handle.addEventListener('pointermove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(innerWidth-box.offsetWidth,drag.left+e.clientX-drag.x))+'px';box.style.top=Math.max(0,Math.min(innerHeight-box.offsetHeight,drag.top+e.clientY-drag.y))+'px';box.style.bottom='auto'});
@@ -1380,26 +1382,50 @@ window.armServerRequest=async function(path,options={}){
      button.onclick=()=>{button.onclick=null;battleDialog.hidden=true;inspectPanel.hidden=true;battlePointer.style.display='none';battleTarget=null;inspectedUnitId=null;inspectedSource=null;inspectedTarget=null;inspectedSourcePoint=null;selectShotTarget=null;cycleShotTarget=null;battlefieldCanvas.removeEventListener('contextmenu',onBattleTargetContext,true);battlefieldCanvas.removeEventListener('pointerup',onBattleMapClick,true);resolve();};
    });
  }
+ // M6.198: map-anchored, draggable replay notifications with a directional arrow.
+ function anchoredReplayNotice(panel,header,renderer,hex){
+   let drag=null;header.style.cursor='move';header.style.touchAction='none';header.style.userSelect='none';header.title='Drag notification';
+   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;z-index:100009;pointer-events:none;overflow:visible';svg.setAttribute('aria-hidden','true');
+   const line=document.createElementNS('http://www.w3.org/2000/svg','path');line.setAttribute('stroke','#ffc13f');line.setAttribute('stroke-width','4');line.setAttribute('fill','none');
+   const tip=document.createElementNS('http://www.w3.org/2000/svg','polygon');tip.setAttribute('fill','#ffc13f');svg.append(line,tip);document.body.append(svg);
+   const point=()=>{if(!hex||!renderer?.canvas)return null;const c=renderer.worldPixel(hex.col,hex.row),r=renderer.canvas.getBoundingClientRect();return {x:r.left+c.x*r.width/renderer.dims.w,y:r.top+c.y*r.height/renderer.dims.h};};
+   const redraw=()=>{if(!panel.isConnected||!svg.isConnected)return;const pt=point();if(pt){const r=panel.getBoundingClientRect(),sx=Math.max(r.left,Math.min(r.right,pt.x)),sy=Math.max(r.top,Math.min(r.bottom,pt.y)),dx=pt.x-sx,dy=pt.y-sy,len=Math.hypot(dx,dy);if(len>8){const ux=dx/len,uy=dy/len;svg.setAttribute('viewBox',`0 0 ${innerWidth} ${innerHeight}`);line.setAttribute('d',`M ${sx} ${sy} L ${pt.x-ux*12} ${pt.y-uy*12}`);tip.setAttribute('points',`${pt.x},${pt.y} ${pt.x-ux*16-uy*7},${pt.y-uy*16+ux*7} ${pt.x-ux*16+uy*7},${pt.y-uy*16-ux*7}`);svg.style.display='block';}else svg.style.display='none';}requestAnimationFrame(redraw);};
+   const locate=()=>{const pt=point();if(!pt)return;const w=panel.offsetWidth||390,h=panel.offsetHeight||170,gap=185;const left=pt.x+gap+w<innerWidth?pt.x+gap:pt.x-gap-w;panel.style.transform='none';panel.style.left=Math.max(8,Math.min(innerWidth-w-8,left))+'px';panel.style.top=Math.max(8,Math.min(innerHeight-h-8,pt.y-h/2))+'px';};
+   header.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('button'))return;const r=panel.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};header.setPointerCapture(e.pointerId);e.preventDefault();});
+   header.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;panel.style.left=Math.max(4,Math.min(innerWidth-panel.offsetWidth-4,drag.left+e.clientX-drag.x))+'px';panel.style.top=Math.max(4,Math.min(innerHeight-panel.offsetHeight-4,drag.top+e.clientY-drag.y))+'px';});
+   for(const n of ['pointerup','pointercancel','lostpointercapture'])header.addEventListener(n,()=>drag=null);
+   locate();requestAnimationFrame(redraw);return ()=>svg.remove();
+ }
  // Production notifications are per-viewer; a server production event must be
  // authored by the server to be synchronized reliably across teammates.
- async function showMoraleOutcome(event,byId){
+ async function showMoraleOutcome(event,byId,renderer){
    const unit=byId.get(String(event.unitId||event.id));
    const title=event.type==='surrender'?'SURRENDER':event.type==='retreat-blocked'?'RETREAT BLOCKED':'RETREAT';
-   return new Promise(resolve=>{
+   const source=event.from||event.hex||(unit?{col:unit.col,row:unit.row}:null);
+   if(source)await centerCombat(renderer,source);
+   await new Promise(resolve=>{
      const panel=document.createElement('section');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');
-     panel.style.cssText='position:fixed;z-index:100020;top:18%;left:50%;transform:translateX(-50%);width:min(410px,92vw);background:#10283c;color:#fff;border:2px solid #e2ad58;border-radius:9px;padding:18px;box-shadow:0 15px 30px #000b;font:15px/1.5 Arial';
-     const name=document.createElement('h2');name.textContent=title+' — '+(unit?.name||event.unitId||'Division');panel.append(name);
-     const detail=document.createElement('p');detail.textContent=event.type==='surrender'?'The division has surrendered.':event.type==='retreat-blocked'?'Retreat was blocked; additional losses may apply.':'The division has retreated following a morale failure.';panel.append(detail);
-     const button=document.createElement('button');button.textContent='Acknowledge';button.style.cssText='padding:9px 18px;background:#245b86;color:#fff;border:1px solid #b2d5ef;border-radius:5px';button.onclick=()=>{panel.remove();resolve();};panel.append(button);document.body.append(panel);button.focus();
+     panel.style.cssText='position:fixed;z-index:100020;width:min(410px,92vw);background:#10283c;color:#fff;border:2px solid #e2ad58;border-radius:9px;padding:18px;box-shadow:0 15px 30px #000b;font:15px/1.5 Arial';
+     const name=document.createElement('h2');name.textContent=title+' — '+(unit?.name||event.unitId||'Division');name.style.cssText='margin:0;cursor:move';panel.append(name);
+     const detail=document.createElement('p');detail.textContent=event.type==='surrender'?'The division has surrendered.':event.type==='retreat-blocked'?'Retreat was blocked.':'This division must retreat after failing morale.';panel.append(detail);
+     const extra=Math.max(0,Number(event.extraCasualties)||0);const losses=document.createElement('p');losses.textContent=(event.enemyZoc?'Enemy ZOC retreat casualties: ':'Additional retreat casualties: ')+extra.toLocaleString();panel.append(losses);
+     if(event.from&&event.to){const destination=document.createElement('p');destination.textContent=`Retreat: (${event.from.col}, ${event.from.row}) → (${event.to.col}, ${event.to.row}). Movement begins after acknowledgment.`;panel.append(destination);}
+     const button=document.createElement('button');button.textContent='Acknowledge';button.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:36px;line-height:1;padding:9px 18px;background:#245b86;color:#fff;border:1px solid #b2d5ef;border-radius:5px';button.onclick=()=>{clear();panel.remove();resolve();};panel.append(button);document.body.append(panel);const clear=anchoredReplayNotice(panel,name,renderer,source);button.focus();
    });
+   if(event.type==='retreat'&&event.from&&event.to&&unit){
+     const beginning=renderer.worldPixel(event.from.col,event.from.row),ending=renderer.worldPixel(event.to.col,event.to.row),started=performance.now();
+     // Unit map coordinates remain server-authoritative; this is visual-only replay.
+     while(true){const amount=Math.min(1,(performance.now()-started)/4000);renderer.visualPositions.set(unit.id,{pixelX:(beginning.x+(ending.x-beginning.x)*amount-renderer.pan.x)/renderer.zoom,pixelY:(beginning.y+(ending.y-beginning.y)*amount-renderer.pan.y)/renderer.zoom});renderer.render();if(amount>=1)break;await nextFrame();}
+     renderer.visualPositions.set(unit.id,{col:event.to.col,row:event.to.row});renderer.render();
+   }
  }
  async function showProductionReport(event,day,renderer){
    const mine=current?.players?.find(p=>p.id===ident.playerId);if(event.side!==mine?.side)return;
    if(event.hex)await centerCombat(renderer,event.hex);
-   return new Promise(resolve=>{const panel=document.createElement('section');panel.style.cssText='position:fixed;z-index:100010;right:20px;top:100px;width:min(390px,calc(100vw - 35px));background:#10283c;border:2px solid #e2ad58;border-radius:10px;color:white;padding:18px;font:15px/1.5 Arial;box-shadow:0 12px 30px #0009';
-   const h=document.createElement('h2');h.textContent='New Division Produced';h.style.margin='0 0 8px';
+   return new Promise(resolve=>{const panel=document.createElement('section');panel.style.cssText='position:fixed;z-index:100020;width:min(390px,calc(100vw - 35px));background:#10283c;border:2px solid #e2ad58;border-radius:10px;color:white;padding:18px;font:15px/1.5 Arial;box-shadow:0 12px 30px #0009';
+   const h=document.createElement('h2');h.textContent='New Division Produced';h.style.cssText='margin:0 0 8px;cursor:move';
    const desc=document.createElement('p');desc.textContent=(event.unitType||event.typeName||'Division')+' produced at '+(event.cityName||'city')+' · '+(event.controllerName||event.side||'Unknown controller')+' controls it.';
-   const btn=document.createElement('button');btn.textContent='Acknowledge';btn.style.cssText='padding:10px 18px;background:#235c8b;color:white;border:1px solid #bfd1df;border-radius:5px';btn.onclick=()=>{panel.remove();resolve()};panel.append(h,desc,btn);document.body.append(panel);});
+   const btn=document.createElement('button');btn.textContent='Acknowledge';btn.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:36px;line-height:1;padding:10px 18px;background:#235c8b;color:white;border:1px solid #bfd1df;border-radius:5px';btn.onclick=()=>{clear();panel.remove();resolve()};panel.append(h,desc,btn);document.body.append(panel);const clear=anchoredReplayNotice(panel,h,renderer,event.hex);});
  }
  function nextFrame(){return new Promise(resolve=>requestAnimationFrame(resolve))}
  async function playServerMovements(day,events){
@@ -1485,7 +1511,7 @@ window.armServerRequest=async function(path,options={}){
        if(current)showPacificationNotices(current);
        while(!pacPanel.hidden){await new Promise(r=>setTimeout(r,100));}
        for(const battle of combats.filter(e=>e.ti===ti)){if(replaySkip)break;await showBattleReport(battle,day,byId,renderer);}
-       for(const event of moraleOutcomes.filter(e=>Number(e.ti||10)===ti)){if(replaySkip)break;await showMoraleOutcome(event,byId);}
+       for(const event of moraleOutcomes.filter(e=>Number(e.ti||10)===ti)){if(replaySkip)break;await showMoraleOutcome(event,byId,renderer);}
        for(const event of productions.filter(e=>e.ti===ti)){if(replaySkip)break;await showProductionReport(event,day,renderer);}
      }
    }finally{
@@ -1553,9 +1579,9 @@ window.armServerRequest=async function(path,options={}){
  memberAlert.setAttribute('role','alertdialog');memberAlert.setAttribute('aria-modal','true');memberAlert.setAttribute('aria-label','Game membership change requiring acknowledgment');
  const memberBackdrop=document.createElement('div');memberBackdrop.id='gtMemberBackdrop';memberBackdrop.hidden=true;memberBackdrop.style.cssText='position:fixed;inset:0;background:#0009;z-index:100499';document.body.append(memberBackdrop);document.body.append(memberAlert);
  let displayedMemberNoticeId=null;function showMemberNotices(st){const n=st.memberNotices?.[0];if(!n){memberAlert.hidden=true;memberBackdrop.hidden=true;displayedMemberNoticeId=null;return;}if(displayedMemberNoticeId===n.id&&!memberAlert.hidden)return;displayedMemberNoticeId=n.id;
-  memberAlert.replaceChildren();const h=document.createElement('h2');h.style.margin='0 0 12px';h.textContent=n.kind==='kick'?'Player Removed from Game':'New Player Joined';
-  const p=document.createElement('p');const nation=n.side==='Red'?'Redonia':'Bluenstein';p.textContent=n.name+(n.kind==='kick'?' has been kicked from the game.':' has joined '+nation+'.');p.style.borderLeft='8px solid '+(n.color||'#ccc');p.style.paddingLeft='10px';
-  const info=document.createElement('p');info.textContent=n.kind==='kick'?'All remaining players have been reset to Not Ready.':'All players have been reset to Not Ready for the next Planning phase. Existing divisions, cities, and orders are retained.';
+  memberAlert.replaceChildren();const h=document.createElement('h2');h.style.margin='0 0 12px';h.textContent=n.kind==='kick'?'Player Removed from Game':n.kind==='leave'?'Player Left Game':'New Player Joined';
+  const p=document.createElement('p');const nation=n.side==='Red'?'Redonia':'Bluenstein';p.textContent=n.name+(n.kind==='kick'?' has been kicked from the game.':n.kind==='leave'?' has left the game.':' has joined '+nation+'.');p.style.borderLeft='8px solid '+(n.color||'#ccc');p.style.paddingLeft='10px';
+  const info=document.createElement('p');info.textContent=(n.kind==='kick'||n.kind==='leave')?'All remaining players have been reset to Not Ready.':'All players have been reset to Not Ready for the next Planning phase. Existing divisions, cities, and orders are retained.';
   const ack=document.createElement('button');ack.type='button';ack.textContent='Acknowledge';ack.style.cssText='font-weight:bold;padding:10px 22px;background:#296da2;color:#fff;border:1px solid #b0d5ed;border-radius:6px';
   ack.onclick=async()=>{ack.disabled=true;try{await api(base+'/member-ack',{method:'POST',body:JSON.stringify({token:ident.token,noticeId:n.id})});await refresh()}catch(err){ack.disabled=false;info.textContent='Acknowledgment failed: '+err.message;}};
   memberAlert.append(h,p,info,ack);memberBackdrop.hidden=false;memberAlert.hidden=false;ack.focus({preventScroll:true});
@@ -1566,7 +1592,7 @@ window.armServerRequest=async function(path,options={}){
  let membershipRevoked=false;
  function showRemovedFromGame(){
   if(membershipRevoked)return;
-  membershipRevoked=true;endTalk();voice.hidden=true;topKick.hidden=true;comm.disabled=true;ready.disabled=true;
+  membershipRevoked=true;endTalk();voice.hidden=true;topKick.hidden=true;topLeave.hidden=true;comm.disabled=true;ready.disabled=true;
   try{sessionStorage.removeItem('armageddon_identity_'+id);localStorage.removeItem('armageddon_identity_'+id);}catch(_e){}
   const shield=document.createElement('div');shield.id='gtRemovedFromGame';shield.setAttribute('role','alertdialog');shield.setAttribute('aria-modal','true');
   shield.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#07121cf5;display:flex;align-items:center;justify-content:center;padding:16px;color:white;font:16px Arial';
@@ -1586,7 +1612,7 @@ window.armServerRequest=async function(path,options={}){
    if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}
    if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else await applyServerPositions(st.day);}
 const loginBadge=box.querySelector('#gtLoginStatus');if(loginBadge){const who=st.players.find(p=>p.id===ident.playerId);loginBadge.textContent=who?.accountId?'Signed in: '+who.name+' · Account ID '+who.accountId:'Guest: '+(who?.name||'Player')+' · Register / Log In via Games Underway';}
-status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}const sameSideSenior=st.players.filter(x=>x.role==='active'&&x.side===me?.side).sort((a,b)=>a.seniority-b.seniority)[0];topKick.hidden=!(me&&sameSideSenior?.id===ident.playerId&&st.phase==='planning');if(!voice.hidden)renderChannels();syncCommAvailability();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});if(e.message==='Admission required'||e.message==='Active player required'){showRemovedFromGame();return;}status.textContent='Server: '+e.message}}
+status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}const sameSideSenior=st.players.filter(x=>x.role==='active'&&x.side===me?.side).sort((a,b)=>a.seniority-b.seniority)[0];topKick.hidden=!(me&&sameSideSenior?.id===ident.playerId&&st.phase==='planning');topLeave.hidden=!(me&&me.role==='active');topLeave.disabled=st.phase!=='planning';if(!voice.hidden)renderChannels();syncCommAvailability();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});if(e.message==='Admission required'||e.message==='Active player required'){showRemovedFromGame();return;}status.textContent='Server: '+e.message}}
  ready.onclick=async()=>{try{if(!current||current.phase!=='planning')return;window.ARMAGEDDON_SOUND?.unlock?.();window.ARMAGEDDON_SOUND?.unlockMedia?.();ready.disabled=true;const me=current?.players.find(p=>p.id===ident.playerId);trace('ready-click',{day:current.day,readyBefore:!!me?.ready});if(!me?.ready)await submitPlottedRoutes();trace('sending-ready',{ready:!me?.ready});if(!me?.ready){ready.textContent='Waiting';ready.className='gt-ready';const bar=document.getElementById('readyButton');if(bar){bar.textContent='READY';bar.style.background='#15803d';}}await api(base+'/ready',{method:'POST',body:JSON.stringify({token:ident.token,ready:!me?.ready})});trace('ready-accepted',{ready:!me?.ready});await refresh()}catch(e){trace('ready-error',{error:e.message});alert(e.message);await refresh()}};
  // M6.136: WebRTC peer-to-peer live voice; the backend carries signaling ONLY.
  const voice=document.createElement('section');voice.id='gtVoiceWindow';voice.hidden=true;
@@ -1761,7 +1787,11 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.197"></script></body>
+<script src="src/version.js?v=6.198"></script>
+<style>/* M6.198: vertically centered button captions in game notifications. */
+#gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
+</style>
+</body>
 </html>
 
 <style>

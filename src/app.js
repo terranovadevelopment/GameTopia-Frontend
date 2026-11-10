@@ -236,10 +236,9 @@
         if(balance!=null&&Number.isFinite(Number(balance)))item('RPs available for Planning',fmtRPDecimal(balance));
         for(const [caption,source] of [['Divisions out of supply','outOfSupply'],['Divisions with negative supply','negativeSupply']]){
           const arr=r[source]?.[side];item(caption,r.supplyVerified===false?'Not calculated':fmt(Array.isArray(arr)?arr.length:arr));
+          if(Array.isArray(arr)&&arr.length){const details=make('details','report-supply');details.append(make('summary','',`Show ${nation} ${caption.toLowerCase()} (${arr.length})`));const ul=make('ul','');for(const unit of arr){const li=make('li','');li.append(reportUnitLink(unit.id,`${unit.name||unit.id} — Supply ${unit.rating}`));ul.append(li);}details.append(ul);column.append(details);}
         }
         item('Replacements',r.replacements?.[side]||'None');
-        const affected=r.negativeSupply?.[side]||[];
-        if(Array.isArray(affected)&&affected.length){const details=make('details','report-supply');details.append(make('summary','',`View negative supply ratings (${affected.length})`));const ul=make('ul','');for(const unit of affected){const li=make('li','');li.append(reportUnitLink(unit.id,`${unit.name} — Supply ${unit.rating}`));ul.append(li);}details.append(ul);column.append(details);}
       }
       const routesRow=make('div','report-operation report-routes');routesRow.append(make('span','','Unfinished movement routes'),make('strong','',fmt(r.routes)));other.append(routesRow);
       // M6.192: per-shot details remain in Battle Summary, not the Daily Situation Report.
