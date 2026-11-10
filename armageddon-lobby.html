@@ -33,7 +33,7 @@
 <div class="toolbar"><a class="btn" href="account.html?next=armageddon.html%3FcreateLobby%3D1">Start New Game</a><span id="gtAccountStatus" class="muted"></span><a class="btn" href="account.html">Account / Log In</a></div>
 <h2 style="margin:10px 0 9px">Available Games</h2>
 <div class="game-catalog" aria-label="Games available to resume, join, or load">
- <div class="game-head"><span>Game</span><span>Player</span><span>Date</span><span>Turn</span><span>Status</span><span>Action</span><span>Description</span></div>
+ <div class="game-head"><span>Game</span><span>Player (Host)</span><span>Created</span><span>Turn</span><span>Status</span><span>Action</span><span>Description</span></div>
  <div id="gameRows" class="game-scroll" role="list" aria-live="polite"><div class="game-row"><span>Loading games…</span></div></div>
 </div>
 <p id="status" role="status" class="game-note">Checking games and autosaves…</p>
@@ -125,8 +125,14 @@ function render(){
   const canJoin=hasLive&&!mine;
   const action=canResume?'Resume':canJoin?'Join':'Autosaves';
   const turn=live?.turn??live?.day??(entry.saves.length?Math.max(...entry.saves.map(x=>Number(x.turn)||0)):'—');
-  const player=live?.creatorName||live?.hostName||live?.creator||live?.host||entry.saves[0]?.playerName||entry.saves[0]?.creator||'';
-  const date=live?.created||live?.createdAt||(entry.saves.length&&entry.saves.some(x=>saveTime(x)>0)?new Date(Math.max(...entry.saves.map(saveTime))).toISOString():null);
+  // The Player column is the ORIGINAL HOST, never the player who saved a turn.
+  // If the backend omits host metadata, show an explicit unknown instead of a wrong identity.
+  const saveHost=entry.saves.find(x=>x.originalHostName||x.hostName||x.creatorName||x.host?.name||x.creator?.name);
+  const hostValue=live?.originalHostName||live?.creatorName||live?.hostName||live?.creator?.name||live?.host?.name||entry.mine?.originalHostName||entry.mine?.creatorName||entry.mine?.hostName||saveHost?.originalHostName||saveHost?.hostName||saveHost?.creatorName||saveHost?.host?.name||saveHost?.creator?.name;
+  const player=typeof hostValue==='string'?hostValue:(typeof hostValue==='number'?String(hostValue):'Host unavailable');
+  // Date means game creation date; if not supplied, do not mislabel latest autosave date as creation.
+  const datedSave=entry.saves.find(x=>x.gameCreatedAt||x.originalGameCreatedAt||x.gameCreated||x.game?.createdAt);
+  const date=live?.createdAt||live?.created||entry.mine?.createdAt||entry.mine?.created||datedSave?.gameCreatedAt||datedSave?.originalGameCreatedAt||datedSave?.gameCreated||datedSave?.game?.createdAt||null;
   const phase=String(live?.phase||live?.status||'').toLowerCase();
   const state=hasLive?(phase==='lobby'||phase==='initiation'?'Initiation':phase==='planning'?'Planning':phase==='executing'||phase==='execution'?'Executing':phase==='replaying'||phase==='replay'?'Replaying':'Active'):'Saved';
   const description=entry.saves.length?entry.saves.length+' autosave'+(entry.saves.length===1?'':'s')+(hasLive?' available':''):(hasLive?'Game in progress':'No autosaves');
@@ -174,9 +180,9 @@ async function refresh(){
  const myToken=++refreshToken;const errors=[];
  const tasks=[request('/api/games',{cache:'no-store'}).then(g=>({key:'public',value:Array.isArray(g)?g:[]})),
  account?.token?request('/api/accounts/games',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'enrolled',value:g.games||[]})):Promise.resolve({key:'enrolled',value:[]}),
- account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:Array.isArray(g)?g:Array.isArray(g.saves)?g.saves:Array.isArray(g.games)?g.games.flatMap(x=>Array.isArray(x.saves)?x.saves.map(save=>({...save,gameId:save.gameId||x.gameId||x.id,name:save.name||x.name})):[]):[]})):Promise.resolve({key:'saves',value:[]})];
+ account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:Array.isArray(g)?g:Array.isArray(g.saves)?g.saves:Array.isArray(g.games)?g.games.flatMap(x=>Array.isArray(x.saves)?x.saves.map(save=>({...save,gameId:save.gameId||x.gameId||x.id,name:save.name||x.name,originalHostName:save.originalHostName||x.originalHostName||x.hostName||x.creatorName||'',gameCreatedAt:save.gameCreatedAt||x.gameCreatedAt||x.createdAt||''})):[]):[]})):Promise.resolve({key:'saves',value:[]})];
  const results=await Promise.allSettled(tasks);if(myToken!==refreshToken)return;
  results.forEach((r,i)=>{if(r.status==='fulfilled'){snapshot[r.value.key]=r.value.value;if(i===2)snapshot.saveCatalogOk=true;}else{if(i===2)snapshot.saveCatalogOk=false;errors.push(['Active games','My games','Autosaves'][i]+' request failed: '+(r.reason?.message||'network or CORS error'));}});snapshot.errors=errors;render();
 }
 refresh();setInterval(()=>{if(!document.hidden)refresh()},10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
-</script><script src="src/version.js?v=6.204"></script></body></html>
+</script><script src="src/version.js?v=6.206"></script></body></html>
