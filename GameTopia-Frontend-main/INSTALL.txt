@@ -1,15 +1,9 @@
-GAMETOPIA M6.200 — COMPLETE FRONTEND RELEASE
+GAMETOPIA M6.201 — COMPLETE FRONTEND UPDATE
 
-IMPORTANT: THIS ZIP IS NOT AN AUTOMATIC DEPLOYMENT.
+1. Extract ZIP, open the INSIDE GameTopia-Frontend-main folder.
+2. Upload its CONTENTS to the ROOT of TerraNovaDevelopment/GameTopia-Frontend, replacing files. Do not upload the ZIP or a nested folder.
+3. Commit all changed files. Wait for Render's deployment to finish.
+4. Open YOUR-SITE/release-check.html and check for GT-FRONTEND-M6-201-VERIFIED-LOGIN-BEFORE-BACKSTORY.
+5. On YOUR-SITE/games.html select ARMAGEDDON. A verified registered account with permanent player ID is required before the first backstory screen.
 
-1. EXTRACT the ZIP. Open the INSIDE folder GameTopia-Frontend-main.
-2. UPLOAD THE CONTENTS OF THAT FOLDER (not ZIP, not folder itself) to the root of TerraNovaDevelopment/GameTopia-Frontend on the deployment branch.
-3. Replace the existing files, including src/version.js, index.html, games.html, account.html, and armageddon-backstory.html. Commit changes.
-4. Confirm your live website's deployment service picked up that commit.
-5. Visit YOUR-LIVE-SITE/release-check.html — it must say GT-FRONTEND-M6-200-LOGIN-FIRST.
-6. Visit the same site's games.html: clicking ARMAGEDDON must lead to login before backstory.
-
-If release-check.html returns 404, the new files have NOT reached the site. Do not diagnose the game UI until this is resolved.
-
-Frontend build: M6.200. Backend API compatibility remains M6.198.
-Existing backend saves and AI production are NOT altered by this package.
+Frontend M6.201. Backend compatibility remains M6.198. No backend saves, autosaves, or AI production logic are changed.
