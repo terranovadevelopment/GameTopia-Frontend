@@ -1,0 +1,112 @@
+<!doctype html><html lang="en"><head><script src="src/verify-backend-m6198.js?v=198-release1"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GameTopia — ARMAGEDDON Games</title><style>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#244366,#07111f 70%);color:#f4e5c5;font-family:Georgia,serif;min-height:100vh}main{max-width:1050px;margin:auto;padding:28px 20px 70px}a{color:#f5cf82}h1{font-size:clamp(30px,5vw,55px);text-align:center;color:#ffd28b;margin:22px 0 4px}h2{color:#ffdb9d}.sub{text-align:center;color:#d3e0f1;font-size:19px;margin:0 0 26px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin:24px 0}.btn{display:inline-block;background:linear-gradient(#197dc8,#06427e);border:1px solid #f3c477;border-radius:9px;padding:13px 20px;color:white;text-decoration:none;font:700 17px system-ui,Arial,sans-serif;cursor:pointer}.btn:hover{filter:brightness(1.2)}.btn:focus-visible{outline:3px solid white}.muted{color:#b4c9db}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}.game{border:1px solid #a98a59;border-radius:12px;background:#0d2135;padding:20px;box-shadow:0 8px 22px #0006}.game h3{margin:0 0 8px;color:#ffe0a5;font-size:23px}.game p{color:#d1dfec;line-height:1.5;margin:7px 0 15px}.meta{font-size:14px;color:#a8c4e0}.notice{padding:17px 20px;border:1px solid #6c849e;border-radius:9px;background:#10283c;color:#d4e4f3}#status{min-height:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.refresh{background:transparent;border:1px solid #7899b8;border-radius:7px;padding:9px 13px;color:#e5f0fa;cursor:pointer}
+
+/* M6.198 compact, scrollable saved-game catalog */
+.autosave-scroll{max-height:260px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #536d86;border-radius:7px;margin-top:10px}
+.autosave-header,.autosave-row{display:grid;grid-template-columns:minmax(120px,2fr) 65px minmax(145px,1.3fr) 85px;align-items:center;gap:8px;padding:8px 10px}
+.autosave-header{position:sticky;top:0;background:#203b53;color:#e4edfa;font:700 12px system-ui,Arial,sans-serif;z-index:1}
+.autosave-row{background:#10283c;color:#e4edfa;border:0;border-top:1px solid #405a73;width:100%;text-align:left;cursor:pointer;font:14px system-ui,Arial,sans-serif}
+.autosave-row:hover,.autosave-row:focus-visible{background:#244766;outline:1px solid #e2b96b}
+.autosave-row[aria-selected=true]{background:#315371;box-shadow:inset 4px 0 #f0c16e}
+.autosave-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.autosave-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}
+.autosave-actions .btn{font-size:14px;padding:8px 13px}
+@media(max-width:580px){.autosave-header,.autosave-row{grid-template-columns:minmax(90px,2fr) 50px minmax(108px,1fr);gap:5px;font-size:12px}.autosave-expires{display:none}}
+
+/* M6.198: unified scrollable game list */
+.game-catalog{border:1px solid #6a849c;border-radius:10px;overflow:hidden;background:#10283c}
+.game-head,.game-row{display:grid;grid-template-columns:minmax(120px,2.4fr) minmax(64px,.6fr) minmax(80px,1fr) 88px;gap:10px;align-items:center;padding:9px 12px}
+.game-head{background:#203b53;color:#e4edfa;font:700 13px system-ui,Arial,sans-serif}
+.game-scroll{height:min(53vh,390px);min-height:185px;overflow-y:auto;overscroll-behavior:contain}
+.game-row{border-top:1px solid #35516d;color:#e8eef9;font:14px system-ui,Arial,sans-serif}
+.game-row:nth-child(even){background:#142e45}
+.game-row:hover{background:#22405c}
+.game-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-row .btn{font-size:13px;padding:7px 7px;min-width:69px}
+.game-row .btn[disabled]{opacity:.6;cursor:wait}
+.game-note{color:#b8cbdb;font:12px system-ui,Arial,sans-serif;margin:8px 0 0}
+@media(max-width:560px){main{padding:16px 10px 30px}.game-head,.game-row{grid-template-columns:minmax(105px,2fr) 46px 62px 76px;gap:4px;padding:8px 5px;font-size:12px}.game-row .btn{font-size:12px;padding:7px 3px;min-width:0}.toolbar{margin:12px 0}}
+</style></head><body><main>
+<div class="top"><a class="btn" href="armageddon-backstory.html?step=3">← Back</a><a class="btn" href="index.html">GameTopia Welcome</a></div>
+<h1>ARMAGEDDON</h1>
+<div class="toolbar"><a class="btn" href="account.html?next=armageddon.html%3FcreateLobby%3D1">Start New Game</a><span id="gtAccountStatus" class="muted"></span><a class="btn" href="account.html">Account / Log In</a></div>
+<h2 style="margin:10px 0 9px">Available Games</h2>
+<div class="game-catalog" aria-label="Games available to resume, join, or load">
+ <div class="game-head"><span>Game</span><span>Turn</span><span>Status</span><span>Action</span></div>
+ <div id="gameRows" class="game-scroll" role="list" aria-live="polite"><div class="game-row"><span>Loading games…</span></div></div>
+</div>
+<p id="status" role="status" class="game-note">Checking games and autosaves…</p>
+</main><script>
+'use strict';
+const API='https://gametopia-backend.onrender.com';
+const rows=document.getElementById('gameRows'),status=document.getElementById('status');
+const snapshot={public:[],enrolled:[],saves:[],errors:[]};
+let refreshToken=0;
+function accountInfo(){try{return JSON.parse(sessionStorage.getItem('gt_account')||localStorage.getItem('gt_account')||'null')}catch(_){return null}}
+const account=accountInfo();
+if(!account?.token)document.getElementById('gtAccountStatus').textContent='Please log in to join or resume a game';
+document.getElementById('gtAccountStatus').textContent=account?.number?'Signed in: '+(account.screenName||account.name||'Player')+' · ID '+account.number:'Please log in or register to play';
+async function request(url,options){const response=await fetch(API+url,options||{cache:'no-store'});const payload=await response.json();if(!response.ok)throw Error(payload.error||'Server returned '+response.status);return payload}
+function pushCell(row,text){const el=document.createElement('span');el.textContent=text;el.title=text;row.append(el)}
+function actionButton(row,entry){
+ const btn=document.createElement(entry.action==='Join'?'a':'button');btn.className='btn';btn.textContent=entry.action;
+ if(entry.action==='Join'){
+  btn.href='account.html?next='+encodeURIComponent('armageddon.html?joinGame='+entry.id);
+ }else{
+  btn.type='button';btn.addEventListener('click',async()=>{
+   btn.disabled=true;btn.textContent=entry.action==='Load'?'Loading…':'Resuming…';
+   try{if(entry.action==='Load')await loadSave(entry.save);else await resumeGame(entry.id,entry.side)}
+   catch(e){alert(e.message);btn.disabled=false;btn.textContent=entry.action}
+  });
+ }
+ row.append(btn);
+}
+function render(){
+ const enrolled=new Map(snapshot.enrolled.map(g=>[String(g.id),g]));
+ const active=new Map();
+ for(const g of snapshot.public){
+  if(!['lobby','planning','executing'].includes(g.status)||!Array.isArray(g.players)||!g.players.some(p=>p.role==='active'))continue;
+  active.set(String(g.id),g);
+ }
+ // An enrolled game gets one Resume row, not a second Join row.
+ for(const g of snapshot.enrolled){if(!active.has(String(g.id)))active.set(String(g.id),g)}
+ const all=[];
+ for(const [id,g] of active){
+  const mine=enrolled.get(id);const action=mine?'Resume':'Join';
+  all.push({id,name:g.name||'Unnamed game',turn:g.turn??g.day??mine?.turn??'—',status:g.phase||mine?.phase||g.status||'Active',action,side:mine?.side||'',created:g.created||mine?.created||'',host:g.creator||'',sort:0});
+ }
+ for(const save of snapshot.saves){all.push({id:'save:'+save.gameId+':'+save.turn,name:save.name||'ARMAGEDDON',turn:save.turn,status:'Autosave',action:'Load',save,sort:1})}
+ all.sort((a,b)=>a.sort-b.sort||(Date.parse(b.created||b.save?.created||0)||0)-(Date.parse(a.created||a.save?.created||0)||0)||a.name.localeCompare(b.name));
+ rows.replaceChildren();
+ for(const entry of all){const row=document.createElement('div');row.className='game-row';row.setAttribute('role','listitem');pushCell(row,entry.name+(entry.host?' · '+entry.host:'')+(entry.sort===0&&entry.created?' · '+new Date(entry.created).toLocaleString():''));pushCell(row,String(entry.turn));pushCell(row,entry.status==='lobby'||entry.status==='initiation'?'Initiation':entry.status==='planning'?'Planning':(entry.status==='executing'||entry.status==='execution')?'Executing':(entry.status==='replaying'||entry.status==='replay')?'Replaying':entry.status==='Autosave'?'Saved':'Active');actionButton(row,entry);rows.append(row)}
+ if(!all.length){const row=document.createElement('div');row.className='game-row';pushCell(row,'No active games available — load an autosave to restart a fully disconnected game');rows.append(row)}
+ status.textContent=all.length+' game entr'+(all.length===1?'y':'ies')+' · '+active.size+' active · '+snapshot.saves.length+' saved'+(snapshot.errors.length?' · '+snapshot.errors.join('; '):'');
+}
+async function resumeGame(id){
+ if(!account?.token)throw Error('Log in to resume your existing game.');
+ const identity=await request('/api/games/'+encodeURIComponent(id)+'/reconnect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accountToken:account.token})});
+ sessionStorage.setItem('armageddon_identity_'+id,JSON.stringify(identity));sessionStorage.setItem('armageddon_active_game',id);
+ const info=await request('/api/games/'+encodeURIComponent(id)+'/join-info',{cache:'no-store'});
+ if(!info.query)throw Error('Game setup not found');
+ if(info.status==='lobby'){location.href='armageddon.html?initLobby='+encodeURIComponent(id);return}
+ const q=new URLSearchParams(info.query);q.set('gameId',id);q.set('playerSide',identity.side);location.href='armageddon.html?'+q.toString();
+}
+async function loadSave(save){
+ if(!account?.token)throw Error('Log in to load a saved game.');
+ if(!confirm('Load '+(save.name||'ARMAGEDDON')+' at Turn '+save.turn+'? Original player ownership is preserved; everyone starts Not Ready.'))return;
+ const loaded=await request('/api/saved-games/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token,gameId:save.gameId,turn:save.turn})});
+ sessionStorage.setItem('armageddon_identity_'+loaded.id,JSON.stringify({playerId:loaded.playerId,token:loaded.token,side:loaded.side,color:loaded.color,accountId:loaded.accountId}));
+ sessionStorage.setItem('armageddon_active_game',loaded.id);
+ const games=await request('/api/games',{cache:'no-store'});const g=games.find(g=>g.id===loaded.id);if(!g)throw Error('Restored game not visible');
+ const q=new URLSearchParams(g.query);q.set('gameId',loaded.id);q.set('playerSide',loaded.side);location.href='armageddon.html?'+q.toString();
+}
+async function refresh(){
+ const myToken=++refreshToken;const errors=[];
+ const tasks=[request('/api/games',{cache:'no-store'}).then(g=>({key:'public',value:Array.isArray(g)?g:[]})),
+ account?.token?request('/api/accounts/games',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'enrolled',value:g.games||[]})):Promise.resolve({key:'enrolled',value:[]}),
+ account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:g.saves||[]})):Promise.resolve({key:'saves',value:[]})];
+ const results=await Promise.allSettled(tasks);if(myToken!==refreshToken)return;
+ results.forEach((r,i)=>{if(r.status==='fulfilled')snapshot[r.value.key]=r.value.value;else errors.push(['Active games','My games','Autosaves'][i]+' unavailable')});snapshot.errors=errors;render();
+}
+refresh();setInterval(()=>{if(!document.hidden)refresh()},10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+</script><script src="src/version.js?v=6.198"></script></body></html>

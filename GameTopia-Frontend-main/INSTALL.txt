@@ -1,0 +1,17 @@
+GAMETOPIA FRONTEND — M6.198 HOW TO PLAY UI UPDATE
+
+This ZIP is a COMPLETE frontend source package, not a patch.
+
+To publish: Open TerraNovaDevelopment/GameTopia-Frontend in GitHub.
+Upload the contents INSIDE the GameTopia-Frontend-main folder, preserving subfolders.
+Commit the changes to the deployment branch, and allow your normal frontend deployment to finish.
+Do not upload just the ZIP as a GitHub file; extract its contents.
+Do not replace your backend, database, or backend version verification file.
+
+Test:
+1. On index.html, click the visible How to Play button near top-right of splash.
+2. Go to ARMAGEDDON game screen and click How to Play in the existing top bar.
+3. Verify both open the README.txt guide and Close/Escape dismisses them.
+4. Hard refresh (Ctrl+Shift+R) if a browser shows an older cached version.
+
+Backend compatibility requirement remains M6.198.
