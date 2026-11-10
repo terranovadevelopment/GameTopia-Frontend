@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en">
-<head><script src="src/verify-backend-m6194.js?v=194-release1"></script>
+<head><script src="src/verify-backend-m6195.js?v=195-release1"></script>
 <script>
-// M6.194: account registration/login available via account.html; registered accounts required for play.
+// M6.195: account registration/login available via account.html; registered accounts required for play.
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.194</title>
+  <title>ARMAGEDDON — M6.195</title>
   <link rel="stylesheet" href="src/styles.css">
 <style>
 #endDayOverlay.day-overlay{position:fixed!important;left:5vw!important;top:5vh!important;right:5vw!important;bottom:5vh!important;width:90vw!important;height:90vh!important;max-width:none!important;max-height:none!important;box-sizing:border-box;z-index:15000!important;overflow-y:auto!important;background:#102432!important;border:3px solid #9fb8ce!important;border-radius:12px;padding:20px 26px!important;box-shadow:0 20px 80px #000c!important;color:#eef6ff}
@@ -32,11 +32,11 @@ if(location.protocol==='file:') {
 }
 </script>
 <style>#m639Version{position:fixed;right:8px;top:8px;z-index:99999;background:#111c2e;color:#fff;border:2px solid #e6b347;border-radius:5px;padding:5px 9px;font:bold 13px Arial;pointer-events:none}</style>
-<style>/* M6.194: expose music controls. The hidden stylesheet blocked users from enabling autoplay. */
+<style>/* M6.195: expose music controls. The hidden stylesheet blocked users from enabling autoplay. */
 #gtMusicError[hidden],#musicCreditsDialog:not([open]){display:none!important}
 #battleMusicToggle,#setupMusicToggle,#musicCreditsButton,#gtLegacyMusicSwitch,#gtLegacyMusicCredits{display:inline-flex!important;align-items:center;justify-content:center}
 </style><style>
-/* M6.194 — full-width map and independent reports */
+/* M6.195 — full-width map and independent reports */
 .layout{display:block!important;max-width:none!important;width:100%!important;padding:0!important;height:calc(100vh - 72px)!important;min-height:400px!important}
 .map-shell{height:100%!important;width:100%!important;border-radius:0!important}
 .sidebar{display:none!important}
@@ -49,7 +49,7 @@ if(location.protocol==='file:') {
 <style id="gt-m6193-gameplay-and-setup">
 /* Gameplay has no background music. Story and Setup keep their Options music controls. */
 #battleMusicToggle,#gtMusicTest,#gtMusicState{display:none!important}
-/* M6.194: keep Setup bounded within the visible browser viewport; scroll contents internally. */
+/* M6.195: keep Setup bounded within the visible browser viewport; scroll contents internally. */
 #storyStage.setup{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;box-sizing:border-box!important;overflow:hidden!important;padding:clamp(4px,1vh,10px)!important;align-items:center!important;justify-content:center!important}
 #storyStage.setup #mapSetupPanel{position:relative!important;inset:auto!important;left:auto!important;top:auto!important;transform:none!important;margin:0 auto!important;width:min(850px,calc(100vw - 12px))!important;max-width:100%!important;height:auto!important;max-height:calc(100dvh - 12px)!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;box-sizing:border-box!important;overscroll-behavior:contain!important}
 #storyStage.setup #setupThreeColumns,#storyStage.setup #setupLower{min-width:0!important}
@@ -167,7 +167,7 @@ if(location.protocol==='file:') {
     <div id="cityBody"></div>
   </div>
   <script>
-// M6.194: a single safe path used by both local and server-driven execution.
+// M6.195: a single safe path used by both local and server-driven execution.
 window.ARMAGEDDON_CLOSE_EXECUTION_PANELS=function(){
   const city=document.getElementById('cityPanel');
   if(city)city.hidden=true;
@@ -660,7 +660,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById(id)?.addEventListener('click',()=>setTimeout(updateLabels,0));
  }
 
- // M6.194: the playtest viewpoint is configured from Options, not the top toolbar.
+ // M6.195: the playtest viewpoint is configured from Options, not the top toolbar.
  const playtestChoice=document.createElement('button');playtestChoice.className='overlays-option';
  playtestChoice.type='button';playtestChoice.textContent='Play Test…';
  overlayList.appendChild(playtestChoice);
@@ -716,9 +716,9 @@ document.addEventListener('DOMContentLoaded',function(){
 </style>
 
 <script>
-// M6.194: Check browser speaker output independently of MP3 assets and microphone capture.
+// M6.195: Check browser speaker output independently of MP3 assets and microphone capture.
 (function(){function init(){const b=document.getElementById('gtSpeakerTest'),st=document.getElementById('gtMusicState');if(!b)return;b.onclick=async()=>{try{const AudioContextClass=window.AudioContext||window.webkitAudioContext;if(!AudioContextClass)throw Error('Web Audio not supported');const ctx=new AudioContextClass();await ctx.resume();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=440;gain.gain.value=0.08;osc.connect(gain).connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.35);osc.onended=()=>{ctx.close();};st.textContent='Speaker test tone requested. If silent, check the Windows output device and Chrome tab volume.';}catch(e){st.textContent='Speaker test failed: '+e.message;}};}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
-// M6.194: user-initiated test reports real browser audio errors, not just toggle state.
+// M6.195: user-initiated test reports real browser audio errors, not just toggle state.
 (function(){function init(){const button=document.getElementById('gtSoundTest'),status=document.getElementById('gtSoundState');if(!button||!status)return;
  button.onclick=async()=>{status.textContent='Testing sound file…';try{const r=await fetch(new URL('sounds/infantry_fire.mp3',document.baseURI),{cache:'no-store'});if(!r.ok)throw Error('Sound file HTTP '+r.status);
  const a=new Audio(new URL('sounds/infantry_fire.mp3',document.baseURI).href);a.volume=.9;await a.play();status.textContent='Sound started · '+Math.round(Number(r.headers.get('content-length')||0)/1024)+' KB · check speakers';a.addEventListener('ended',()=>{status.textContent='Sound test complete';},{once:true});
@@ -904,7 +904,7 @@ window.armServerRequest=async function(path,options={}){
 <style>
 #gtPlayersPanel{position:fixed;left:12px;bottom:12px;width:310px;max-width:calc(100vw - 24px);z-index:35000;background:#10283c;color:#f4f8ff;border:2px solid #86b9df;border-radius:9px;box-shadow:0 3px 14px #0009;font:13px Arial,sans-serif;overflow:hidden}
 #gtPlayersPanel .gt-drag{cursor:move;touch-action:none;background:#193e5b;padding:10px 12px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;user-select:none}
-#gtPlayersPanel .gt-body{padding:10px 12px}#gtPlayersPanel .gt-member{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #476176}#gtPlayersPanel .gt-controls{display:flex;gap:8px;margin-top:10px;align-items:stretch}#gtPlayersPanel #gtReadyToggle{flex:1 1 auto;min-width:100px;white-space:nowrap}#gtPlayersPanel #gtCommToggle{flex:0 0 65px;white-space:nowrap}#gtPlayersPanel button{border:1px solid #a9c9e6;border-radius:5px;padding:7px 9px;color:white;cursor:pointer;background:#235c8b}#gtPlayersPanel .gt-notready{background:#ca8213}#gtPlayersPanel .gt-ready{background:#27864b}#gtPlayersPanel .gt-executing{background:#eab308;color:#172334}#gtPlayersPanel .gt-note{font-size:11px;opacity:.85;margin-top:8px}
+#gtKickOverlay[hidden],#gtTopKick[hidden]{display:none!important}#gtPlayersPanel .gt-body{padding:10px 12px}#gtPlayersPanel .gt-member{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #476176}#gtPlayersPanel .gt-controls{display:flex;gap:8px;margin-top:10px;align-items:stretch}#gtPlayersPanel #gtReadyToggle{flex:1 1 auto;min-width:100px;white-space:nowrap}#gtPlayersPanel #gtCommToggle{flex:0 0 65px;white-space:nowrap}#gtPlayersPanel button{border:1px solid #a9c9e6;border-radius:5px;padding:7px 9px;color:white;cursor:pointer;background:#235c8b}#gtPlayersPanel .gt-notready{background:#ca8213}#gtPlayersPanel .gt-ready{background:#27864b}#gtPlayersPanel .gt-executing{background:#eab308;color:#172334}#gtPlayersPanel .gt-note{font-size:11px;opacity:.85;margin-top:8px}
 #gtChatPanel{display:none;margin-top:10px;border-top:1px solid #7899b8;padding-top:9px}#gtChatPanel[aria-hidden=false]{display:block}#gtChatPanel textarea{width:100%;box-sizing:border-box;background:#081d2e;color:white;border:1px solid #7295b5;border-radius:4px;resize:vertical}#gtChatPanel select{width:100%;margin:5px 0}#gtChatMessages{max-height:125px;overflow:auto;white-space:pre-wrap;background:#081d2e;padding:7px;min-height:35px}
 </style>
 <script>
@@ -917,14 +917,32 @@ window.armServerRequest=async function(path,options={}){
  const box=document.createElement('section');box.id='gtPlayersPanel';box.setAttribute('aria-label','Multiplayer player status');
  box.innerHTML='<div class="gt-drag" id="gtDragHandle"><span>Players · Planning</span><span title="Drag to move">⠿</span></div><div class="gt-body"><div id="gtLoginStatus" style="font-size:12px;color:#bfe4ff;margin-bottom:5px">Checking account…</div><div id="gtTurnStatus">Connecting…</div><div id="gtPlayersList"></div><div class="gt-controls"><button id="gtReadyToggle" class="gt-notready">Click when ready</button><button id="gtCommToggle" title="Communications" aria-label="Communications">COMM</button></div><div class="gt-note" id="gtSyncNote"></div></div>';
  document.body.appendChild(box);
- // M6.194: Move the existing COMM control into the top bar. Keep its ID,
+ // M6.195: Move the existing COMM control into the top bar. Keep its ID,
  // handler, and voice state; only its parent changes.
  const topComm=box.querySelector('#gtCommToggle');
  const topbar=document.querySelector('.topbar');
  if(topComm&&topbar){topbar.appendChild(topComm);topComm.classList.add('text-button');topComm.style.cssText='margin-left:5px;white-space:nowrap;min-height:32px;padding:5px 10px;background:#235c8b;color:#fff;border:1px solid #a9c9e6;border-radius:5px;cursor:pointer';}
- // M6.194: Execution Trace is no longer a player-facing window or reopen control.
+ // M6.195: Senior-only Kick (including voluntary departure) in the same top bar.
+ const topKick=document.createElement('button');topKick.id='gtTopKick';topKick.type='button';topKick.textContent='KICK';topKick.title='Senior player: remove a teammate or leave the game';topKick.className='text-button';topKick.style.cssText='margin-left:5px;white-space:nowrap;min-height:32px;padding:5px 10px;background:#8b2635;color:#fff;border:1px solid #f5acac;border-radius:5px;cursor:pointer';topKick.hidden=true;
+ if(topbar)topbar.appendChild(topKick);
+ const kickOverlay=document.createElement('div');kickOverlay.id='gtKickOverlay';kickOverlay.hidden=true;kickOverlay.style.cssText='position:fixed;inset:0;z-index:100070;background:#000b;display:grid;place-items:center;padding:16px';
+ kickOverlay.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="gtKickTitle" style="background:#10283c;color:white;border:2px solid #f5acac;border-radius:9px;max-width:440px;width:100%;max-height:80vh;overflow:auto;padding:18px;font:15px Arial"><h2 id="gtKickTitle">Kick Player / Leave Game</h2><p style="font-size:13px">Select a player on your side, including yourself. Only the senior player may do this.</p><div id="gtKickTargets"></div><p id="gtKickInfo" aria-live="polite"></p><div style="display:flex;gap:8px;justify-content:flex-end"><button id="gtKickCancel" type="button">Cancel</button><button id="gtKickConfirm" type="button" style="background:#8b2635;color:#fff">Confirm Kick</button></div></section>';
+ document.body.append(kickOverlay);kickOverlay.hidden=true;
+ const kickTargets=kickOverlay.querySelector('#gtKickTargets'),kickInfo=kickOverlay.querySelector('#gtKickInfo'),kickConfirm=kickOverlay.querySelector('#gtKickConfirm');
+ let kickSelection=null;
+ kickOverlay.querySelector('#gtKickCancel').onclick=()=>{kickOverlay.hidden=true;};
+ // Never dismiss by clicking outside: deliberate confirmation/cancel only.
+ function showKickPopup(st){const me=st.players.find(p=>p.id===ident.playerId);if(!me)return;const teammates=st.players.filter(p=>p.role==='active'&&p.side===me.side).sort((a,b)=>a.seniority-b.seniority);if(teammates[0]?.id!==ident.playerId||st.phase!=='planning')return;
+  kickTargets.replaceChildren();kickSelection=null;kickConfirm.disabled=true;kickInfo.textContent='Select a player.';
+  for(const p of teammates){const row=document.createElement('label');row.style.cssText='display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #476176;cursor:pointer';const radio=document.createElement('input');radio.type='radio';radio.name='kick-target';radio.value=p.id;radio.onchange=()=>{kickSelection=p;kickConfirm.disabled=false;const left=teammates.filter(x=>x.id!==p.id);kickInfo.textContent=left.length?'Assets transfer to '+left[0].name+'. The next senior player assumes command.':'AI takes over this side if the opposing side still has humans; otherwise the game ends.';};const desc=document.createElement('span');desc.textContent=p.name+' (ID '+(p.accountId||p.id)+')'+(p.id===ident.playerId?' — You / Senior':'')+(p.online?'':' — Offline');row.append(radio,desc);kickTargets.append(row);}
+  kickOverlay.hidden=false;
+ }
+ topKick.onclick=()=>{if(current)showKickPopup(current);};
+ kickConfirm.onclick=async()=>{if(!kickSelection)return;const victim=kickSelection;const self=victim.id===ident.playerId;if(!confirm((self?'Leave the game yourself':'Kick '+victim.name)+'? This action transfers assets or activates AI, resets Ready, and cannot be undone.'))return;kickConfirm.disabled=true;try{const result=await api(base+'/kick',{method:'POST',body:JSON.stringify({token:ident.token,playerId:victim.id})});kickOverlay.hidden=true;if(self||result.gameEnded){location.href='games.html';return;}await refresh();}catch(e){kickInfo.textContent='Kick failed: '+e.message;kickConfirm.disabled=false;}};
+
+ // M6.195: Execution Trace is no longer a player-facing window or reopen control.
  function trace(step,data){ /* diagnostics intentionally hidden from the game interface */ }
- trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.194'});
+ trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.195'});
  const handle=box.querySelector('#gtDragHandle');let drag=null;
  handle.addEventListener('pointerdown',e=>{if(e.button!==0)return;const r=box.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};handle.setPointerCapture(e.pointerId);e.preventDefault()});
  handle.addEventListener('pointermove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(innerWidth-box.offsetWidth,drag.left+e.clientX-drag.x))+'px';box.style.top=Math.max(0,Math.min(innerHeight-box.offsetHeight,drag.top+e.clientY-drag.y))+'px';box.style.bottom='auto'});
@@ -1145,7 +1163,7 @@ window.armServerRequest=async function(path,options={}){
    const heading=document.createElement('p');heading.textContent='Turn '+(day-1)+' · TI '+event.ti+' · Combat at '+event.hex.col+', '+event.hex.row;body.append(heading);
    const battleLosses={Blue:0,Red:0};
    for(const loss of event.losses||[]){const unit=byId.get(String(loss.unitId));if(unit&&battleLosses[unit.side]!=null)battleLosses[unit.side]+=Number(loss.casualties)||0;}
-   // M6.194: a battle winner is the side inflicting at least 10% more
+   // M6.195: a battle winner is the side inflicting at least 10% more
    // casualties than it suffers. Compare *inflicted* casualties, not own losses.
    // Avoid claiming victory when both sides have zero recorded losses.
    const blueWins=battleLosses.Red>0 && battleLosses.Red*10>=battleLosses.Blue*11;
@@ -1390,7 +1408,7 @@ window.armServerRequest=async function(path,options={}){
    // M6.88: execution replay must never display Planning route overlays.
    // Server orders were submitted before Ready; clearing this map affects visuals only.
    game.planner?.routes?.clear();
-   // M6.194: close both Planning inspection popups before authoritative replay.
+   // M6.195: close both Planning inspection popups before authoritative replay.
    window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();
    replayBusy=true;replayPaused=false;replaySkip=false;replaySpeed=1;
    const executeButton=document.getElementById('readyButton');if(executeButton){executeButton.textContent='EXECUTING';executeButton.style.background='#eab308';executeButton.style.color='#101820';}const playerExecuteButton=document.getElementById('gtReadyToggle');if(playerExecuteButton){playerExecuteButton.textContent='EXECUTING';playerExecuteButton.className='gt-executing';}
@@ -1529,7 +1547,7 @@ window.armServerRequest=async function(path,options={}){
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
- // M6.194: per-player persisted roster changes; never dismiss without an acknowledgement.
+ // M6.195: per-player persisted roster changes; never dismiss without an acknowledgement.
  const memberAlert=document.createElement('section');memberAlert.id='gtMemberAlert';memberAlert.hidden=true;
  memberAlert.style.cssText='position:fixed;z-index:100500;top:18%;left:50%;transform:translateX(-50%);width:min(450px,90vw);background:#13293d;border:3px solid #f2b04a;border-radius:12px;padding:20px;color:#fff;box-shadow:0 15px 50px #000c;font:16px Arial';
  memberAlert.setAttribute('role','alertdialog');memberAlert.setAttribute('aria-modal','true');memberAlert.setAttribute('aria-label','Game membership change requiring acknowledgment');
@@ -1552,10 +1570,7 @@ window.armServerRequest=async function(path,options={}){
    if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}
    if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else await applyServerPositions(st.day);}
 const loginBadge=box.querySelector('#gtLoginStatus');if(loginBadge){const who=st.players.find(p=>p.id===ident.playerId);loginBadge.textContent=who?.accountId?'Signed in: '+who.name+' · Account ID '+who.accountId:'Guest: '+(who?.name||'Player')+' · Register / Log In via Games Underway';}
-status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);if(p.id!==ident.playerId&&p.side===st.players.find(x=>x.id===ident.playerId)?.side&&st.phase==='planning'){
- const teammates=st.players.filter(x=>x.role==='active'&&x.side===p.side).sort((a,b)=>a.seniority-b.seniority);
- if(teammates[0]?.id===ident.playerId){const kick=document.createElement('button');kick.type='button';kick.textContent='Kick';kick.title='Remove teammate and transfer their assets to the senior remaining teammate';kick.style.cssText='padding:3px 8px;background:#8b2635;border:1px solid #f5acac;border-radius:4px;color:#fff;font-size:12px';kick.onclick=async()=>{if(!confirm('Kick '+p.name+' from this game? Their divisions and cities will transfer to you. This cannot be undone.'))return;try{kick.disabled=true;await api(base+'/kick',{method:'POST',body:JSON.stringify({token:ident.token,playerId:p.id})});await refresh();}catch(e){alert('Kick failed: '+e.message);kick.disabled=false;}};line.append(kick);}
- }players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}syncCommAvailability();if(!voice.hidden)renderChannels();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});status.textContent='Server: '+e.message}}
+status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}const sameSideSenior=st.players.filter(x=>x.role==='active'&&x.side===me?.side).sort((a,b)=>a.seniority-b.seniority)[0];topKick.hidden=!(me&&sameSideSenior?.id===ident.playerId&&st.phase==='planning');if(!voice.hidden)renderChannels();syncCommAvailability();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});status.textContent='Server: '+e.message}}
  ready.onclick=async()=>{try{if(!current||current.phase!=='planning')return;window.ARMAGEDDON_SOUND?.unlock?.();window.ARMAGEDDON_SOUND?.unlockMedia?.();ready.disabled=true;const me=current?.players.find(p=>p.id===ident.playerId);trace('ready-click',{day:current.day,readyBefore:!!me?.ready});if(!me?.ready)await submitPlottedRoutes();trace('sending-ready',{ready:!me?.ready});if(!me?.ready){ready.textContent='Waiting';ready.className='gt-ready';const bar=document.getElementById('readyButton');if(bar){bar.textContent='READY';bar.style.background='#15803d';}}await api(base+'/ready',{method:'POST',body:JSON.stringify({token:ident.token,ready:!me?.ready})});trace('ready-accepted',{ready:!me?.ready});await refresh()}catch(e){trace('ready-error',{error:e.message});alert(e.message);await refresh()}};
  // M6.136: WebRTC peer-to-peer live voice; the backend carries signaling ONLY.
  const voice=document.createElement('section');voice.id='gtVoiceWindow';voice.hidden=true;
@@ -1693,7 +1708,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 })();
 </script>
 <style id="m6189-setup-options-css">
-/* M6.194: one music switch inside Options, on story and setup screens. */
+/* M6.195: one music switch inside Options, on story and setup screens. */
 #gtLegacyMusicSwitch{position:static!important;display:block!important;z-index:auto!important;width:100%!important;font-size:13px!important;white-space:nowrap!important;padding:9px 14px!important;margin:0!important}
 #gtIntroOptions{position:fixed!important;top:12px;right:12px;z-index:10050;font:13px Arial,sans-serif;color:#fff}
 #gtIntroOptions>summary{list-style:none;cursor:pointer;padding:9px 16px;border:1px solid #e6bd73;border-radius:7px;background:#163f67;font-weight:bold;user-select:none}
@@ -1706,7 +1721,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.194"></script></body>
+<script src="src/version.js?v=6.195"></script></body>
 </html>
 
 <style>
