@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en">
-<head><script src="src/verify-backend-m6196.js?v=196-hotfix1"></script>
+<head><script src="src/verify-backend-m6197.js?v=197-release1"></script>
 <script>
-// M6.196: account registration/login available via account.html; registered accounts required for play.
+// M6.197: account registration/login available via account.html; registered accounts required for play.
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.196</title>
+  <title>ARMAGEDDON — M6.197</title>
   <link rel="stylesheet" href="src/styles.css">
 <style>
 #endDayOverlay.day-overlay{position:fixed!important;left:5vw!important;top:5vh!important;right:5vw!important;bottom:5vh!important;width:90vw!important;height:90vh!important;max-width:none!important;max-height:none!important;box-sizing:border-box;z-index:15000!important;overflow-y:auto!important;background:#102432!important;border:3px solid #9fb8ce!important;border-radius:12px;padding:20px 26px!important;box-shadow:0 20px 80px #000c!important;color:#eef6ff}
@@ -32,11 +32,11 @@ if(location.protocol==='file:') {
 }
 </script>
 <style>#m639Version{position:fixed;right:8px;top:8px;z-index:99999;background:#111c2e;color:#fff;border:2px solid #e6b347;border-radius:5px;padding:5px 9px;font:bold 13px Arial;pointer-events:none}</style>
-<style>/* M6.196: expose music controls. The hidden stylesheet blocked users from enabling autoplay. */
+<style>/* M6.197: expose music controls. The hidden stylesheet blocked users from enabling autoplay. */
 #gtMusicError[hidden],#musicCreditsDialog:not([open]){display:none!important}
 #battleMusicToggle,#setupMusicToggle,#musicCreditsButton,#gtLegacyMusicSwitch,#gtLegacyMusicCredits{display:inline-flex!important;align-items:center;justify-content:center}
 </style><style>
-/* M6.196 — full-width map and independent reports */
+/* M6.197 — full-width map and independent reports */
 .layout{display:block!important;max-width:none!important;width:100%!important;padding:0!important;height:calc(100vh - 72px)!important;min-height:400px!important}
 .map-shell{height:100%!important;width:100%!important;border-radius:0!important}
 .sidebar{display:none!important}
@@ -49,7 +49,7 @@ if(location.protocol==='file:') {
 <style id="gt-m6193-gameplay-and-setup">
 /* Gameplay has no background music. Story and Setup keep their Options music controls. */
 #battleMusicToggle,#gtMusicTest,#gtMusicState{display:none!important}
-/* M6.196: keep Setup bounded within the visible browser viewport; scroll contents internally. */
+/* M6.197: keep Setup bounded within the visible browser viewport; scroll contents internally. */
 #storyStage.setup{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;box-sizing:border-box!important;overflow:hidden!important;padding:clamp(4px,1vh,10px)!important;align-items:center!important;justify-content:center!important}
 #storyStage.setup #mapSetupPanel{position:relative!important;inset:auto!important;left:auto!important;top:auto!important;transform:none!important;margin:0 auto!important;width:min(850px,calc(100vw - 12px))!important;max-width:100%!important;height:auto!important;max-height:calc(100dvh - 12px)!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;box-sizing:border-box!important;overscroll-behavior:contain!important}
 #storyStage.setup #setupThreeColumns,#storyStage.setup #setupLower{min-width:0!important}
@@ -167,7 +167,7 @@ if(location.protocol==='file:') {
     <div id="cityBody"></div>
   </div>
   <script>
-// M6.196: a single safe path used by both local and server-driven execution.
+// M6.197: a single safe path used by both local and server-driven execution.
 window.ARMAGEDDON_CLOSE_EXECUTION_PANELS=function(){
   const city=document.getElementById('cityPanel');
   if(city)city.hidden=true;
@@ -660,7 +660,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById(id)?.addEventListener('click',()=>setTimeout(updateLabels,0));
  }
 
- // M6.196: the playtest viewpoint is configured from Options, not the top toolbar.
+ // M6.197: the playtest viewpoint is configured from Options, not the top toolbar.
  const playtestChoice=document.createElement('button');playtestChoice.className='overlays-option';
  playtestChoice.type='button';playtestChoice.textContent='Play Test…';
  overlayList.appendChild(playtestChoice);
@@ -716,9 +716,9 @@ document.addEventListener('DOMContentLoaded',function(){
 </style>
 
 <script>
-// M6.196: Check browser speaker output independently of MP3 assets and microphone capture.
+// M6.197: Check browser speaker output independently of MP3 assets and microphone capture.
 (function(){function init(){const b=document.getElementById('gtSpeakerTest'),st=document.getElementById('gtMusicState');if(!b)return;b.onclick=async()=>{try{const AudioContextClass=window.AudioContext||window.webkitAudioContext;if(!AudioContextClass)throw Error('Web Audio not supported');const ctx=new AudioContextClass();await ctx.resume();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=440;gain.gain.value=0.08;osc.connect(gain).connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.35);osc.onended=()=>{ctx.close();};st.textContent='Speaker test tone requested. If silent, check the Windows output device and Chrome tab volume.';}catch(e){st.textContent='Speaker test failed: '+e.message;}};}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
-// M6.196: user-initiated test reports real browser audio errors, not just toggle state.
+// M6.197: user-initiated test reports real browser audio errors, not just toggle state.
 (function(){function init(){const button=document.getElementById('gtSoundTest'),status=document.getElementById('gtSoundState');if(!button||!status)return;
  button.onclick=async()=>{status.textContent='Testing sound file…';try{const r=await fetch(new URL('sounds/infantry_fire.mp3',document.baseURI),{cache:'no-store'});if(!r.ok)throw Error('Sound file HTTP '+r.status);
  const a=new Audio(new URL('sounds/infantry_fire.mp3',document.baseURI).href);a.volume=.9;await a.play();status.textContent='Sound started · '+Math.round(Number(r.headers.get('content-length')||0)/1024)+' KB · check speakers';a.addEventListener('ended',()=>{status.textContent='Sound test complete';},{once:true});
@@ -917,12 +917,12 @@ window.armServerRequest=async function(path,options={}){
  const box=document.createElement('section');box.id='gtPlayersPanel';box.setAttribute('aria-label','Multiplayer player status');
  box.innerHTML='<div class="gt-drag" id="gtDragHandle"><span>Players · Planning</span><span title="Drag to move">⠿</span></div><div class="gt-body"><div id="gtLoginStatus" style="font-size:12px;color:#bfe4ff;margin-bottom:5px">Checking account…</div><div id="gtTurnStatus">Connecting…</div><div id="gtPlayersList"></div><div class="gt-controls"><button id="gtReadyToggle" class="gt-notready">Click when ready</button><button id="gtCommToggle" title="Communications" aria-label="Communications">COMM</button></div><div class="gt-note" id="gtSyncNote"></div></div>';
  document.body.appendChild(box);
- // M6.196: Move the existing COMM control into the top bar. Keep its ID,
+ // M6.197: Move the existing COMM control into the top bar. Keep its ID,
  // handler, and voice state; only its parent changes.
  const topComm=box.querySelector('#gtCommToggle');
  const topbar=document.querySelector('.topbar');
  if(topComm&&topbar){topbar.appendChild(topComm);topComm.classList.add('text-button');topComm.style.cssText='margin-left:5px;white-space:nowrap;min-height:32px;padding:5px 10px;background:#235c8b;color:#fff;border:1px solid #a9c9e6;border-radius:5px;cursor:pointer';}
- // M6.196: Senior-only Kick (including voluntary departure) in the same top bar.
+ // M6.197: Senior-only Kick (including voluntary departure) in the same top bar.
  const topKick=document.createElement('button');topKick.id='gtTopKick';topKick.type='button';topKick.textContent='KICK';topKick.title='Senior player: remove a teammate or leave the game';topKick.className='text-button';topKick.style.cssText='margin-left:5px;white-space:nowrap;min-height:32px;padding:5px 10px;background:#8b2635;color:#fff;border:1px solid #f5acac;border-radius:5px;cursor:pointer';topKick.hidden=true;
  if(topbar)topbar.appendChild(topKick);
  const kickOverlay=document.createElement('div');kickOverlay.id='gtKickOverlay';kickOverlay.hidden=true;kickOverlay.style.cssText='position:fixed;inset:0;z-index:100070;background:#000b;display:grid;place-items:center;padding:16px';
@@ -940,9 +940,9 @@ window.armServerRequest=async function(path,options={}){
  topKick.onclick=()=>{if(current)showKickPopup(current);};
  kickConfirm.onclick=async()=>{if(!kickSelection)return;const victim=kickSelection;const self=victim.id===ident.playerId;if(!confirm((self?'Leave the game yourself':'Kick '+victim.name)+'? This action transfers assets or activates AI, resets Ready, and cannot be undone.'))return;kickConfirm.disabled=true;try{const result=await api(base+'/kick',{method:'POST',body:JSON.stringify({token:ident.token,playerId:victim.id})});kickOverlay.hidden=true;if(self||result.gameEnded){location.href='games.html';return;}await refresh();}catch(e){kickInfo.textContent='Kick failed: '+e.message;kickConfirm.disabled=false;}};
 
- // M6.196: Execution Trace is no longer a player-facing window or reopen control.
+ // M6.197: Execution Trace is no longer a player-facing window or reopen control.
  function trace(step,data){ /* diagnostics intentionally hidden from the game interface */ }
- trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.196'});
+ trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.197'});
  const handle=box.querySelector('#gtDragHandle');let drag=null;
  handle.addEventListener('pointerdown',e=>{if(e.button!==0)return;const r=box.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};handle.setPointerCapture(e.pointerId);e.preventDefault()});
  handle.addEventListener('pointermove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(innerWidth-box.offsetWidth,drag.left+e.clientX-drag.x))+'px';box.style.top=Math.max(0,Math.min(innerHeight-box.offsetHeight,drag.top+e.clientY-drag.y))+'px';box.style.bottom='auto'});
@@ -1163,7 +1163,7 @@ window.armServerRequest=async function(path,options={}){
    const heading=document.createElement('p');heading.textContent='Turn '+(day-1)+' · TI '+event.ti+' · Combat at '+event.hex.col+', '+event.hex.row;body.append(heading);
    const battleLosses={Blue:0,Red:0};
    for(const loss of event.losses||[]){const unit=byId.get(String(loss.unitId));if(unit&&battleLosses[unit.side]!=null)battleLosses[unit.side]+=Number(loss.casualties)||0;}
-   // M6.196: a battle winner is the side inflicting at least 10% more
+   // M6.197: a battle winner is the side inflicting at least 10% more
    // casualties than it suffers. Compare *inflicted* casualties, not own losses.
    // Avoid claiming victory when both sides have zero recorded losses.
    const blueWins=battleLosses.Red>0 && battleLosses.Red*10>=battleLosses.Blue*11;
@@ -1408,7 +1408,7 @@ window.armServerRequest=async function(path,options={}){
    // M6.88: execution replay must never display Planning route overlays.
    // Server orders were submitted before Ready; clearing this map affects visuals only.
    game.planner?.routes?.clear();
-   // M6.196: close both Planning inspection popups before authoritative replay.
+   // M6.197: close both Planning inspection popups before authoritative replay.
    window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();
    replayBusy=true;replayPaused=false;replaySkip=false;replaySpeed=1;
    const executeButton=document.getElementById('readyButton');if(executeButton){executeButton.textContent='EXECUTING';executeButton.style.background='#eab308';executeButton.style.color='#101820';}const playerExecuteButton=document.getElementById('gtReadyToggle');if(playerExecuteButton){playerExecuteButton.textContent='EXECUTING';playerExecuteButton.className='gt-executing';}
@@ -1547,7 +1547,7 @@ window.armServerRequest=async function(path,options={}){
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
- // M6.196: per-player persisted roster changes; never dismiss without an acknowledgement.
+ // M6.197: per-player persisted roster changes; never dismiss without an acknowledgement.
  const memberAlert=document.createElement('section');memberAlert.id='gtMemberAlert';memberAlert.hidden=true;
  memberAlert.style.cssText='position:fixed;z-index:100500;top:18%;left:50%;transform:translateX(-50%);width:min(450px,90vw);background:#13293d;border:3px solid #f2b04a;border-radius:12px;padding:20px;color:#fff;box-shadow:0 15px 50px #000c;font:16px Arial';
  memberAlert.setAttribute('role','alertdialog');memberAlert.setAttribute('aria-modal','true');memberAlert.setAttribute('aria-label','Game membership change requiring acknowledgment');
@@ -1560,7 +1560,23 @@ window.armServerRequest=async function(path,options={}){
   ack.onclick=async()=>{ack.disabled=true;try{await api(base+'/member-ack',{method:'POST',body:JSON.stringify({token:ident.token,noticeId:n.id})});await refresh()}catch(err){ack.disabled=false;info.textContent='Acknowledgment failed: '+err.message;}};
   memberAlert.append(h,p,info,ack);memberBackdrop.hidden=false;memberAlert.hidden=false;ack.focus({preventScroll:true});
  }
- async function refresh(){try{const st=await api(base+'/state?token='+encodeURIComponent(ident.token));current=st;showMemberNotices(st);applyEconomyUpdate(st);if(!window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC){window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC=true;modeSync=modeSync.then(syncPlaytestMode).catch(err=>trace('playtest-init-error',{error:err.message}));}const localPlayer=st.players.find(p=>p.id===ident.playerId);if(localPlayer){if(!window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_VIEW_MODE==='None')window.ARMAGEDDON_VIEW_MODE=localPlayer.side;window.ARMAGEDDON_SETUP=window.ARMAGEDDON_SETUP||{};window.ARMAGEDDON_SETUP.playerSide=localPlayer.side;}if(replayBusy){showPacificationNotices(st)}
+ // M6.197: server-authoritative departure; lock the former participant's browser
+ // on its next state poll. An opaque overlay prevents stale local battlefield
+ // interactions even if the websocket/poll connection was previously lost.
+ let membershipRevoked=false;
+ function showRemovedFromGame(){
+  if(membershipRevoked)return;
+  membershipRevoked=true;endTalk();voice.hidden=true;topKick.hidden=true;comm.disabled=true;ready.disabled=true;
+  try{sessionStorage.removeItem('armageddon_identity_'+id);localStorage.removeItem('armageddon_identity_'+id);}catch(_e){}
+  const shield=document.createElement('div');shield.id='gtRemovedFromGame';shield.setAttribute('role','alertdialog');shield.setAttribute('aria-modal','true');
+  shield.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#07121cf5;display:flex;align-items:center;justify-content:center;padding:16px;color:white;font:16px Arial';
+  const panel=document.createElement('section');panel.style.cssText='background:#122d43;border:2px solid #e0a3a3;border-radius:12px;max-width:460px;width:100%;padding:25px;text-align:center';
+  const heading=document.createElement('h2');heading.textContent='You Have Been Removed from This Game';
+  const detail=document.createElement('p');detail.textContent='Your participation in this ARMAGEDDON game has ended. You can no longer issue orders, communicate, or control units in this game.';
+  const action=document.createElement('button');action.type='button';action.textContent='Return to Game List';action.style.cssText='padding:12px 18px;background:#246fa9;border:1px solid white;color:white;border-radius:7px;cursor:pointer';action.onclick=()=>{location.href='armageddon-lobby.html';};
+  panel.append(heading,detail,action);shield.append(panel);document.body.append(shield);action.focus();
+ }
+ async function refresh(){if(membershipRevoked)return;try{const st=await api(base+'/state?token='+encodeURIComponent(ident.token));current=st;showMemberNotices(st);applyEconomyUpdate(st);if(!window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC){window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC=true;modeSync=modeSync.then(syncPlaytestMode).catch(err=>trace('playtest-init-error',{error:err.message}));}const localPlayer=st.players.find(p=>p.id===ident.playerId);if(localPlayer){if(!window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_VIEW_MODE==='None')window.ARMAGEDDON_VIEW_MODE=localPlayer.side;window.ARMAGEDDON_SETUP=window.ARMAGEDDON_SETUP||{};window.ARMAGEDDON_SETUP.playerSide=localPlayer.side;}if(replayBusy){showPacificationNotices(st)}
    else if(st.day<=lastAppliedDay) {pacificationRevealTi=10;showPacificationNotices(st)}
    else {pacificationRevealTi=0;pacPanel.hidden=true;pacCityHex=null;updatePacificationArrow();}
    if(st.day>1&&st.executionEvents?.length)window.ARMAGEDDON_SET_SERVER_REPORT?.(st.day-1,st.executionEvents,st.battlefield);
@@ -1570,14 +1586,38 @@ window.armServerRequest=async function(path,options={}){
    if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}
    if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else await applyServerPositions(st.day);}
 const loginBadge=box.querySelector('#gtLoginStatus');if(loginBadge){const who=st.players.find(p=>p.id===ident.playerId);loginBadge.textContent=who?.accountId?'Signed in: '+who.name+' · Account ID '+who.accountId:'Guest: '+(who?.name||'Player')+' · Register / Log In via Games Underway';}
-status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}const sameSideSenior=st.players.filter(x=>x.role==='active'&&x.side===me?.side).sort((a,b)=>a.seniority-b.seniority)[0];topKick.hidden=!(me&&sameSideSenior?.id===ident.playerId&&st.phase==='planning');if(!voice.hidden)renderChannels();syncCommAvailability();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});status.textContent='Server: '+e.message}}
+status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}const sameSideSenior=st.players.filter(x=>x.role==='active'&&x.side===me?.side).sort((a,b)=>a.seniority-b.seniority)[0];topKick.hidden=!(me&&sameSideSenior?.id===ident.playerId&&st.phase==='planning');if(!voice.hidden)renderChannels();syncCommAvailability();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});if(e.message==='Admission required'||e.message==='Active player required'){showRemovedFromGame();return;}status.textContent='Server: '+e.message}}
  ready.onclick=async()=>{try{if(!current||current.phase!=='planning')return;window.ARMAGEDDON_SOUND?.unlock?.();window.ARMAGEDDON_SOUND?.unlockMedia?.();ready.disabled=true;const me=current?.players.find(p=>p.id===ident.playerId);trace('ready-click',{day:current.day,readyBefore:!!me?.ready});if(!me?.ready)await submitPlottedRoutes();trace('sending-ready',{ready:!me?.ready});if(!me?.ready){ready.textContent='Waiting';ready.className='gt-ready';const bar=document.getElementById('readyButton');if(bar){bar.textContent='READY';bar.style.background='#15803d';}}await api(base+'/ready',{method:'POST',body:JSON.stringify({token:ident.token,ready:!me?.ready})});trace('ready-accepted',{ready:!me?.ready});await refresh()}catch(e){trace('ready-error',{error:e.message});alert(e.message);await refresh()}};
  // M6.136: WebRTC peer-to-peer live voice; the backend carries signaling ONLY.
  const voice=document.createElement('section');voice.id='gtVoiceWindow';voice.hidden=true;
- voice.innerHTML='<div id="gtVoiceDrag" class="gt-voice-title"><strong>Communications · Recorded Voice</strong><button type="button" id="gtVoiceClose" aria-label="Close communications">Close</button></div><div class="gt-voice-content"><p>Choose who can hear you:</p><div id="gtVoiceChannels"></div><p id="gtVoiceSelection" aria-live="polite">No channel selected.</p><button type="button" id="gtVoicePTT" disabled>Hold to Record</button> <button type="button" id="gtVoiceTestMic">Test Microphone</button> <button type="button" id="gtVoiceReplay" disabled>Play Last Recording</button><label style="display:block;margin:8px 0"><input id="gtVoiceEcho" type="checkbox" checked> Hear my recording after release</label><p id="gtVoiceWarning">Hold to record (maximum 15 seconds); release to send. Recordings are temporary, not archived. Enable echo to check your speakers.</p><p style="margin:6px 0;font-size:12px">Local playback (choose your headset or speakers in Windows):</p><audio id="gtVoiceLocalAudio" controls preload="none" style="display:block;width:100%;max-width:400px" aria-label="Your last recorded message"></audio><div id="gtVoiceRemote"></div></div>';
+ voice.innerHTML='<div id="gtVoiceDrag" class="gt-voice-title"><strong>Communications · Recorded Voice</strong><button type="button" id="gtVoiceClose" aria-label="Close communications">Close</button></div><div class="gt-voice-content"><p>Choose who can hear you:</p><div id="gtVoiceChannels"></div><p id="gtVoiceSelection" aria-live="polite">No channel selected.</p><label style="display:block;margin:8px 0 4px" for="gtMicChoice">Microphone source</label><select id="gtMicChoice" style="display:block;width:100%;padding:5px;background:#183b55;color:white;border:1px solid #8cbadd"><option value="default">Windows / browser default microphone</option></select><small id="gtMicLevel" style="display:block;margin:5px 0">Input level: not tested</small><button type="button" id="gtVoicePTT" disabled>Hold to Record</button> <button type="button" id="gtVoiceTestMic">Test Microphone</button> <button type="button" id="gtVoiceReplay" disabled>Play Last Recording</button><label style="display:block;margin:8px 0"><input id="gtVoiceEcho" type="checkbox" checked> Hear my recording after release</label><p id="gtVoiceWarning">Hold to record (maximum 15 seconds); release to send. Recordings are temporary, not archived. Enable echo to check your speakers.</p><p style="margin:6px 0;font-size:12px">Local playback (choose your headset or speakers in Windows):</p><audio id="gtVoiceLocalAudio" controls preload="none" style="display:block;width:100%;max-width:400px" aria-label="Your last recorded message"></audio><div id="gtVoiceRemote"></div></div>';
  document.body.append(voice);
  const channels=voice.querySelector('#gtVoiceChannels'),selection=voice.querySelector('#gtVoiceSelection'),ptt=voice.querySelector('#gtVoicePTT'),voiceNote=voice.querySelector('#gtVoiceWarning');
  let selectedChannel=null,micStream=null,speaking=false,voiceCursor=0,voiceBusy=false,voicePressEpoch=0;
+ const micChoice=voice.querySelector('#gtMicChoice'),micLevel=voice.querySelector('#gtMicLevel');
+ let micMonitor=null;
+ function closeMic(){if(micMonitor){cancelAnimationFrame(micMonitor.frame);micMonitor.ctx.close().catch(()=>{});micMonitor=null;}if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}}
+ async function loadMicrophones(){if(!navigator.mediaDevices?.enumerateDevices)return;try{
+   const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput');
+   const selected=micChoice.value;micChoice.replaceChildren();
+   const def=document.createElement('option');def.value='default';def.textContent='Windows / browser default microphone';micChoice.append(def);
+   for(const d of devices){if(!d.deviceId||d.deviceId==='default')continue;const o=document.createElement('option');o.value=d.deviceId;o.textContent=d.label||('Microphone '+(micChoice.options.length));micChoice.append(o);}
+   micChoice.value=[...micChoice.options].some(o=>o.value===selected)?selected:'default';
+  }catch(e){micLevel.textContent='Microphone list unavailable: '+e.message;}}
+ async function acquireMic(){if(micStream?.getAudioTracks().some(t=>t.readyState==='live'))return micStream;
+  closeMic();const audio={echoCancellation:true,noiseSuppression:true};if(micChoice.value!=='default')audio.deviceId={exact:micChoice.value};
+  micStream=await navigator.mediaDevices.getUserMedia({audio});await loadMicrophones();return micStream;
+ }
+ function monitorMic(){if(!micStream)return;try{
+  if(micMonitor){cancelAnimationFrame(micMonitor.frame);micMonitor.ctx.close().catch(()=>{});}
+  const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;
+  const ctx=new Context(),src=ctx.createMediaStreamSource(micStream),analyser=ctx.createAnalyser();analyser.fftSize=512;src.connect(analyser);
+  const samples=new Uint8Array(analyser.fftSize);const state={ctx,frame:0};micMonitor=state;
+  const frame=()=>{if(micMonitor!==state)return;analyser.getByteTimeDomainData(samples);let sum=0;for(const val of samples){const v=(val-128)/128;sum+=v*v;}const rms=Math.sqrt(sum/samples.length);micLevel.textContent='Microphone input level: '+Math.round(Math.min(100,rms*300))+'%'+(rms<.004?' (quiet / silence)':'');state.frame=requestAnimationFrame(frame);};frame();
+ }catch(e){micLevel.textContent='Level meter unavailable: '+e.message;}}
+ micChoice.onchange=()=>{endTalk();closeMic();micLevel.textContent='New microphone selected — click Test Microphone.';};
+ navigator.mediaDevices?.addEventListener?.('devicechange',()=>void loadMicrophones());
+
  const voiceUrl=base+'/voice';
  const humanPlayers=()=>current?.players?.filter(p=>p.role==='active')||[];
  const mePlayer=()=>humanPlayers().find(p=>p.id===ident.playerId);
@@ -1609,7 +1649,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
  const preferredMime=()=>['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].find(m=>MediaRecorder.isTypeSupported(m))||'';
  async function startRecorder(){if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){voiceNote.textContent='Recording requires HTTPS or localhost and a browser with MediaRecorder support.';return;}
   if(speaking||pressPending||ptt.disabled)return;pressPending=true;const epoch=++voicePressEpoch;ptt.textContent='Opening microphone…';
-  try{micStream ||= await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});if(epoch!==voicePressEpoch){pressPending=false;ptt.textContent='Hold to Record';voiceNote.textContent='Microphone is ready. Your press ended before recording started; hold the button again and watch for RECORDING.';return;}
+  try{micStream=await acquireMic();if(epoch!==voicePressEpoch){pressPending=false;ptt.textContent='Hold to Record';voiceNote.textContent='Microphone is ready. Your press ended before recording started; hold the button again and watch for RECORDING.';return;}
    const mime=preferredMime();recorder=new MediaRecorder(micStream,mime?{mimeType:mime,audioBitsPerSecond:24000}:{});voiceChunks=[];recordStarted=Date.now();speaking=true;pressPending=false;
    const captured=recorder;captured.ondataavailable=e=>{if(e.data?.size)voiceChunks.push(e.data)};
    captured.onstop=()=>{const elapsed=Date.now()-recordStarted;const blob=new Blob(voiceChunks,{type:captured.mimeType||'audio/webm'});voiceChunks=[];void transmitRecording(blob,elapsed);};
@@ -1630,15 +1670,15 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
  function endTalk(){++voicePressEpoch;pressPending=false;speaking=false;if(recordStopper){clearTimeout(recordStopper);recordStopper=null;}ptt.textContent='Hold to Record';ptt.setAttribute('aria-pressed','false');if(recorder?.state==='recording')recorder.stop();}
  const noticePanel=document.createElement('div');noticePanel.id='gtVoiceDisclosure';noticePanel.hidden=true;noticePanel.style.cssText='position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:100050;padding:20px;max-width:450px;background:#152d40;color:#fff;border:3px solid #e6ae51;border-radius:9px;box-shadow:0 10px 35px #000a';document.body.append(noticePanel);
  let notices=[];function showNotice(){if(!notices.length){noticePanel.hidden=true;return;}const n=notices[0];noticePanel.replaceChildren();const description=document.createElement('p');description.textContent='Opposing-side private voice conversation: '+n.sender+' and '+n.recipient+'. (Contents remain private.)';const btn=document.createElement('button');btn.textContent='Acknowledge';btn.style.cssText='background:#235c8b;color:white;padding:10px;border:1px solid #fff;border-radius:5px';btn.onclick=()=>{notices.shift();showNotice();if(!notices.length&&replayBusy){replayPaused=false;replayBar.querySelector('#gtReplayPause').textContent='Pause';}};noticePanel.append(description,btn);noticePanel.hidden=false;if(replayBusy){replayPaused=true;replayBar.querySelector('#gtReplayPause').textContent='Play';}}
- async function pollVoice(){if(voiceBusy||!current)return;voiceBusy=true;try{const res=await api(voiceUrl+'/poll?token='+encodeURIComponent(ident.token)+'&since='+voiceCursor);for(const event of res.events||[]){if(event.type==='clip'){playClip(event.payload.audio,event.payload.mime);voiceNote.textContent='Received recording from '+event.payload.sender;}if(event.type==='disclosure'){notices.push(event.payload);showNotice();}}voiceCursor=Math.max(voiceCursor,res.cursor||0);}catch(err){trace('voice-poll-error',{error:String(err)});}finally{voiceBusy=false;}}
+ async function pollVoice(){if(membershipRevoked||voiceBusy||!current)return;voiceBusy=true;try{const res=await api(voiceUrl+'/poll?token='+encodeURIComponent(ident.token)+'&since='+voiceCursor);for(const event of res.events||[]){if(event.type==='clip'){playClip(event.payload.audio,event.payload.mime);voiceNote.textContent='Received recording from '+event.payload.sender;}if(event.type==='disclosure'){notices.push(event.payload);showNotice();}}voiceCursor=Math.max(voiceCursor,res.cursor||0);}catch(err){trace('voice-poll-error',{error:String(err)});}finally{voiceBusy=false;}}
  ptt.addEventListener('pointerdown',e=>{if(e.button!==0||ptt.disabled)return;ptt.setPointerCapture(e.pointerId);startRecorder();e.preventDefault();});
  for(const eventName of ['pointerup','pointercancel','lostpointercapture'])ptt.addEventListener(eventName,endTalk);
  ptt.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&!e.repeat){e.preventDefault();startRecorder();}});ptt.addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='Enter')endTalk();});
  window.addEventListener('blur',endTalk);document.addEventListener('visibilitychange',()=>{if(document.hidden)endTalk();});
- comm.onclick=()=>{if(comm.disabled)return;voice.hidden=!voice.hidden;if(!voice.hidden)renderChannels();};
+ comm.onclick=()=>{if(comm.disabled)return;voice.hidden=!voice.hidden;if(!voice.hidden){renderChannels();void loadMicrophones();}};
  voice.querySelector('#gtVoiceClose').onclick=()=>{endTalk();voice.hidden=true};
  voice.querySelector('#gtVoiceReplay').onclick=()=>{if(lastAudio)playClip(lastAudio.data,lastAudio.mime);};
- voice.querySelector('#gtVoiceTestMic').onclick=async()=>{try{if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw Error('HTTPS or localhost is required');micStream ||= await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});const track=micStream.getAudioTracks()[0];voiceNote.textContent='Microphone: '+(track?.label||'selected input')+' · '+(track?.readyState||'unknown')+(track?.muted?' · MUTED':'')+'. Choose a channel and hold to record.';}catch(err){voiceNote.textContent='Microphone test failed: '+err.message;}};
+ voice.querySelector('#gtVoiceTestMic').onclick=async()=>{try{if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw Error('HTTPS or localhost is required');micStream=await acquireMic();monitorMic();const track=micStream.getAudioTracks()[0];voiceNote.textContent='Microphone: '+(track?.label||'selected input')+' · '+(track?.readyState||'unknown')+(track?.muted?' · MUTED':'')+'. Choose a channel and hold to record.';}catch(err){voiceNote.textContent='Microphone test failed: '+err.message;}};
  setInterval(pollVoice,850);
  const voiceHandle=voice.querySelector('#gtVoiceDrag');let voiceDrag=null;
  voiceHandle.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.button!==0)return;const r=voice.getBoundingClientRect();voiceDrag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};voiceHandle.setPointerCapture(e.pointerId);e.preventDefault()});
@@ -1708,7 +1748,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 })();
 </script>
 <style id="m6189-setup-options-css">
-/* M6.196: one music switch inside Options, on story and setup screens. */
+/* M6.197: one music switch inside Options, on story and setup screens. */
 #gtLegacyMusicSwitch{position:static!important;display:block!important;z-index:auto!important;width:100%!important;font-size:13px!important;white-space:nowrap!important;padding:9px 14px!important;margin:0!important}
 #gtIntroOptions{position:fixed!important;top:12px;right:12px;z-index:10050;font:13px Arial,sans-serif;color:#fff}
 #gtIntroOptions>summary{list-style:none;cursor:pointer;padding:9px 16px;border:1px solid #e6bd73;border-radius:7px;background:#163f67;font-weight:bold;user-select:none}
@@ -1721,7 +1761,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.196"></script></body>
+<script src="src/version.js?v=6.197"></script></body>
 </html>
 
 <style>

@@ -1,7 +1,7 @@
-<!doctype html><html lang="en"><head><script src="src/verify-backend-m6196.js?v=196-hotfix1"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GameTopia — ARMAGEDDON Games</title><style>
+<!doctype html><html lang="en"><head><script src="src/verify-backend-m6197.js?v=197-release1"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GameTopia — ARMAGEDDON Games</title><style>
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#244366,#07111f 70%);color:#f4e5c5;font-family:Georgia,serif;min-height:100vh}main{max-width:1050px;margin:auto;padding:28px 20px 70px}a{color:#f5cf82}h1{font-size:clamp(30px,5vw,55px);text-align:center;color:#ffd28b;margin:22px 0 4px}h2{color:#ffdb9d}.sub{text-align:center;color:#d3e0f1;font-size:19px;margin:0 0 26px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin:24px 0}.btn{display:inline-block;background:linear-gradient(#197dc8,#06427e);border:1px solid #f3c477;border-radius:9px;padding:13px 20px;color:white;text-decoration:none;font:700 17px system-ui,Arial,sans-serif;cursor:pointer}.btn:hover{filter:brightness(1.2)}.btn:focus-visible{outline:3px solid white}.muted{color:#b4c9db}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}.game{border:1px solid #a98a59;border-radius:12px;background:#0d2135;padding:20px;box-shadow:0 8px 22px #0006}.game h3{margin:0 0 8px;color:#ffe0a5;font-size:23px}.game p{color:#d1dfec;line-height:1.5;margin:7px 0 15px}.meta{font-size:14px;color:#a8c4e0}.notice{padding:17px 20px;border:1px solid #6c849e;border-radius:9px;background:#10283c;color:#d4e4f3}#status{min-height:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.refresh{background:transparent;border:1px solid #7899b8;border-radius:7px;padding:9px 13px;color:#e5f0fa;cursor:pointer}
 
-/* M6.196 compact, scrollable saved-game catalog */
+/* M6.197 compact, scrollable saved-game catalog */
 .autosave-scroll{max-height:260px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #536d86;border-radius:7px;margin-top:10px}
 .autosave-header,.autosave-row{display:grid;grid-template-columns:minmax(120px,2fr) 65px minmax(145px,1.3fr) 85px;align-items:center;gap:8px;padding:8px 10px}
 .autosave-header{position:sticky;top:0;background:#203b53;color:#e4edfa;font:700 12px system-ui,Arial,sans-serif;z-index:1}
@@ -13,7 +13,7 @@
 .autosave-actions .btn{font-size:14px;padding:8px 13px}
 @media(max-width:580px){.autosave-header,.autosave-row{grid-template-columns:minmax(90px,2fr) 50px minmax(108px,1fr);gap:5px;font-size:12px}.autosave-expires{display:none}}
 
-/* M6.196: unified scrollable game list */
+/* M6.197: unified scrollable game list */
 .game-catalog{border:1px solid #6a849c;border-radius:10px;overflow:hidden;background:#10283c}
 .game-head,.game-row{display:grid;grid-template-columns:minmax(120px,2.4fr) minmax(64px,.6fr) minmax(80px,1fr) 88px;gap:10px;align-items:center;padding:9px 12px}
 .game-head{background:#203b53;color:#e4edfa;font:700 13px system-ui,Arial,sans-serif}
@@ -109,4 +109,4 @@ async function refresh(){
  results.forEach((r,i)=>{if(r.status==='fulfilled')snapshot[r.value.key]=r.value.value;else errors.push(['Active games','My games','Autosaves'][i]+' unavailable')});snapshot.errors=errors;render();
 }
 refresh();setInterval(()=>{if(!document.hidden)refresh()},10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
-</script><script src="src/version.js?v=6.196"></script></body></html>
+</script><script src="src/version.js?v=6.197"></script></body></html>
