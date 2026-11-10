@@ -1,7 +1,7 @@
-GAMETOPIA M6.206 - FRONTEND (NO NESTED FOLDER)
+GAMETOPIA M6.207 - FRONTEND (NO NESTED FOLDER)
 ================================================
 
-FRONTEND: M6.206
+FRONTEND: M6.207
 BACKEND REQUIRED: M6.198 (unchanged)
 LIVE PLAYTEST: https://gametopia-playtest.onrender.com/
 
@@ -17,13 +17,13 @@ INSTALL USING WINDOWS EXPLORER AND GITHUB DESKTOP
 4. In the destination repository folder, Ctrl+V and choose Replace files.
    Do NOT copy a whole outer extracted folder into the repository.
    Do NOT touch or delete the .git directory.
-5. Confirm in the destination itself that src\version.js says M6.206.
+5. Confirm in the destination itself that src\version.js says M6.207.
 6. In GitHub Desktop review the changes. If it reports remote commits, Fetch/Pull and
-   reconcile them before pushing; never use Force Push. Commit as GameTopia M6.206.
+   reconcile them before pushing; never use Force Push. Commit as GameTopia M6.207.
 7. Push origin to TerraNovaDevelopment/GameTopia-Frontend.
 8. After Render's GameTopia-Playtest deployment says Live, open
    https://gametopia-playtest.onrender.com/release-check.html
-   and confirm M6.206. Then Ctrl+Shift+R on the playtest homepage.
+   and confirm M6.207. Then Ctrl+Shift+R on the playtest homepage.
 
 CLEANUP (OPTIONAL, AFTER CONFIRMING THE LIVE SITE WORKS)
 An old C:\Projects\Gametopia\GameTopia-Frontend\GameTopia-Frontend-main
@@ -33,4 +33,4 @@ Do not delete it until you confirm the root files and the live website are corre
 This packaging release does not modify gameplay, login behavior, autosaves, or
 backend services. It has not been live tested.
 
-M6.206 notes: see README_M6_206.md and NON_AI_ISSUES.md for verified changes and remaining tests.
+M6.207 notes: see README_M6_206.md and NON_AI_ISSUES.md for verified changes and remaining tests.

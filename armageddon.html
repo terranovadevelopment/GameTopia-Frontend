@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ARMAGEDDON — M6.198</title>
   <link rel="stylesheet" href="src/styles.css">
-<script src="how-to-play.js?v=6.206" defer></script>
+<script src="how-to-play.js?v=6.208" defer></script>
 <style>
 #endDayOverlay.day-overlay{position:fixed!important;left:5vw!important;top:5vh!important;right:5vw!important;bottom:5vh!important;width:90vw!important;height:90vh!important;max-width:none!important;max-height:none!important;box-sizing:border-box;z-index:15000!important;overflow-y:auto!important;background:#102432!important;border:3px solid #9fb8ce!important;border-radius:12px;padding:20px 26px!important;box-shadow:0 20px 80px #000c!important;color:#eef6ff}
 #endDayOverlay[hidden]{display:none!important}
@@ -74,7 +74,7 @@ if(location.protocol==='file:') {
     <div class="brand"><div><strong>ARMAGEDDON</strong><small>Blue vs Red</small></div></div>
     <a href="https://buymeacoffee.com/billbuttso" target="_blank" rel="noopener noreferrer" class="coffee-support" title="Support the game on Buy Me a Coffee">☕ Buy Me a Coffee</a>
     <div id="headerRp" aria-label="Resource points" style="display:flex;align-items:center;gap:8px;white-space:nowrap;font-weight:700;padding:6px 10px;border:1px solid #688293;border-radius:6px;background:#142838"></div>
-    <button id="gametopia-howto-battle" data-gametopia-howto class="text-button" type="button" title="Read the new player guide">How to Play</button>
+    <button id="gametopia-howto-battle" data-gametopia-howto class="text-button" type="button" title="How to Play page coming later">How to Play</button>
     <div class="phase-pill" id="phaseLabel"><span class="status-dot"></span> PLANNING PHASE</div>
   </header>
   <main class="layout">
@@ -1180,7 +1180,16 @@ window.armServerRequest=async function(path,options={}){
    const lossText=document.createElement('div');
    lossText.style.cssText='font:12px Arial;color:#d7e6f2;text-align:right';
    lossText.textContent='Blue losses '+battleLosses.Blue.toLocaleString()+' · Red losses '+battleLosses.Red.toLocaleString();
-   winnerBanner.append(winnerText,lossText);body.append(winnerBanner);
+   // M6.208 Issue #023: realistic battle-outcome soldier, 3/4-inch tall.
+   const soldier=document.createElement('img');
+   soldier.src='assets/battle-winner-'+(winningSide==='Blue'?'blue':winningSide==='Red'?'red':'white')+'.png';
+   soldier.alt=winningSide==='Blue'?'Blue soldier: Bluenstein victory':winningSide==='Red'?'Red soldier: Redonia victory':'White soldier: draw';
+   soldier.style.cssText='height:72px;width:auto;max-width:55px;object-fit:contain;flex:0 0 auto;display:block';
+   const winnerInfo=document.createElement('div');
+   winnerInfo.style.cssText='display:flex;flex-direction:column;gap:4px;flex:1;min-width:0';
+   winnerInfo.append(winnerText,lossText);
+   winnerBanner.style.justifyContent='flex-start';
+   winnerBanner.append(soldier,winnerInfo);body.append(winnerBanner);
    const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;text-align:left';
    const thead=document.createElement('thead');thead.innerHTML='<tr><th style="padding:6px;border-bottom:1px solid #a4bbce">Division</th><th style="padding:6px;border-bottom:1px solid #a4bbce">Side</th><th style="padding:6px;border-bottom:1px solid #a4bbce;text-align:right">Losses</th><th style="padding:6px;border-bottom:1px solid #a4bbce">Morale</th></tr>';table.append(thead);
    const inspectPanel=document.getElementById('gtBattleUnitInspect')||document.createElement('section');
@@ -1789,7 +1798,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.206"></script>
+<script src="src/version.js?v=6.208"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>
