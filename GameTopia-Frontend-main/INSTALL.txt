@@ -1,9 +1,33 @@
-GAMETOPIA M6.201 — COMPLETE FRONTEND UPDATE
+GAMETOPIA M6.202 FRONTEND — GITHUB DESKTOP INSTALLATION
+=======================================================
 
-1. Extract ZIP, open the INSIDE GameTopia-Frontend-main folder.
-2. Upload its CONTENTS to the ROOT of TerraNovaDevelopment/GameTopia-Frontend, replacing files. Do not upload the ZIP or a nested folder.
-3. Commit all changed files. Wait for Render's deployment to finish.
-4. Open YOUR-SITE/release-check.html and check for GT-FRONTEND-M6-201-VERIFIED-LOGIN-BEFORE-BACKSTORY.
-5. On YOUR-SITE/games.html select ARMAGEDDON. A verified registered account with permanent player ID is required before the first backstory screen.
+IMPORTANT: If GitHub Desktop displays "Newer commits on remote", DO NOT force push.
+Do the following IN THIS ORDER:
 
-Frontend M6.201. Backend compatibility remains M6.198. No backend saves, autosaves, or AI production logic are changed.
+1. In GitHub Desktop select the TerraNovaDevelopment/GameTopia-Frontend repository.
+2. First click Fetch origin. If "Pull origin" appears, click Pull origin.
+3. If you have an unpushed local commit, GitHub Desktop may ask to merge or rebase.
+   Use GitHub Desktop's normal merge/pull workflow. If there is a conflict,
+   resolve it before continuing; DO NOT discard local work, reset, or force push.
+4. Extract this M6.202 ZIP to a separate temporary folder. Open its INSIDE
+   GameTopia-Frontend-main folder.
+5. Open your LOCAL GitHub Desktop repository: Repository > Show in Explorer.
+6. Copy the CONTENTS from the extracted GameTopia-Frontend-main folder into the
+   local GitHub repository root, replacing matching frontend files. Do NOT copy
+   the enclosing folder, and do NOT commit the ZIP file instead of its contents.
+7. Return to GitHub Desktop. Review "Changes". You should see modifications to
+   src/version.js, games.html, account.html, armageddon-backstory.html,
+   release-check.html and documentation. Commit them as "GameTopia M6.202".
+8. Click Push origin. Confirm the push succeeds. Wait until Render deployment
+   reports "Live" for the correct connected frontend service.
+9. On the ACTUAL game website, visit /release-check.html. It must say
+   GT-FRONTEND-M6-202-LOGIN-BEFORE-BACKSTORY.
+10. Refresh the game (Ctrl+Shift+R) and confirm the top-left label M6.202.
+11. Click ARMAGEDDON on game selection. You must log in / confirm your
+    registered account before the FIRST backstory image. Then continue to
+    the Available Games screen, where your permanent player ID is shown.
+
+NOTE: Uploading a ZIP to GitHub without extracting its contents will NOT deploy
+these changes. This update changes ONLY frontend files. Existing server data,
+autosaves and AI production have not been modified. Backend compatibility
+is still M6.198: do not change this to M6.202 merely to match the UI version.

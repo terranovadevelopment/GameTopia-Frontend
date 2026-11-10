@@ -17,7 +17,7 @@ nav .group{display:flex;gap:10px;align-items:center}.button{color:white;cursor:p
 <script src="src/march.js?v=6.192"></script>
 <script>
 'use strict';
-// M6.201: no backstory is shown until the account is validated by the backend.
+// M6.202: no backstory is shown until the account is validated by the backend.
 // The permanent player ID is required for later game/autosave association.
 let gameAccount=null;
 try {gameAccount=JSON.parse(sessionStorage.getItem('gt_account')||localStorage.getItem('gt_account')||'null');} catch(_) {}
@@ -76,4 +76,4 @@ window.ARMAGEDDON_MARCH?.selectPage(page);syncMusicStatus();
 
 window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();navigate(1);}else if(e.key==='ArrowLeft'){e.preventDefault();navigate(-1);}});
 render(); // Click anywhere on the image to advance; no Next button. Music starts with the first user gesture, in accordance with browser autoplay rules.
-</script><script src="src/version.js?v=6.201"></script></body></html>
+</script><script src="src/version.js?v=6.202"></script></body></html>
