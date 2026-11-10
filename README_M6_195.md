@@ -1,4 +1,4 @@
-# GameTopia / ARMAGEDDON M6.195
+# GameTopia / ARMAGEDDON M6.196
 
 - Senior players can open a top-bar KICK dialog and remove an enrolled player on their own side, including themselves, during Planning.
 - On removal the next senior player on that side inherits the removed player’s divisions, cities, and orders.

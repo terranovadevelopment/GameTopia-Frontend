@@ -514,7 +514,7 @@
           x+dx*.68-nx*side*.7,y+dy*.68-ny*side*.7,X,Y);
         g.strokeStyle=color;g.lineWidth=width;g.lineJoin='round';g.lineCap='round';g.stroke();g.restore();
       };
-      // M6.195: Group adjacent water edges into continuous polylines and smooth
+      // M6.196: Group adjacent water edges into continuous polylines and smooth
       // turns through hex vertices, similar to roads. Original endpoints and
       // crossing-edge topology remain authoritative and unchanged.
       const connectedWaterPaths=(edges)=>{
