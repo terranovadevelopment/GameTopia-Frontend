@@ -3,10 +3,10 @@
 (function(w){'use strict';
  const tracks=['music/exciting-trailer.mp3','music/at-launch.mp3','music/black-vortex.mp3','music/the-descent.mp3'];
  const battleTrack='music/five-armies.mp3';
- let page=0,enabled=true,battleEnabled=false,battlePhase='story',gameplay=false,active=false,lastError='';
+ let page=0,enabled=false,battleEnabled=false,battlePhase='story',gameplay=false,active=false,lastError='';
  let element=null,currentFile='';
- // Respect a player-off choice, but a new session starts enabled for music diagnostics.
- // Each newly loaded game enables music; any explicit off selection applies to the current page only.
+ // M6.210: Keep all bundled music, but default to OFF on every page load.
+ // Music plays only when a player explicitly enables it using a music control.
  function audio(){if(!element){element=new Audio();element.loop=true;element.preload='none';element.volume=.55;element.addEventListener('error',()=>{lastError='Music file error: '+(element?.error?.code||'unknown')+' at '+currentFile;active=false;});}return element;}
  function file(){return (battlePhase==='planning'||battlePhase==='execution')?battleTrack:tracks[Math.max(0,Math.min(3,page))];}
  function play(){if(gameplay){stop();return;}const source=file();lastError='';if(!enabled||!source||(battlePhase==='planning'&&!battleEnabled)){stop();return;}const a=audio();if(source!==currentFile){a.pause();a.src=source;currentFile=source;a.load();}if(active&&!a.paused)return;const result=a.play();if(result&&typeof result.then==='function')result.then(()=>{active=!a.paused;}).catch(err=>{active=false;lastError='Music playback failed: '+err.message;console.warn('GameTopia music',currentFile,lastError);});else active=!a.paused;}

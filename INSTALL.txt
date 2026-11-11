@@ -1,36 +1,13 @@
-GAMETOPIA M6.207 - FRONTEND (NO NESTED FOLDER)
-================================================
+GAMETOPIA M6.210 — COMPLETE FRONTEND — ROOT LEVEL ZIP
 
-FRONTEND: M6.207
-BACKEND REQUIRED: M6.198 (unchanged)
-LIVE PLAYTEST: https://gametopia-playtest.onrender.com/
+Frontend M6.210 | Backend requirement M6.198 (unchanged)
 
-IMPORTANT: This ZIP opens DIRECTLY to index.html, games.html, src, assets, etc.
-It DOES NOT contain an inner GameTopia-Frontend-main folder.
+1. Extract the ZIP outside the GitHub repository.
+2. Open C:\Projects\Gametopia\GameTopia-Frontend (repository root).
+3. Copy the CONTENTS of the extracted ZIP (index.html, src, assets, etc.) into that folder, replacing existing files.
+4. Preserve the .git folder. In GitHub Desktop, review, commit, and Push origin.
+5. Let the GameTopia-Playtest Render service deploy.
+6. Open https://gametopia-playtest.onrender.com/release-check.html and confirm M6.210.
 
-INSTALL USING WINDOWS EXPLORER AND GITHUB DESKTOP
-1. Extract this ZIP to a temporary folder outside your repository (for example Downloads\GameTopia_M6_206).
-2. In GitHub Desktop, select GameTopia-Frontend; use Repository > Show in Explorer.
-   The destination should be C:\Projects\Gametopia\GameTopia-Frontend
-3. In the temporary extracted folder, Ctrl+A to select ALL top-level files
-   and folders (index.html, src, assets, README.txt, etc.). Ctrl+C.
-4. In the destination repository folder, Ctrl+V and choose Replace files.
-   Do NOT copy a whole outer extracted folder into the repository.
-   Do NOT touch or delete the .git directory.
-5. Confirm in the destination itself that src\version.js says M6.207.
-6. In GitHub Desktop review the changes. If it reports remote commits, Fetch/Pull and
-   reconcile them before pushing; never use Force Push. Commit as GameTopia M6.207.
-7. Push origin to TerraNovaDevelopment/GameTopia-Frontend.
-8. After Render's GameTopia-Playtest deployment says Live, open
-   https://gametopia-playtest.onrender.com/release-check.html
-   and confirm M6.207. Then Ctrl+Shift+R on the playtest homepage.
-
-CLEANUP (OPTIONAL, AFTER CONFIRMING THE LIVE SITE WORKS)
-An old C:\Projects\Gametopia\GameTopia-Frontend\GameTopia-Frontend-main
-folder may remain from earlier extracts. That folder is NOT the repository root.
-Do not delete it until you confirm the root files and the live website are correct.
-
-This packaging release does not modify gameplay, login behavior, autosaves, or
-backend services. It has not been live tested.
-
-M6.207 notes: see README_M6_206.md and NON_AI_ISSUES.md for verified changes and remaining tests.
+Mouse: Right-click plots movement. Shift + right-click adds a 1-TI pause ONLY on the selected division or its plotted route.
+Music: Retained in the package, OFF by default. Can be enabled manually.

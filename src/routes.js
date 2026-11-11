@@ -72,13 +72,13 @@
     addPause(id,cell){
       const d=this.scenario.divisions.find(x=>x.id===id);
       if(!d||(d.side!==(window.ARMAGEDDON_PLAYER_SIDE||'Blue')))return {ok:false,reason:'This division cannot receive orders.'};
-      if(!cell)return {ok:false,reason:'Right-click the division or a hex on its plotted route to add a pause.'};
+      if(!cell)return {ok:false,reason:'Shift + right-click the division or a hex on its plotted route to add a pause.'};
       if(same(d,cell)){
         d.pauseTIs=(d.pauseTIs||0)+1;
         return {ok:true,count:d.pauseTIs,location:'current hex'};
       }
       const point=this.get(id).find(x=>same(x,cell));
-      if(!point)return {ok:false,reason:'Right-click a route hex to add a pause.'};
+      if(!point)return {ok:false,reason:'Shift + right-click a route hex to add a pause.'};
       point.pauseCount=(point.pauseCount||0)+1;
       delete point.pause;
       return {ok:true,count:point.pauseCount,location:'route hex'};
