@@ -57,6 +57,7 @@ function unlockMedia(){
  });
  for(const kind of Object.keys(movementRecordings))prepareRecording(kind).catch(()=>{});
  for(const kind of Object.keys(combatRecordings))prepareCombat(kind).catch(()=>{});
+ for(const kind of ['retreat','surrender'])preloadEvent(kind).catch(e=>console.warn('Event audio preload:',kind,e));
 }
 function bufferedMovement(kind,duration,volume=1){
  const c=audio();
@@ -184,8 +185,32 @@ function recordedEvent(file,volume){
   const result=player.play();if(result&&result.catch)result.catch(error=>{console.warn('ARMAGEDDON event sound blocked:',file,String(error));cleanup();});
  }catch(e){console.warn('Event audio unavailable:',e);}
 }
-function retreat(){recordedEvent('sounds/retreat.mp3',.75);}
-function surrender(){recordedEvent('sounds/surrender.mp3',.75);}
+// One shared, user-unlocked AudioContext avoids a new HTMLAudio autoplay
+// permission request when the server replays a delayed retreat/surrender.
+const eventSamples={retreat:'sounds/retreat.mp3',surrender:'sounds/surrender.mp3'};
+const eventBuffers=new Map(),eventBufferLoads=new Map();
+function preloadEvent(kind){
+ if(eventBuffers.has(kind))return Promise.resolve(eventBuffers.get(kind));
+ if(eventBufferLoads.has(kind))return eventBufferLoads.get(kind);
+ const c=audio();if(!c)return Promise.reject(Error('AudioContext unavailable'));
+ const job=fetch(eventSamples[kind]).then(r=>{if(!r.ok)throw Error(kind+' sound HTTP '+r.status);return r.arrayBuffer();})
+   .then(bytes=>c.decodeAudioData(bytes)).then(buf=>{eventBuffers.set(kind,buf);return buf;})
+   .finally(()=>eventBufferLoads.delete(kind));
+ eventBufferLoads.set(kind,job);return job;
+}
+function playRecordedEvent(kind){
+ if(!enabled)return;
+ const c=audio(),buf=eventBuffers.get(kind);
+ if(c&&c.state==='running'&&buf){
+   try{const source=c.createBufferSource(),gain=c.createGain();source.buffer=buf;gain.gain.value=.75;
+     source.connect(gain);gain.connect(c.destination);source.start();return;}catch(e){console.warn(kind+' decoded playback failed:',e);}
+ }
+ // HTMLAudio fallback while decoding or where WebAudio is unavailable.
+ recordedEvent(eventSamples[kind],.75);
+ if(!buf)preloadEvent(kind).catch(e=>console.warn('Cannot preload '+kind+' sound:',e));
+}
+function retreat(){playRecordedEvent('retreat');}
+function surrender(){playRecordedEvent('surrender');}
 // Sound is cosmetic: never let an audio-device or scheduling failure interrupt a game turn.
 function nonBlocking(fn){return function(...args){try{return fn(...args);}catch(error){console.warn('ARMAGEDDON audio skipped:',error);}};}
 global.ARMAGEDDON_SOUND={uiCue:nonBlocking(uiCue),movement:nonBlocking(movement),combat:nonBlocking(combat),blocked:nonBlocking(blocked),retreat:nonBlocking(retreat),surrender:nonBlocking(surrender),unlock:nonBlocking(audio),unlockMedia:nonBlocking(unlockMedia),status:movementStatus,setEnabled(v){enabled=!!v;if(!enabled){for(const player of recordedFirePlayers)player.pause();recordedFirePlayers=[];for(const player of eventAudioPlayers)player.pause();eventAudioPlayers.length=0;}if(!enabled&&vehicleAudio){vehicleAudio.pause();vehicleAudio=null;if(vehicleStop)clearTimeout(vehicleStop);vehicleStop=null;}if(!enabled&&marchingAudio){marchingAudio.pause();if(marchingStop)clearTimeout(marchingStop);marchingStop=null;}if(!enabled&&infantryFireAudio){infantryFireAudio.pause();if(infantryFireStop)clearTimeout(infantryFireStop);infantryFireStop=null;}if(!enabled&&ctx)ctx.suspend();else if(enabled&&ctx)ctx.resume();},get enabled(){return enabled;}};

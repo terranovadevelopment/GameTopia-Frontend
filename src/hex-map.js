@@ -19,7 +19,7 @@
   function offsetFromAxial(q,r){return {col:q+Math.floor(r/2),row:r};}
   function terrainStyle(name){return ({Plains:{fill:"#778e63",detail:"#91a777"},Forest:{fill:"#496c4c",detail:"#67865b"},Hills:{fill:"#938765",detail:"#b3a47c"},River:{fill:"#507e91",detail:"#7db0c0"}})[name]||{fill:"#778e63",detail:"#91a777"};}
   class HexMapRenderer{
-    constructor(canvas,scenario,terrainAt){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.scenario=scenario;this.terrainAt=terrainAt;this.baseSize=35;this.zoom=1;this.pan={x:0,y:0};this.selectedId=null;this.unitSymbolStyle='nato';this.unitArt={};for(const side of ['blue','red'])for(const type of ['infantry','motorized','mechanized','armored']){const key=side+'_'+type,img=new Image();img.onload=()=>this.render();img.src='src/unit_'+key+'.png';this.unitArt[key]=img;}this.hoverCell=null;this.selectedCityHex=null;this.routes=null;this.showZoc=false;this.showControl=false;this.showCities=false;this.showSupply=false;this.cityStates=null;this.showTerrainTypes=false;this.showWaterCrossings=false;this.playtest=false;this.visualPositions=new Map();this.spottingPositions=new Map();this.satelliteLayer=null;this.cityTexture=null;this.lakeTexture=null;this.extraTextures={};this.hillHexes=[];this.approvedTerrain={};this.terrainVariants={};for(const [name,ext] of [['clear','jpg'],['forest','jpg'],['rough','jpg'],['swamp','jpg'],['mountains','jpg'],['city','jpg'],['lake','png']]){this.terrainVariants[name]=Array.from({length:(name==='clear'||name==='forest'||name==='swamp'||name==='rough'||name==='mountains'||name==='city')?5:4},(_,i)=>{const im=new Image();im.onload=()=>{this.satelliteLayer=null;this.render();};im.src='src/'+name+'_'+(i+1)+'.'+ext+'?asset=m650';return im;});}
+    constructor(canvas,scenario,terrainAt){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.scenario=scenario;this.terrainAt=terrainAt;this.baseSize=35;this.zoom=1;this.pan={x:0,y:0};this.selectedId=null;this.unitSymbolStyle='nato';this.unitArt={};for(const side of ['blue','red'])for(const type of ['infantry','motorized','mechanized','armored']){const key=side+'_'+type,img=new Image();img.onload=()=>this.render();img.src='src/unit_'+key+'.png';this.unitArt[key]=img;}this.hoverCell=null;this.selectedCityHex=null;this.routes=null;this.allyRoutes=new Map();this.showZoc=false;this.showControl=false;this.showCities=false;this.showSupply=false;this.cityStates=null;this.showTerrainTypes=false;this.showWaterCrossings=false;this.playtest=false;this.visualPositions=new Map();this.spottingPositions=new Map();this.satelliteLayer=null;this.cityTexture=null;this.lakeTexture=null;this.extraTextures={};this.hillHexes=[];this.approvedTerrain={};this.terrainVariants={};for(const [name,ext] of [['clear','jpg'],['forest','jpg'],['rough','jpg'],['swamp','jpg'],['mountains','jpg'],['city','jpg'],['lake','png']]){this.terrainVariants[name]=Array.from({length:(name==='clear'||name==='forest'||name==='swamp'||name==='rough'||name==='mountains'||name==='city')?5:4},(_,i)=>{const im=new Image();im.onload=()=>{this.satelliteLayer=null;this.render();};im.src='src/'+name+'_'+(i+1)+'.'+ext+'?asset=m650';return im;});}
 
       const lakeImage=new Image();lakeImage.onload=()=>{this.lakeTexture=lakeImage;this.satelliteLayer=null;this.render();};lakeImage.src='src/lake_hex.png';for(const type of ['plains','hills','mountains']){const im=new Image();im.onload=()=>{this.extraTextures[type]=im;this.satelliteLayer=null;this.render();};im.src='src/'+type+'_texture.jpg';}for(let i=0;i<2;i++){const im=new Image();im.onload=()=>{this.hillHexes[i]=im;this.satelliteLayer=null;this.render();};im.src='src/hill_hex_'+(i?'b':'a')+'.png';}this.onSelect=()=>{};this.dpr=1;this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize();}
     resize(){const rect=this.canvas.getBoundingClientRect();this.dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));this.canvas.width=Math.max(1,Math.floor(rect.width*this.dpr));this.canvas.height=Math.max(1,Math.floor(rect.height*this.dpr));this.clampPan();this.render();}
@@ -490,30 +490,32 @@
         g.restore();
       }
       window.ARMAGEDDON_CLEAR_VARIANT_COUNTS=clearVariantCounts;
-      // M4.68: feather differing land terrain across shared hexsides.
-      // The hex outline is drawn separately at render time and remains sharp.
-      // This is a visual effect only; terrainAt and movement/combat are untouched.
+      // M6.217: terrain color transitions only INSIDE the terrain's hex.
+      // Forest/rough/swamp/mountain textures remain bounded by their own
+      // hex classification; a narrow inner feather reduces the cut-out edge.
       const blendColors={Plains:'#87a653',River:'#87a653',Forest:'#365c34',Hills:'#a18c62',Mountains:'#7d8588',Swamp:'#266c70'};
       const byCoord=new Map(points.map(p=>[hexKey(p.c,p.r),p]));
       for(const p of points){
-        if(!blendColors[p.t])continue;
-        const verts=hexPoints(p.x,p.y,S);
+        if(!['Forest','Hills','Swamp','Mountains'].includes(p.t))continue;
+        const verts=hexPoints(p.x,p.y,S-.35);
+        g.save();g.beginPath();verts.forEach((v,i)=>i?g.lineTo(v.x,v.y):g.moveTo(v.x,v.y));g.closePath();g.clip();
         for(let i=0;i<6;i++){
-          const a=verts[i],b=verts[(i+1)%6];
-          const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
-          const nx=(mx-p.x)/Math.hypot(mx-p.x,my-p.y),ny=(my-p.y)/Math.hypot(mx-p.x,my-p.y);
-          const across=pixelToAxial(mx+nx*S*.65,my+ny*S*.65,S);
-          const off=offsetFromAxial(across.q,across.r);
-          const other=byCoord.get(hexKey(off.col,off.row));
-          if(!other||other.t===p.t||!blendColors[other.t]||p.r>other.r||(p.r===other.r&&p.c>other.c))continue;
-          const width=S*.38;
-          const grad=g.createLinearGradient(mx-nx*width/2,my-ny*width/2,mx+nx*width/2,my+ny*width/2);
-          grad.addColorStop(0,blendColors[p.t]);grad.addColorStop(.5,blendColors[p.t]);
-          grad.addColorStop(.501,blendColors[other.t]);grad.addColorStop(1,blendColors[other.t]);
-          // A translucent softening strip over both neighboring aerial textures.
-          g.save();g.globalAlpha=.30;g.strokeStyle=grad;g.lineWidth=width;
-          g.lineCap='butt';g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke();g.restore();
+          const a=verts[i],b=verts[(i+1)%6],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+          const ux=(mx-p.x)/Math.max(1,Math.hypot(mx-p.x,my-p.y));
+          const uy=(my-p.y)/Math.max(1,Math.hypot(mx-p.x,my-p.y));
+          const neighborAx=pixelToAxial(mx+ux*S*.68,my+uy*S*.68,S);
+          const near=offsetFromAxial(neighborAx.q,neighborAx.r),other=byCoord.get(hexKey(near.col,near.row));
+          if(!other||other.t===p.t||!blendColors[other.t])continue;
+          const depth=S*.22;
+          const grad=g.createLinearGradient(mx-ux*depth,my-uy*depth,mx+ux*.5,my+uy*.5);
+          grad.addColorStop(0,'rgba(0,0,0,0)');
+          grad.addColorStop(.85,blendColors[other.t]+'95');
+          grad.addColorStop(1,blendColors[other.t]+'a0');
+          g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);
+          g.lineTo(b.x-ux*depth,b.y-uy*depth);g.lineTo(a.x-ux*depth,a.y-uy*depth);g.closePath();
+          g.fillStyle=grad;g.fill();
         }
+        g.restore();
       }
       // M6.214: natural lake coasts. Keep water at the centre, but allow the
       // adjacent terrain's OWN image to intrude as an irregular land margin.
@@ -533,32 +535,53 @@
           const axial=pixelToAxial(outer.x,outer.y,S),off=offsetFromAxial(axial.q,axial.r);
           const terrain=byCoord.get(hexKey(off.col,off.row));
           if(!terrain||terrain.t==='Lake'||!shore[terrain.t])continue;
-          const edge=[];const pieces=12;
+          const edge=[],pieces=24;
+          // Smooth connected banks with gentle coves and peninsulas, not
+          // square/hexagonal wedges. Terrain reaches into the water unevenly.
+          const bendA=noise(p.c*3.18+i*5.2,p.r*2.71+i*.7)-.5;
+          const bendB=noise(p.c*2.07-i*3.4,p.r*3.91+i*2.3)-.5;
           for(let j=0;j<=pieces;j++){
             const t=j/pieces;
-            const wobble=(noise(p.c*7.3+i*1.8+t*7,p.r*8.4+i*2.1)-.5)*S*.21;
-            const margin=S*(.17+.15*Math.sin(Math.PI*t)) + wobble;
+            const low=Math.sin(Math.PI*t),wave=Math.sin(2*Math.PI*t)*bendA*.62+Math.sin(3*Math.PI*t)*bendB*.21;
+            const fine=(noise(p.c*5.7+i*2.1+t*5.5,p.r*4.2-i+t*3.2)-.5)*.035;
+            const margin=S*(.22+low*(.18+wave*.22+fine));
             edge.push({x:a.x+(b.x-a.x)*t+nx*margin,y:a.y+(b.y-a.y)*t+ny*margin});
           }
+          // A rounded shoreline interpolates each intermediate point; avoid
+          // the former straight-line/jagged polygon land-water boundary.
+          const smoothBank=()=>{
+            g.moveTo(edge[0].x,edge[0].y);
+            for(let j=1;j<edge.length;j++){
+              const m={x:(edge[j-1].x+edge[j].x)/2,y:(edge[j-1].y+edge[j].y)/2};
+              g.quadraticCurveTo(edge[j-1].x,edge[j-1].y,m.x,m.y);
+            }
+            const last=edge[edge.length-1];g.lineTo(last.x,last.y);
+          };
           g.save();g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);
-          for(let j=edge.length-1;j>=0;j--)g.lineTo(edge[j].x,edge[j].y);
+          for(let j=edge.length-1;j>=0;j--){const pt=edge[j];g.lineTo(pt.x,pt.y);}
           g.closePath();g.clip();
-          g.fillStyle=shore[terrain.t];g.fillRect(p.x-S*1.3,p.y-S*1.3,S*2.6,S*2.6);
+          g.fillStyle=shore[terrain.t];g.fillRect(p.x-S*1.4,p.y-S*1.4,S*2.8,S*2.8);
           const variants=this.terrainVariants?.[assetName[terrain.t]]||[];
           const idx=Math.floor(hash(terrain.c*7+137,terrain.r*11+271)*variants.length);
           const im=variants[idx];
           if(im?.complete&&im.naturalWidth){
-            g.globalAlpha=.82;
-            const hw=S*Math.sqrt(3)/2;
-            g.drawImage(im,terrain.x-hw,terrain.y-S,hw*2,S*2);
+            g.globalAlpha=.92;
+            // Cover the entire land margin with the NEIGHBORING terrain image;
+            // the old drawImage was centered on the neighbor and left a flat band.
+            g.drawImage(im,p.x-S*1.6,p.y-S*1.6,S*3.2,S*3.2);
           }
           g.restore();
-          // Thin shoreline follows the irregular intrusion rather than hex sides.
-          g.save();g.beginPath();edge.forEach((pt,j)=>j?g.lineTo(pt.x,pt.y):g.moveTo(pt.x,pt.y));
-          g.strokeStyle='rgba(207,222,196,.44)';g.lineWidth=Math.max(.7,S*.025);g.stroke();g.restore();
+          // A thin translucent waterline softens the coast without obscuring
+          // the clearly drawn hex boundaries over the entire map.
+          g.save();g.beginPath();smoothBank();
+          g.strokeStyle='rgba(180,215,177,.55)';g.lineWidth=Math.max(1.2,S*.057);
+          g.shadowColor='rgba(17,89,112,.65)';g.shadowBlur=S*.12;g.stroke();g.restore();
         }
         g.restore();
       }
+      // M6.217: no exterior water wedges on adjacent land hexes. All lake
+      // shoreline perturbation is clipped INSIDE each lake hex above, so
+      // neighboring forests/mountains/swamps are never overpainted.
       // Draw smooth connected waterways and roads. Previously this helper was missing,
       // causing a ReferenceError midway through map generation (the all-green screen).
       const strokePath=(points,width,color)=>{
@@ -829,7 +852,8 @@
       for(const d of routeDrawOrder){
         if(d.destroyed||d.strength<=0)continue;
         if(d.side!==(window.ARMAGEDDON_PLAYER_SIDE||"Blue")&&window.ARMAGEDDON_VIEW_MODE!=="Both")continue;
-        const route=this.routes.get(d.id)||this.routes.get(String(d.id));
+        const allyRoute=this.allyRoutes?.has(String(d.id));
+        const route=allyRoute?this.allyRoutes.get(String(d.id)):(this.routes.get(d.id)||this.routes.get(String(d.id)));
         if((d.pauseTIs||0)>0){
           const p=this.worldPixel(d.col,d.row);
           ctx.save();ctx.font='bold 15px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -852,8 +876,11 @@
         ctx.fillText(nextLabel,anchor.x,anchor.y+this.size*.77);ctx.restore();
         const selected=!window.ARMAGEDDON_ROUTES_FROZEN&&(d.id===this.selectedId||d.id===window.ARMAGEDDON_READY_GOLD_ROUTE);
         ctx.save();
-        ctx.strokeStyle=selected?"#ffdf55":"#f14b55";
-        ctx.lineWidth=selected?4:3;
+        // Ally plots are read-only and use their owner's personal player color.
+        const owner=window.ARMAGEDDON_ASSET_OWNERS?.['unit:'+String(d.id)];
+        const allyColor=window.ARMAGEDDON_PLAYER_COLORS?.[owner]||'#8fe3ff';
+        ctx.strokeStyle=selected?'#ffdf55':allyRoute?allyColor:'#f14b55';
+        ctx.lineWidth=selected?4:allyRoute?3.4:3;
         ctx.lineCap="round";ctx.lineJoin="round";
         ctx.setLineDash([Math.max(7,11*this.zoom),Math.max(5,8*this.zoom)]);
         ctx.beginPath();

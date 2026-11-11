@@ -81,7 +81,7 @@ if(location.protocol==='file:') {
     <section class="map-shell" aria-label="Battlefield map">
       <div class="map-toolbar">
         <div class="toolbar-group" style="display:none"><strong style="white-space:nowrap"><span id="blueRpGroup">Blue RP: <span id="rpBlueTotal">0.0</span></span><span id="redRpGroup" hidden> · Red RP: <span id="rpRedTotal">0.0</span></span></strong><button id="deployReinforcement" class="text-button">Deploy Reinforcement (<span id="reinforcementCount">0</span>)</button></div>
-        <div class="toolbar-group"><button id="gtSoundTest" class="text-button" type="button">Test Sound</button><span id="gtSoundState" style="font:12px Arial;color:#ffdf99;max-width:190px">Sound not tested</span><button id="gtSpeakerTest" class="text-button" type="button" title="Check that browser sound reaches your selected speakers">Test Speakers</button><button id="gtMusicTest" class="text-button" type="button" title="Test bundled music and show playback errors">Test Music</button><span id="gtMusicState" style="font:12px Arial;color:#ffdf99;max-width:200px">Music not tested</span><button id="battleMusicToggle" class="text-button" type="button" title="Toggle battlefield music">♫ Music: OFF</button><button id="soundToggle" class="text-button" aria-pressed="true" title="Toggle game sound">🔊 Sound: ON</button><button id="retreatSoundTest" hidden type="button">Retreat SFX</button><button id="surrenderSoundTest" hidden type="button">Surrender SFX</button><button id="replayTurnButton" class="text-button" title="Restore the start of the last executed turn and replay its orders">Replay Turn ↺</button><button id="saveGameButton" class="text-button" title="Save current game">Save Game</button><span id="gameSpeedWrap" style="position:relative;display:inline-block"><button id="gameSpeedButton" class="text-button" aria-expanded="false" title="Change animation speed during execution">Speed: Normal 100% ▾</button><fieldset id="gameSpeedMenu" hidden style="position:absolute;top:100%;left:0;z-index:100;background:#162938;color:white;border:1px solid #688293;border-radius:6px;padding:9px;min-width:145px;box-shadow:0 3px 12px #0008"><legend style="font-size:11px">Game speed</legend><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="0.5"> Slow 50%</label><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="1" checked> Normal 100%</label><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="2"> Fast 200%</label></fieldset></span><button id="readyButton" class="text-button" hidden style="display:none" aria-hidden="true" tabindex="-1">READY</button><span id="tiLabel" style="font-weight:700;white-space:nowrap">Day 1 · Planning</span><span id="gameClock" style="font-weight:700;color:#5ced83;white-space:nowrap;padding:5px 9px;border:1px solid #688293;border-radius:5px" aria-live="polite">Turn 1 7:00</span><label id="playtestTopLabel" title="Choose the playtest view" style="font:12px Arial;color:#fff;white-space:nowrap">Playtest view <select id="playtestTopSelect" aria-label="Playtest side" style="background:#243e53;color:#fff;border:1px solid #8aa7bd;border-radius:5px;padding:5px"><option value="Blue">Bluenstein</option><option value="Red">Redonia</option><option value="Both">Both sides</option></select></label><button id="playtestMode" class="text-button" aria-pressed="true" style="background:#374858;color:white;min-width:195px">Playtest Mode: OFF — BLUE ONLY</button><button id="unitSymbolsToggle" class="text-button" aria-pressed="false" title="Switch NATO and illustrated counters (U)">Unit Symbols: NATO</button><button id="replacementToggle" class="text-button" aria-pressed="false" title="Replacement packet overlay (R)">Replacements: OFF</button><button id="endPositionsToggle" class="text-button" aria-pressed="false" title="End positions preview (E)" title="Show projected division positions after 10 hours; combat and traffic may change the result">End Positions: OFF</button><button id="zocToggle" class="text-button" aria-pressed="false">Show ZOCs: OFF</button><button id="citiesOverlayToggle" class="text-button" aria-pressed="false" title="Highlight cities producing divisions">Cities: OFF</button><button id="supplyOverlayToggle" class="text-button" aria-pressed="false" title="Color friendly divisions by supply rating">Supply: OFF</button><button id="hexControlToggle" class="text-button" aria-pressed="false">Hex Control: OFF</button><button id="mapControlsToggle" class="text-button" aria-pressed="false">Map Controls ?</button><button id="aiOrdersButton" class="text-button" title="Show the AI daily mission and movement diagnostics">AI Orders</button><button id="aiPlanButton" class="text-button" title="Preview cautious AI strategic missions (no orders issued)">AI Plan</button><button id="dayReportButton" class="text-button">Daily Situation Report</button><button id="mapSetupToggle" class="text-button">Map Setup ⚙</button></div>
+        <div class="toolbar-group"><button id="gtSoundTest" class="text-button" type="button">Test Sound</button><span id="gtSoundState" style="font:12px Arial;color:#ffdf99;max-width:190px">Sound not tested</span><button id="gtSpeakerTest" class="text-button" type="button" title="Check that browser sound reaches your selected speakers">Test Speakers</button><button id="gtMusicTest" class="text-button" type="button" title="Test bundled music and show playback errors">Test Music</button><span id="gtMusicState" style="font:12px Arial;color:#ffdf99;max-width:200px">Music not tested</span><button id="battleMusicToggle" class="text-button" type="button" title="Toggle battlefield music">♫ Music: OFF</button><button id="soundToggle" class="text-button" aria-pressed="true" title="Toggle game sound">🔊 Sound: ON</button><button id="retreatSoundTest" type="button">Retreat SFX</button><button id="surrenderSoundTest" type="button">Surrender SFX</button><button id="replayTurnButton" class="text-button" title="Restore the start of the last executed turn and replay its orders">Replay Turn ↺</button><button id="saveGameButton" class="text-button" title="Save current game">Save Game</button><span id="gameSpeedWrap" style="position:relative;display:inline-block"><button id="gameSpeedButton" class="text-button" aria-expanded="false" title="Change animation speed during execution">Speed: Normal 100% ▾</button><fieldset id="gameSpeedMenu" hidden style="position:absolute;top:100%;left:0;z-index:100;background:#162938;color:white;border:1px solid #688293;border-radius:6px;padding:9px;min-width:145px;box-shadow:0 3px 12px #0008"><legend style="font-size:11px">Game speed</legend><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="0.5"> Slow 50%</label><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="1" checked> Normal 100%</label><label style="display:block;white-space:nowrap"><input type="radio" name="animationSpeed" value="2"> Fast 200%</label></fieldset></span><button id="readyButton" class="text-button" hidden style="display:none" aria-hidden="true" tabindex="-1">READY</button><span id="tiLabel" style="font-weight:700;white-space:nowrap">Day 1 · Planning</span><span id="gameClock" style="font-weight:700;color:#5ced83;white-space:nowrap;padding:5px 9px;border:1px solid #688293;border-radius:5px" aria-live="polite">Turn 1 7:00</span><label id="playtestTopLabel" title="Choose the playtest view" style="font:12px Arial;color:#fff;white-space:nowrap">Playtest view <select id="playtestTopSelect" aria-label="Playtest side" style="background:#243e53;color:#fff;border:1px solid #8aa7bd;border-radius:5px;padding:5px"><option value="Blue">Bluenstein</option><option value="Red">Redonia</option><option value="Both">Both sides</option></select></label><button id="playtestMode" class="text-button" aria-pressed="true" style="background:#374858;color:white;min-width:195px">Playtest Mode: OFF — BLUE ONLY</button><button id="unitSymbolsToggle" class="text-button" aria-pressed="false" title="Switch NATO and illustrated counters (U)">Unit Symbols: NATO</button><button id="replacementToggle" class="text-button" aria-pressed="false" title="Replacement packet overlay (R)">Replacements: OFF</button><button id="endPositionsToggle" class="text-button" aria-pressed="false" title="End positions preview (E)" title="Show projected division positions after 10 hours; combat and traffic may change the result">End Positions: OFF</button><button id="zocToggle" class="text-button" aria-pressed="false">Show ZOCs: OFF</button><button id="citiesOverlayToggle" class="text-button" aria-pressed="false" title="Highlight cities producing divisions">Cities: OFF</button><button id="supplyOverlayToggle" class="text-button" aria-pressed="false" title="Color friendly divisions by supply rating">Supply: OFF</button><button id="hexControlToggle" class="text-button" aria-pressed="false">Hex Control: OFF</button><button id="mapControlsToggle" class="text-button" aria-pressed="false">Map Controls ?</button><button id="aiOrdersButton" class="text-button" title="Show the AI daily mission and movement diagnostics">AI Orders</button><button id="aiPlanButton" class="text-button" title="Preview cautious AI strategic missions (no orders issued)">AI Plan</button><button id="dayReportButton" class="text-button">Daily Situation Report</button><button id="mapSetupToggle" class="text-button">Map Setup ⚙</button></div>
       </div>
       <div id="mapSetupPanel" hidden style="position:absolute;z-index:40;top:150px;left:50%;transform:translateX(-50%);background:#172634;color:#eaf4ff;border:2px solid #8ea5b5;border-radius:10px;padding:20px;width:min(1000px,96%);box-shadow:0 10px 45px #000b;max-height:70%;overflow:auto">
         <h2 style="margin:0 0 6px">Map Setup — Battlefield and Deployment</h2>
@@ -838,9 +838,9 @@ window.armServerRequest=async function(path,options={}){
    if(occupant&&!mine){tile.disabled=true;const x=document.createElement('span');x.className='gt-color-x';x.textContent='✕';const name=document.createElement('span');name.className='gt-color-name';name.textContent=occupant.name.length>10?occupant.name.slice(0,9)+'…':occupant.name;tile.append(x,name);}else{if(mine){tile.title='Rejoin your reserved color';tile.textContent='Your color — Rejoin';}tile.onclick=()=>callback(color);}grid.append(tile);
   }
  }
- function create(){panel.innerHTML='<h1>Create a Game</h1><form id="mpCreateForm"><label>Your display name<input name="player" maxlength="50" required autocomplete="nickname"></label><label>Game name<input name="game" maxlength="90" required></label><label>Optional description<textarea name="description" maxlength="500" rows="3"></textarea></label><button type="submit">Continue to Game Setup</button><button type="button" id="mpBack">Back</button></form>';
- panel.querySelector('#mpBack').onclick=()=>{location.href='armageddon-lobby.html';};panel.querySelector('[name=player]').value=localStorage.getItem('armageddon_last_display_name')||'';panel.querySelector('[name=game]').value=localStorage.getItem('armageddon_last_game_name')||'';panel.querySelector('[name=description]').value=localStorage.getItem('armageddon_last_description')||'';
- panel.querySelector('form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);const draft={player:String(f.get('player')),game:String(f.get('game')),description:String(f.get('description')||'')};localStorage.setItem('armageddon_last_display_name',draft.player);localStorage.setItem('armageddon_last_game_name',draft.game);localStorage.setItem('armageddon_last_description',draft.description);sessionStorage.setItem('armageddon_game_draft',JSON.stringify(draft));lobby.hidden=true;document.getElementById('storyStage').hidden=false;};
+ function create(){panel.innerHTML='<h1>Create a Game</h1><form id="mpCreateForm"><label>Your display name<input name="player" maxlength="50" required autocomplete="nickname"></label><label>Game name<input name="game" maxlength="90" required></label><button type="submit">Continue to Game Setup</button><button type="button" id="mpBack">Back</button></form>';
+ panel.querySelector('#mpBack').onclick=()=>{location.href='armageddon-lobby.html';};panel.querySelector('[name=player]').value=localStorage.getItem('armageddon_last_display_name')||'';panel.querySelector('[name=game]').value=localStorage.getItem('armageddon_last_game_name')||'';
+ panel.querySelector('form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);const draft={player:String(f.get('player')),game:String(f.get('game')),description:''};localStorage.setItem('armageddon_last_display_name',draft.player);localStorage.setItem('armageddon_last_game_name',draft.game);sessionStorage.setItem('armageddon_game_draft',JSON.stringify(draft));lobby.hidden=true;document.getElementById('storyStage').hidden=false;};
  }
  async function join(){clear('Join a Game','Games in Lobby, Planning, or Execution replay');const list=document.createElement('div');list.className='mp-games';list.textContent='Loading…';panel.append(list,btn('Back',home));try{const games=await api('/api/games');list.replaceChildren();const open=games.filter(g=>g.status==='lobby'||g.status==='planning'||g.status==='executing');if(!open.length)list.textContent='No games available during Lobby or Planning.';for(const g of open){const item=document.createElement('div');item.className='mp-game';const h=document.createElement('h2');h.textContent=g.name;const d=document.createElement('p');d.textContent='Host: '+g.creator+' · '+g.players.length+' player(s)';item.append(h,d,btn('Join Game',()=>joinColor(g)));list.append(item);}}catch(e){list.textContent='Server unavailable: '+e.message;}}
  async function joinColor(g){try{const current=await gameInfo(g.id);colorPicker(current.players||[],color=>joinName(current,color));panel.append(btn('Back',home));}catch(e){error(e);}}
@@ -1412,6 +1412,9 @@ window.armServerRequest=async function(path,options={}){
  // Production notifications are per-viewer; a server production event must be
  // authored by the server to be synchronized reliably across teammates.
  async function showMoraleOutcome(event,byId,renderer){
+   if(event.type==='retreat'||event.type==='retreat-blocked')window.ARMAGEDDON_SOUND?.retreat?.();
+   else if(event.type==='surrender')window.ARMAGEDDON_SOUND?.surrender?.();
+   trace('morale-event-audio',{event:event.type,soundEnabled:window.ARMAGEDDON_SOUND?.enabled,unitId:String(event.unitId||event.id)});
    const unit=byId.get(String(event.unitId||event.id));
    const title=event.type==='surrender'?'SURRENDER':event.type==='retreat-blocked'?'RETREAT BLOCKED':'RETREAT';
    const source=event.from||event.hex||(unit?{col:unit.col,row:unit.row}:null);
@@ -1430,12 +1433,13 @@ window.armServerRequest=async function(path,options={}){
      const detail=document.createElement('p');detail.textContent=event.type==='surrender'?'The division has surrendered.':event.type==='retreat-blocked'?'Retreat was blocked.':'This division must retreat after failing morale.';panel.append(detail);
      const extra=Math.max(0,Number(event.extraCasualties)||0);const losses=document.createElement('p');losses.textContent=(event.enemyZoc?'Enemy ZOC retreat casualties: ':'Additional retreat casualties: ')+extra.toLocaleString();panel.append(losses);
      if(event.from&&event.to){const destination=document.createElement('p');destination.textContent=`Retreat: (${event.from.col}, ${event.from.row}) → (${event.to.col}, ${event.to.row}). Movement begins after acknowledgment.`;panel.append(destination);}
-     const button=document.createElement('button');button.textContent='Acknowledge';button.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:36px;line-height:1;padding:9px 18px;background:#245b86;color:#fff;border:1px solid #b2d5ef;border-radius:5px';button.onclick=()=>{clear();panel.remove();resolve();};panel.append(button);document.body.append(panel);const clear=anchoredReplayNotice(panel,name,renderer,source);button.focus();
+     const button=document.createElement('button');button.textContent='Acknowledge';button.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:36px;line-height:1;padding:9px 18px;background:#245b86;color:#fff;border:1px solid #b2d5ef;border-radius:5px';button.onclick=()=>{window.ARMAGEDDON_SOUND?.unlock?.();clear();panel.remove();resolve();};panel.append(button);document.body.append(panel);const clear=anchoredReplayNotice(panel,name,renderer,source);button.focus();
    });
    if(event.type==='retreat'&&event.from&&event.to&&unit){
-     const beginning=renderer.worldPixel(event.from.col,event.from.row),ending=renderer.worldPixel(event.to.col,event.to.row),started=performance.now();
+     const base=renderer.baseSize,at=h=>({x:base*Math.sqrt(3)*(h.col-Math.floor(h.row/2)+h.row/2),y:base*1.5*h.row});
+     const beginning=at(event.from),ending=at(event.to),started=performance.now();
      // Unit map coordinates remain server-authoritative; this is visual-only replay.
-     while(true){const amount=Math.min(1,(performance.now()-started)/4000);renderer.visualPositions.set(unit.id,{pixelX:(beginning.x+(ending.x-beginning.x)*amount-renderer.pan.x)/renderer.zoom,pixelY:(beginning.y+(ending.y-beginning.y)*amount-renderer.pan.y)/renderer.zoom});renderer.render();if(amount>=1)break;await nextFrame();}
+     while(true){const amount=Math.min(1,(performance.now()-started)/4000);renderer.visualPositions.set(unit.id,{pixelX:beginning.x+(ending.x-beginning.x)*amount,pixelY:beginning.y+(ending.y-beginning.y)*amount});renderer.render();if(amount>=1)break;await nextFrame();}
      renderer.visualPositions.set(unit.id,{col:event.to.col,row:event.to.row});renderer.render();
    }
  }
@@ -1554,6 +1558,25 @@ window.armServerRequest=async function(path,options={}){
        while(!pacPanel.hidden){await new Promise(r=>setTimeout(r,100));}
        for(const battle of combats.filter(e=>e.ti===ti)){if(replaySkip)break;await showBattleReport(battle,day,byId,renderer);}
        for(const event of moraleOutcomes.filter(e=>Number(e.ti||10)===ti)){if(replaySkip)break;await showMoraleOutcome(event,byId,renderer);}
+       // M6.217: advances occur AFTER morale/retreat. The server emits them
+       // at TI 10. Animate from authoritative hex centers, not pan-adjusted pixels.
+       for(const advance of (events||[]).filter(e=>e.type==='advance'&&Number(e.ti||10)===ti&&e.from&&e.to)){
+         if(replaySkip)break;
+         const u=byId.get(String(advance.unitId));if(!u)continue;
+         replayBar.querySelector('#gtReplayStatus').textContent='ADVANCE AFTER COMBAT · '+(u.name||u.id);
+         await centerCombat(renderer,advance.to);
+         window.ARMAGEDDON_SOUND?.movement?.(u.type||'Infantry',{duration:3,volume:.8});
+         trace('advance-after-combat',{unitId:u.id,from:advance.from,to:advance.to,durationSeconds:3});
+         const base=renderer.baseSize;
+         const world=h=>({x:base*Math.sqrt(3)*(h.col-Math.floor(h.row/2)+h.row/2),y:base*1.5*h.row});
+         const a=world(advance.from),b=world(advance.to);
+         let elapsed=0,previous=performance.now();
+         while(elapsed<3000&&!replaySkip){await nextFrame();const now=performance.now();if(replayPaused){previous=now;continue;}elapsed+=Math.min(100,now-previous);previous=now;
+           const f=Math.min(1,elapsed/3000),ease=f*f*(3-2*f);
+           renderer.visualPositions.set(u.id,{pixelX:a.x+(b.x-a.x)*ease,pixelY:a.y+(b.y-a.y)*ease});renderer.render();
+         }
+         renderer.visualPositions.set(u.id,{col:advance.to.col,row:advance.to.row});renderer.spottingPositions.set(String(u.id),{...advance.to});renderer.render();
+       }
        for(const event of productions.filter(e=>e.ti===ti)){if(replaySkip)break;await showProductionReport(event,day,renderer);}
      }
    }finally{
@@ -1631,6 +1654,25 @@ window.armServerRequest=async function(path,options={}){
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
+  // M6.217: Publish each actual Planning route revision so allied humans can
+  // see it on their next state poll. Sending only at Ready hid plotted routes.
+  let lastSharedRouteSignature=null, sharingRoutes=false;
+  function ownRoutesSignature(){
+    const game=window.ARMAGEDDON_M2;
+    if(!game?.planner||!current?.assetOwners)return null;
+    const me=current.players?.find(p=>p.id===ident.playerId);
+    if(!me||current.phase!=='planning'||me.ready||replayBusy||current.day!==lastAppliedDay)return null;
+    const routes=game.scenario.divisions.filter(d=>d.side===me.side&&current.assetOwners['unit:'+String(d.id)]===ident.playerId)
+      .map(d=>[String(d.id),game.planner.get(d.id).map(p=>[p.col,p.row])]).filter(x=>x[1].length);
+    return JSON.stringify({day:current.day,routes});
+  }
+  setInterval(async()=>{
+    const sig=ownRoutesSignature();if(sig===null||sharingRoutes||sig===lastSharedRouteSignature)return;
+    sharingRoutes=true;
+    try{await submitPlottedRoutes();lastSharedRouteSignature=sig;}
+    catch(error){trace('ally-route-publish-error',{error:String(error)});}
+    finally{sharingRoutes=false;}
+  },850);
  // M6.197: per-player persisted roster changes; never dismiss without an acknowledgement.
  const memberAlert=document.createElement('section');memberAlert.id='gtMemberAlert';memberAlert.hidden=true;
  memberAlert.style.cssText='position:fixed;z-index:100500;top:18%;left:50%;transform:translateX(-50%);width:min(450px,90vw);background:#13293d;border:3px solid #f2b04a;border-radius:12px;padding:20px;color:#fff;box-shadow:0 15px 50px #000c;font:16px Arial';
@@ -1665,6 +1707,14 @@ window.armServerRequest=async function(path,options={}){
    else {pacificationRevealTi=0;pacPanel.hidden=true;pacCityHex=null;updatePacificationArrow();}
    if(st.day>1&&st.executionEvents?.length)window.ARMAGEDDON_SET_SERVER_REPORT?.(st.day-1,st.executionEvents,st.battlefield);
    trace('server-state',{day:st.day,phase:st.phase,status:st.executionStatus,ready:st.players.filter(p=>p.ready).length,events:st.executionEvents?.length,trace:st.executionTrace?.slice(-5)});
+   // Route-owner colors must be current even if Delegation was never opened.
+   window.ARMAGEDDON_ASSET_OWNERS=st.assetOwners||{};
+   window.ARMAGEDDON_PLAYER_COLORS=Object.fromEntries((st.players||[]).map(p=>[p.id,p.color]));
+   window.ARMAGEDDON_PLAYER_NAMES=Object.fromEntries((st.players||[]).map(p=>[p.id,p.name]));
+   if(window.ARMAGEDDON_M2?.renderer){
+     const renderer=window.ARMAGEDDON_M2.renderer;
+     renderer.allyRoutes=new Map(st.phase==='planning'?(st.allyOrders||[]).filter(o=>o.type==='move'&&Array.isArray(o.route)&&o.route.length).map(o=>[String(o.unitId),o.route.map(p=>({col:p.col,row:p.row,pauseCount:Number(p.pauseCount)||0}))]):[]);
+   }
    if(st.phase==='planning'&&st.day===lastAppliedDay&&window.ARMAGEDDON_M2?.planner){const planner=window.ARMAGEDDON_M2.planner;for(const o of st.myOrders||[]){if(o.type!=='move'||!Array.isArray(o.route)||!o.route.length||st.assetOwners?.['unit:'+String(o.unitId)]!==ident.playerId)continue;if(!planner.get(String(o.unitId)).length)planner.routes.set(String(o.unitId),o.route.map(p=>({col:p.col,row:p.row,pauseCount:Number(p.pauseCount)||0})));}window.ARMAGEDDON_M2.renderer?.render();}
    // Clear planned route overlays as soon as server leaves Planning.
    // Do not erase orders while waiting for other players to become Ready.
@@ -1925,7 +1975,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 })();
 </script>
 
-<style>#readyButton{display:none!important}#tiLabel{display:none!important}#retreatSoundTest,#surrenderSoundTest{display:none!important}</style>
+<style>#readyButton{display:none!important}#tiLabel{display:none!important}</style>
 
 <script>/* M6.59 personal-color roster for unit counter rendering */
 (async function(){const id=new URLSearchParams(location.search).get('gameId');if(!id)return;try{const r=await fetch('https://gametopia-backend.onrender.com/api/games',{cache:'no-store'});if(!r.ok)return;const g=(await r.json()).find(x=>x.id===id);if(!g)return;window.ARMAGEDDON_GAME_PLAYERS=g.players||[];window.ARMAGEDDON_DEBUG_RENDERER?.render();}catch(e){console.warn('Player colors unavailable',e);}})();

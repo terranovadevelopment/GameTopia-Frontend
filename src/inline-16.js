@@ -16,6 +16,7 @@
  handle.addEventListener('pointermove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(innerWidth-box.offsetWidth,drag.left+e.clientX-drag.x))+'px';box.style.top=Math.max(0,Math.min(innerHeight-box.offsetHeight,drag.top+e.clientY-drag.y))+'px';box.style.bottom='auto'});
  for(const ev of ['pointerup','pointercancel'])handle.addEventListener(ev,()=>drag=null);
  const status=box.querySelector('#gtTurnStatus'),players=box.querySelector('#gtPlayersList'),ready=box.querySelector('#gtReadyToggle'),comm=box.querySelector('#gtCommToggle');let current=null;let lastEconomyRevision=-1;
+ let lastSentRouteSignature=null,routePublishBusy=false,routePublishDay=null;
  // Receive production and maintenance RP changes without waiting for polling.
  let economyStream=null;
  if(typeof EventSource!=='undefined'){
@@ -115,7 +116,7 @@
    const colorOf=id=>byId.get(id)?.side||'Unknown';
    const casualties=id=>(event.losses||[]).find(l=>String(l.unitId)===id)?.casualties||0;
    const formatMorale=id=>{const loss=(event.losses||[]).find(l=>String(l.unitId)===id);const n=event.endingMorale?.[id]??loss?.endingMorale??loss?.effectiveness??byId.get(id)?.effectiveness;return Number.isFinite(Number(n))?Math.round(Number(n))+'%':'—';};
-   const addRow=(id)=>{const unit=byId.get(id);const row=document.createElement('tr');const outcome=(event.surrenders||[]).find(x=>String(x.unitId)===id)?' · Surrendered':(event.retreats||[]).find(x=>String(x.unitId)===id)?' · Retreated':'';
+   const addRow=(id)=>{const unit=byId.get(id);const row=document.createElement('tr');const outcome=(event.surrenders||[]).find(x=>String(x.unitId)===id)?' · Surrendered':(event.retreats||[]).find(x=>String(x.unitId)===id&&x.advance)?' · Advanced after combat':(event.retreats||[]).find(x=>String(x.unitId)===id&&!x.advance)?' · Retreated':'';
      for(const [value,right] of [[(unit?.name||unit?.designation||id)+outcome,false],[String(casualties(id)),true],[formatMorale(id),true]]){const cell=document.createElement('td');cell.style.cssText='padding:6px;border-bottom:1px solid #385468'+(right?';text-align:right':'');if(!right){const link=document.createElement('button');link.type='button';link.dataset.battleUnitLink='true';link.textContent=value;link.title='Inspect this division without closing battle summary';link.style.cssText='border:0;background:transparent;color:#9cdbff;text-align:left;cursor:pointer;text-decoration:underline;font:inherit;padding:0';link.addEventListener('click',e=>{e.stopPropagation();const game=window.ARMAGEDDON_M2;if(game?.select){try{game.select(id);const u=byId.get(id);if(u&&game.renderer?.centerOnHex)game.renderer.centerOnHex(u.col,u.row);updateBattlePointer();trace('battle-division-selected',{id});}catch(error){trace('battle-division-select-error',{id,error:String(error)});}}});cell.append(link);}else cell.textContent=value;row.append(cell)}tbody.append(row);};
    const addTotal=(side,ids)=>{const row=document.createElement('tr');row.style.cssText='font-weight:700;background:#213e54';for(const [value,right] of [[side+' total',false],[String(ids.reduce((n,id)=>n+casualties(id),0)),true],['',true]]){const cell=document.createElement('td');cell.textContent=value;cell.style.cssText='padding:7px 6px'+(right?';text-align:right':'');row.append(cell);}tbody.append(row);};
    for(const side of ['Blue','Red']){const group=ids.filter(id=>colorOf(id)===side);for(const id of group)addRow(id);addTotal(side,group);}
@@ -237,8 +238,13 @@
        renderer.render();trace('replay-ti',{ti,moves:batch.length});
        for(const battle of combats.filter(e=>e.ti===ti)){if(replaySkip)break;await showBattleReport(battle,day,byId,renderer);}
        const retreatBatch=retreats.filter(e=>e.ti===ti);
+       const advances=retreatBatch.filter(e=>e.type==='advance');
+       if(advances.length){
+         trace('advance-after-combat',{day:day-1,ti,advances:advances.map(e=>({unitId:e.unitId,from:e.from,to:e.to}))});
+         replayBar.querySelector('#gtReplayStatus').textContent='ADVANCE AFTER COMBAT · '+advances.map(e=>byId.get(String(e.unitId))?.name||e.unitId).join(', ');
+       }
        if(retreatBatch.length&&!replaySkip){
-         window.ARMAGEDDON_SOUND?.retreat?.();
+         if(retreatBatch.some(e=>e.type==='retreat'))window.ARMAGEDDON_SOUND?.retreat?.();
          const start=performance.now();
          while(!replaySkip){const f=Math.min(1,(performance.now()-start)/4000);
            for(const e of retreatBatch){const u=byId.get(String(e.unitId));if(u)renderer.visualPositions.set(u.id,pixelTween(e.from,e.to,f));}
@@ -323,7 +329,8 @@
  async function submitPlottedRoutes(){
    const game=window.ARMAGEDDON_M2;if(!game?.planner||!game?.scenario)throw Error('Battlefield not initialized in browser');
    const me=current.players.find(p=>p.id===ident.playerId);
-   const orders=game.scenario.divisions.filter(d=>d.side===me.side&&!d.destroyed&&game.planner.get(d.id).length)
+   const ownership=current.assetOwners||window.ARMAGEDDON_ASSET_OWNERS||{};
+   const orders=game.scenario.divisions.filter(d=>d.side===me.side&&!d.destroyed&&ownership['unit:'+String(d.id)]===ident.playerId&&game.planner.get(d.id).length)
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
@@ -351,6 +358,41 @@
    if(cityState&&st.treasury&&Number(st.economyRevision)!==lastEconomyRevision){
      lastEconomyRevision=Number(st.economyRevision)||0;
      Object.assign(cityState.treasury,st.treasury);cityState.render?.();
+   }
+   // Render all allied human routes, without revealing opposing-side orders.
+   const battlefield=window.ARMAGEDDON_M2;
+   if(battlefield?.renderer){
+     const allies=new Map();
+     for(const order of st.allyOrders||[])if(order.type==='move'&&Array.isArray(order.route)){
+       allies.set(String(order.unitId),order.route.map(p=>({col:p.col,row:p.row})));
+     }
+     battlefield.renderer.allyRoutes=allies;
+     if(st.phase==='planning'&&!replayBusy)battlefield.renderer.render();
+   }
+   // Every new planning day begins with its own server-synchronization signature.
+   if(routePublishDay!==st.day){routePublishDay=st.day;lastSentRouteSignature=null;}
+   if(st.phase==='planning'&&!replayBusy){
+     const mine=st.players.find(p=>p.id===ident.playerId);
+     if(mine&&!mine.ready&&!routePublishBusy&&battlefield?.planner&&battlefield?.scenario){
+       const owned=st.assetOwners||window.ARMAGEDDON_ASSET_OWNERS||{};
+       const localOrders=battlefield.scenario.divisions.filter(d=>d.side===mine.side&&!d.destroyed&&owned['unit:'+String(d.id)]===ident.playerId&&battlefield.planner.get(d.id).length)
+         .map(d=>({type:'move',unitId:String(d.id),route:battlefield.planner.get(d.id).map(p=>({col:p.col,row:p.row}))}));
+       const signature=JSON.stringify(localOrders);
+       // Do not erase server carryover orders before positions/routes load.
+       if(lastSentRouteSignature===null&&st.myOrders?.length&&!localOrders.length){
+         // Server holds a legitimate unfinished route; show it and preserve it.
+         for(const o of st.myOrders)if(o.type==='move'&&o.route?.length&&owned['unit:'+String(o.unitId)]===ident.playerId)
+           battlefield.planner.routes.set(String(o.unitId),o.route.map(x=>({col:x.col,row:x.row})));
+         lastSentRouteSignature=JSON.stringify(st.myOrders.filter(o=>o.type==='move'));
+         battlefield.renderer.render();
+       }else if(signature!==lastSentRouteSignature){
+         routePublishBusy=true;
+         api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders:localOrders})})
+           .then(()=>{lastSentRouteSignature=signature})
+           .catch(e=>trace('live-route-publication-error',{error:e.message}))
+           .finally(()=>{routePublishBusy=false});
+       }
+     }
    }
    if(st.day===lastAppliedDay&&!replayBusy)void acknowledgePacification(st);trace('server-state',{day:st.day,phase:st.phase,status:st.executionStatus,ready:st.players.filter(p=>p.role==='active'&&p.online&&p.ready).length,events:st.executionEvents?.length,trace:st.executionTrace?.slice(-5)});
    // Clear planned route overlays as soon as server leaves Planning.

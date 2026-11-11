@@ -1,13 +1,16 @@
-GAMETOPIA M6.210 — COMPLETE FRONTEND — ROOT LEVEL ZIP
+GAMETOPIA M6.216 — COMPLETE FRONTEND — ROOT LEVEL ZIP
 
-Frontend M6.210 | Backend requirement M6.198 (unchanged)
+Frontend M6.216 | Backend health compatibility version M6.198 (backend M6.216 metadata change)
 
 1. Extract the ZIP outside the GitHub repository.
 2. Open C:\Projects\Gametopia\GameTopia-Frontend (repository root).
-3. Copy the CONTENTS of the extracted ZIP (index.html, src, assets, etc.) into that folder, replacing existing files.
-4. Preserve the .git folder. In GitHub Desktop, review, commit, and Push origin.
-5. Let the GameTopia-Playtest Render service deploy.
-6. Open https://gametopia-playtest.onrender.com/release-check.html and confirm M6.210.
+3. Copy the CONTENTS of the extracted ZIP (index.html, src, etc.) into that folder, replacing existing files.
+4. Preserve .git folder. In GitHub Desktop, review, commit and Push origin.
+5. After Render deploys, check https://gametopia-playtest.onrender.com/release-check.html for M6.216.
+6. Load a new copy of a saved game and have an original ally look for Join.
+7. Two allies plot different division routes before clicking Ready; confirm each sees the other's route.
 
-Mouse: Right-click plots movement. Shift + right-click adds a 1-TI pause ONLY on the selected division or its plotted route.
-Music: Retained in the package, OFF by default. Can be enabled manually.
+Right-click plots movement. Shift + right-click adds a 1-TI pause waypoint.
+Music remains OFF by default; sound effects retained.
+
+Open playtest issues: #060 lakes; #063 allied plotting; #064 combat advances; #074 stream junctions; #075 terrain blending.

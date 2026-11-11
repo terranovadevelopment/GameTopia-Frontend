@@ -224,6 +224,7 @@
         stat(title+' casualties',fmt(r.losses?.[side]),side.toLowerCase());
         stat(title+' troops remaining',fmt(r.remaining?.[side]),side.toLowerCase());
         stat(title+' divisions lost',fmt(r.destroyed?.[side]),side.toLowerCase());
+        stat(title+' divisions surrendered',fmt(r.surrendered?.[side]),side.toLowerCase());
       }
       const other=make('section','report-section');other.append(make('h3','','Operations & logistics'));body.append(other);
       const accountingDay=Number(r.accountingDay)||r.day+1;other.append(make('p','report-accounting-day','RP settlement for Day '+accountingDay+' Planning — income and maintenance posted before orders.'));const list=make('div','report-nations');other.append(list);
@@ -264,7 +265,7 @@
     if(latestReport?.day===day)return;
     const initial=events.find(e=>e.type==='ti-initial-units')?.units||[];
     const byId=new Map([...data.scenario.divisions,...initial].map(u=>[String(u.id),u]));
-    const losses={Blue:0,Red:0},remaining={Blue:0,Red:0},destroyed={Blue:0,Red:0};
+    const losses={Blue:0,Red:0},remaining={Blue:0,Red:0},destroyed={Blue:0,Red:0},surrendered={Blue:0,Red:0};
     const fireLines=[];
     const supply=events.find(e=>e.type==='supply-report');
     const economy=events.find(e=>e.type==='maintenance');
@@ -276,17 +277,19 @@
           target:target?.name||String(shot.targetId),role:shot.role||'Fire',damage:shot.casualtiesInflicted??shot.rawDamage??0});
       }
     }
+    const surrenderedIds=new Set();
+    for(const ev of events)if(ev.type==='surrender'){const id=String(ev.unitId),side=ev.side||byId.get(id)?.side;if(side in surrendered&&!surrenderedIds.has(id)){surrendered[side]++;surrenderedIds.add(id);}}
     const finalPositions=[...events].reverse().find(e=>e.type==='ti-positions')?.positions||[];
     const finalById=new Map(finalPositions.map(u=>[String(u.id),u]));
     for(const unit of byId.values()){
       if(!(unit.side in remaining))continue;
       const end=finalById.get(String(unit.id));
       const troops=Number(end?.strength??unit.strength)||0;
-      remaining[unit.side]+=Math.max(0,troops);
-      if(end?.active===false||unit.destroyed||troops<=0)destroyed[unit.side]++;
+      remaining[unit.side]+=surrenderedIds.has(String(unit.id))?0:Math.max(0,troops);
+      if(end?.active===false||unit.destroyed||troops<=0||surrenderedIds.has(String(unit.id)))destroyed[unit.side]++;
     }
     latestReport={day,engagements:events.filter(e=>e.type==='combat').length,
-      moves:events.filter(e=>e.type==='move').length,losses,remaining,destroyed,fireLines,
+      moves:events.filter(e=>e.type==='move').length,losses,remaining,destroyed,surrendered,fireLines,
       accountingDay:economy?.accountingDay||day+1,opening:economy?.opening||null,maintenance:upkeep,income:economy?.income||null,net:economy?.net||null,balances:economy?.balances||null,supplyVerified:!!supply?.verified,outOfSupply:supply?.outOfSupply||{Blue:[],Red:[]},negativeSupply:supply?.negativeSupply||{Blue:[],Red:[]},
       replacements:{Blue:'See replacement overlay',Red:'See replacement overlay'},routes:0};
     latestCombatDetail='Server-recorded combat and movement for completed Day '+day;

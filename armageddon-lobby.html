@@ -78,11 +78,11 @@ async function request(url,options){const response=await fetch(API+url,options||
 function pushCell(row,text){const el=document.createElement('span');el.textContent=text;el.title=text;row.append(el)}
 function actionButton(row,entry){
  const btn=document.createElement(entry.action==='Join'?'a':'button');btn.className='btn';btn.textContent=entry.action==='Autosaves'?'View Saves':entry.action;
- if(entry.action==='Join'){
+ if(entry.action==='Join'&&!entry.restoredMember){
   btn.href='account.html?next='+encodeURIComponent('armageddon.html?joinGame='+entry.id);
  }else{
   btn.type='button';btn.addEventListener('click',async()=>{
-   btn.disabled=true;btn.textContent=entry.action==='Autosaves'?'View Saves':entry.action==='Load'?'Loading…':'Resuming…';
+   btn.disabled=true;btn.textContent=entry.action==='Autosaves'?'View Saves':entry.action==='Load'?'Loading…':entry.restoredMember?'Joining…':'Resuming…';
    try{if(entry.action==='Autosaves'){openSavePicker(entry);btn.disabled=false;btn.textContent='View Saves';return;}if(entry.action==='Load')await loadSave(entry.save);else await resumeGame(entry.id,entry.side)}
    catch(e){alert(e.message);btn.disabled=false;btn.textContent=entry.action}
   });
@@ -121,8 +121,12 @@ function render(){
   if(hasLive)activeCount++;
   if(entry.saves.length)savedGameCount++;
   const mine=entry.mine;
-  const canResume=hasLive&&!!mine;
-  const canJoin=hasLive&&!mine;
+  // A restored save is a NEW game instance. Original members keep their slots,
+  // but should see Join until they actively reconnect to this new instance.
+  const restored=live?.loadedFrom||mine?.loadedFrom;
+  const restoredMember=!!(hasLive&&mine&&restored&&String(restored.loaderAccountId)!==String(account?.number)&&!sessionStorage.getItem('armageddon_identity_'+entry.id));
+  const canResume=hasLive&&!!mine&&!restoredMember;
+  const canJoin=hasLive&&(!mine||restoredMember);
   const action=canResume?'Resume':canJoin?'Join':'Autosaves';
   const turn=live?.turn??live?.day??(entry.saves.length?Math.max(...entry.saves.map(x=>Number(x.turn)||0)):'—');
   // The Player column is the ORIGINAL HOST, never the player who saved a turn.
@@ -140,7 +144,7 @@ function render(){
   pushCell(row,entry.name);pushCell(row,player||'—');pushCell(row,displayDate(date));pushCell(row,String(turn));pushCell(row,state);
   // Resume takes priority for an active enrolled game. Its saved states remain
   // accessible via an additional View Saves button in the Description cell.
-  actionButton(row,{...entry,action,side:mine?.side||''});
+  actionButton(row,{...entry,action,restoredMember,side:mine?.side||''});
   const desc=document.createElement('span');desc.className='description';desc.textContent=description;
   if(hasLive&&entry.saves.length){
    desc.append(' · ');

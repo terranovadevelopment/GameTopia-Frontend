@@ -43,3 +43,9 @@ AI and strategic-AI evaluation are intentionally excluded.
 - #001–#020: User-confirmed resolved; no gameplay/engine changes included.
 - Backend requirement remains M6.198.
 
+
+## M6.216 issue register addendum
+- #057, #058, #059, #061, #062 and #065 — user-confirmed resolved.
+- #072 — user-confirmed resolved, pending confirmation of speech recognition interpretation.
+- #060, #063, #064, #074, #075 — open; code present for #060/#063 but not user-verified.
+- #076 — restored-save lobby button: show Join to original saved allies other than loader; restore the same original player slot, side, player color and units. Live verification pending.
