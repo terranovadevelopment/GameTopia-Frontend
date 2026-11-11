@@ -180,7 +180,8 @@ function recordedEvent(file,volume){
   eventAudioPlayers.push(player);
   const cleanup=()=>{const i=eventAudioPlayers.indexOf(player);if(i>=0)eventAudioPlayers.splice(i,1);};
   player.addEventListener('ended',cleanup,{once:true});
-  const result=player.play();if(result&&result.catch)result.catch(()=>{cleanup();});
+  player.addEventListener('error',()=>{console.warn('ARMAGEDDON event sound file failed:',file,player.error?.message||'media error');cleanup();},{once:true});
+  const result=player.play();if(result&&result.catch)result.catch(error=>{console.warn('ARMAGEDDON event sound blocked:',file,String(error));cleanup();});
  }catch(e){console.warn('Event audio unavailable:',e);}
 }
 function retreat(){recordedEvent('sounds/retreat.mp3',.75);}

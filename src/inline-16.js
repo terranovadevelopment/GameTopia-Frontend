@@ -186,9 +186,11 @@
    // Hex offset coordinates are discrete: interpolate centers in pixels, never
    // fractional columns/rows (parity flips make diagonal moves jump sideways).
    const pixelTween=(from,to,f)=>{
-     const a=renderer.worldPixel(from.col,from.row),b=renderer.worldPixel(to.col,to.row);
-     return {pixelX:(a.x+(b.x-a.x)*f-renderer.pan.x)/renderer.zoom,
-             pixelY:(a.y+(b.y-a.y)*f-renderer.pan.y)/renderer.zoom};
+     // Stable unpanned/unzoomed world positions. The renderer adds current camera
+     // pan and zoom on every frame, including while the player drags the map.
+     const base=renderer.baseSize, world=hex=>{const q=hex.col-Math.floor(hex.row/2);return {x:base*Math.sqrt(3)*(q+hex.row/2),y:base*1.5*hex.row}};
+     const a=world(from),b=world(to);
+     return {pixelX:a.x+(b.x-a.x)*f,pixelY:a.y+(b.y-a.y)*f};
    };
    const moves=(events||[]).filter(e=>e.type==='move'&&e.from&&e.to&&byId.has(String(e.unitId)));
    const retreats=(events||[]).filter(e=>(e.type==='retreat'||e.type==='advance')&&e.from&&e.to&&byId.has(String(e.unitId)));
@@ -286,7 +288,7 @@
    }
    const cityState=window.ARMAGEDDON_M3?.cities;
    if(cityState?.state){
-     for(const info of result.cities||[]){const entry=cityState.state.find(c=>c.city?.name===info.name);if(entry){entry.owner=info.owner;entry.city.side=info.owner;entry.pacification=info.pacification;entry.occupier=info.occupier;entry.production=info.production;}}
+     for(const info of result.cities||[]){const entry=cityState.state.find(c=>c.city?.name===info.name);if(entry){entry.owner=info.owner;entry.city.side=info.owner;entry.pacification=info.pacification;entry.occupier=info.occupier;entry.production=info.production;entry.productions=info.productions||{};}}
      if(result.treasury)Object.assign(cityState.treasury,result.treasury);
      cityState.render?.();
    }

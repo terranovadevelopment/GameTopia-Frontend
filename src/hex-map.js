@@ -286,6 +286,31 @@
             ctx.fillStyle='rgba(205,32,42,.84)';ctx.fill();
             ctx.strokeStyle='#ff4444';ctx.lineWidth=Math.max(2,2.6*this.zoom);ctx.stroke();
           }
+          // M6.211: Pacification is distinct from normal city colors and
+          // production overlays. Gold dashed ring = pacification; blue/red
+          // center banner identifies WHICH sovereign city is being pacified.
+          const level=Math.max(0,Math.min(5,Number(entry.pacification)||0));
+          if(level>0){
+            const col=city.c??city.col,row=city.r??city.row;
+            if(Number.isInteger(col)&&Number.isInteger(row)){
+              const pt=this.worldPixel(col,row),r=this.size*1.15;
+              const affected=entry.owner==='Red'?'RED':'BLUE';
+              const national=affected==='RED'?'#d52937':'#1877d4';
+              const label=affected+' PAC '+level+'/5';
+              ctx.save();
+              ctx.beginPath();hexPoints(pt.x,pt.y,r).forEach((v,i)=>i?ctx.lineTo(v.x,v.y):ctx.moveTo(v.x,v.y));ctx.closePath();
+              ctx.fillStyle=affected==='RED'?'rgba(199,38,58,.20)':'rgba(23,113,205,.20)';ctx.fill();
+              ctx.setLineDash([Math.max(5,7*this.zoom),Math.max(3,3*this.zoom)]);
+              ctx.strokeStyle='#ffe36b';ctx.lineWidth=Math.max(4,4*this.zoom);ctx.stroke();ctx.setLineDash([]);
+              const fontSize=Math.max(10,Math.min(16,11*this.zoom));ctx.font='bold '+fontSize+'px Arial';
+              const w=ctx.measureText(label).width+12,x=pt.x-w/2,y=pt.y-r-7;
+              ctx.fillStyle='#071827';ctx.fillRect(x-2,y-fontSize-5,w+4,fontSize+10);
+              ctx.fillStyle=national;ctx.fillRect(x,y-fontSize-3,w,fontSize+6);
+              ctx.strokeStyle='#ffe36b';ctx.lineWidth=1.5;ctx.strokeRect(x,y-fontSize-3,w,fontSize+6);
+              ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.fillText(label,pt.x,y-fontSize/2+1);
+              ctx.restore();
+            }
+          }
         }
         ctx.restore();
       }
@@ -490,24 +515,47 @@
           g.lineCap='butt';g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke();g.restore();
         }
       }
-      // M6.209: keep an open-water center but tint lake edges with the exact
-      // adjacent LAND terrain. This does not change passability or hex borders.
+      // M6.214: natural lake coasts. Keep water at the centre, but allow the
+      // adjacent terrain's OWN image to intrude as an irregular land margin.
+      // The canonical hex geometry / impassable lake / visible grid stay fixed.
       for(const p of points.filter(p=>p.t==='Lake')){
-        g.save();g.beginPath();const vertices=hexPoints(p.x,p.y,S+.4);
-        vertices.forEach((v,i)=>i?g.lineTo(v.x,v.y):g.moveTo(v.x,v.y));g.closePath();g.clip();
+        const vertices=hexPoints(p.x,p.y,S+.25);
+        g.save();g.beginPath();vertices.forEach((v,i)=>i?g.lineTo(v.x,v.y):g.moveTo(v.x,v.y));g.closePath();g.clip();
         g.fillStyle='#126da4';g.fillRect(p.x-S*1.2,p.y-S*1.2,S*2.4,S*2.4);
-        const shore={Plains:'#b6ae79',Forest:'#557b49',Hills:'#99936b',Mountains:'#7b7772',Urban:'#aaa79b',Swamp:'#548279',River:'#5193a5'};
+        const shore={Plains:'#aeb784',Forest:'#466943',Hills:'#9a8c64',Mountains:'#817f77',Urban:'#a6a49a',Swamp:'#4b8275',River:'#9eb782'};
+        const assetName={Plains:'clear',River:'clear',Forest:'forest',Hills:'rough',Mountains:'mountains',Urban:'city',Swamp:'swamp'};
         for(let i=0;i<6;i++){
-          const a=vertices[i],b=vertices[(i+1)%6],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
-          const nx=(mx-p.x)/Math.max(1,Math.hypot(mx-p.x,my-p.y)),ny=(my-p.y)/Math.max(1,Math.hypot(mx-p.x,my-p.y));
-          const axial=pixelToAxial(mx+nx*S*.72,my+ny*S*.72,S),offset=offsetFromAxial(axial.q,axial.r);
-          const other=byCoord.get(hexKey(offset.col,offset.row));
-          if(!other||other.t==='Lake'||!shore[other.t])continue;
-          const inner=S*.45;
-          const grad=g.createLinearGradient(mx-nx*inner,my-ny*inner,mx+nx*S*.08,my+ny*S*.08);
-          grad.addColorStop(0,'#126da4');grad.addColorStop(.62,'#377b9d');grad.addColorStop(1,shore[other.t]);
-          g.globalAlpha=.60;g.strokeStyle=grad;g.lineWidth=inner*1.65;g.lineCap='round';
-          g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke();
+          const a=vertices[i],b=vertices[(i+1)%6];
+          const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+          const nx=(p.x-mid.x)/Math.max(1,Math.hypot(p.x-mid.x,p.y-mid.y));
+          const ny=(p.y-mid.y)/Math.max(1,Math.hypot(p.x-mid.x,p.y-mid.y));
+          const outer={x:mid.x-nx*S*.7,y:mid.y-ny*S*.7};
+          const axial=pixelToAxial(outer.x,outer.y,S),off=offsetFromAxial(axial.q,axial.r);
+          const terrain=byCoord.get(hexKey(off.col,off.row));
+          if(!terrain||terrain.t==='Lake'||!shore[terrain.t])continue;
+          const edge=[];const pieces=12;
+          for(let j=0;j<=pieces;j++){
+            const t=j/pieces;
+            const wobble=(noise(p.c*7.3+i*1.8+t*7,p.r*8.4+i*2.1)-.5)*S*.21;
+            const margin=S*(.17+.15*Math.sin(Math.PI*t)) + wobble;
+            edge.push({x:a.x+(b.x-a.x)*t+nx*margin,y:a.y+(b.y-a.y)*t+ny*margin});
+          }
+          g.save();g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);
+          for(let j=edge.length-1;j>=0;j--)g.lineTo(edge[j].x,edge[j].y);
+          g.closePath();g.clip();
+          g.fillStyle=shore[terrain.t];g.fillRect(p.x-S*1.3,p.y-S*1.3,S*2.6,S*2.6);
+          const variants=this.terrainVariants?.[assetName[terrain.t]]||[];
+          const idx=Math.floor(hash(terrain.c*7+137,terrain.r*11+271)*variants.length);
+          const im=variants[idx];
+          if(im?.complete&&im.naturalWidth){
+            g.globalAlpha=.82;
+            const hw=S*Math.sqrt(3)/2;
+            g.drawImage(im,terrain.x-hw,terrain.y-S,hw*2,S*2);
+          }
+          g.restore();
+          // Thin shoreline follows the irregular intrusion rather than hex sides.
+          g.save();g.beginPath();edge.forEach((pt,j)=>j?g.lineTo(pt.x,pt.y):g.moveTo(pt.x,pt.y));
+          g.strokeStyle='rgba(207,222,196,.44)';g.lineWidth=Math.max(.7,S*.025);g.stroke();g.restore();
         }
         g.restore();
       }

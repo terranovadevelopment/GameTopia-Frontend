@@ -1243,7 +1243,7 @@ window.armServerRequest=async function(path,options={}){
      inspectPanel.replaceChildren();
      const heading=document.createElement('div');heading.style.cssText='display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px';
      const title=document.createElement('strong');title.textContent=unit.name||unit.designation||String(unit.id);title.style.color=unit.side==='Red'?'#ff6969':'#74b7ff';
-     const close=document.createElement('button');close.textContent='✕';close.setAttribute('aria-label','Close division report');close.onclick=()=>{inspectPanel.hidden=true;inspectedUnitId=null;inspectedSource=null;inspectedTarget=null;inspectedSourcePoint=null;inspectedBattleShots=[];inspectedShotId=null;selectShotTarget=null;cycleShotTarget=null;updateBattlePointer()};heading.append(title,close);inspectPanel.append(heading);
+     const close=document.createElement('button');close.textContent='✕';close.setAttribute('aria-label','Close division report');close.style.cssText='pointer-events:auto;cursor:pointer;position:relative;z-index:1;min-width:30px;min-height:30px';close.addEventListener('pointerdown',e=>e.stopPropagation());close.onclick=()=>{inspectPanel.hidden=true;inspectedUnitId=null;inspectedSource=null;inspectedTarget=null;inspectedSourcePoint=null;inspectedBattleShots=[];inspectedShotId=null;selectShotTarget=null;cycleShotTarget=null;updateBattlePointer()};heading.append(title,close);inspectPanel.append(heading);
      const preUnit=event.preCombat?.[String(unit.id)];
      const morale=Number(preUnit?.effectiveness??event.endingMorale?.[String(unit.id)]??unit.effectiveness);
      const failed=Number(unit.moraleFailureStreak)>0||unit.moraleState==='FAILING'||unit.moraleStatus==='FAILING'||unit.failedMorale===true;
@@ -1375,6 +1375,8 @@ window.armServerRequest=async function(path,options={}){
    table.append(tbody);body.append(table);
    const canvasRect=renderer.canvas.getBoundingClientRect(),battlePos=renderer.worldPixel(event.hex.col,event.hex.row);
    const bx=canvasRect.left+battlePos.x*canvasRect.width/renderer.dims.w;
+   // Do not let a map drag capture mouse input once the firing window is open.
+   if(renderer.canvas){try{for(const id of [1,2,3,4,5])if(renderer.canvas.hasPointerCapture?.(id))renderer.canvas.releasePointerCapture(id)}catch(_){}}
    battleDialog.hidden=false;battleDialog.style.transform='none';battleDialog.style.top=Math.max(78,Math.min(innerHeight-battleDialog.offsetHeight-12,canvasRect.top+20))+'px';
    const dw=battleDialog.offsetWidth, gap=Math.max(106,renderer.size*1.2+75),right=bx+gap,left=bx-gap-dw;
    battleDialog.style.left=(right+dw<innerWidth-8?right:left>8?left:Math.max(8,Math.min(innerWidth-dw-8,right)))+'px';
@@ -1417,7 +1419,14 @@ window.armServerRequest=async function(path,options={}){
    await new Promise(resolve=>{
      const panel=document.createElement('section');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');
      panel.style.cssText='position:fixed;z-index:100020;width:min(410px,92vw);background:#10283c;color:#fff;border:2px solid #e2ad58;border-radius:9px;padding:18px;box-shadow:0 15px 30px #000b;font:15px/1.5 Arial';
-     const name=document.createElement('h2');name.textContent=title+' — '+(unit?.name||event.unitId||'Division');name.style.cssText='margin:0;cursor:move';panel.append(name);
+     const side=unit?.side||event.side||'Blue';
+     const nation=side==='Red'?'Redonia':'Bluenstein';
+     const headline=document.createElement('div');headline.style.cssText='display:flex;align-items:center;gap:12px';
+     const soldier=document.createElement('img');soldier.src='assets/battle-winner-'+(side==='Red'?'red':'blue')+'.png';
+     soldier.alt=(side==='Red'?'Red':'Blue')+' soldier representing the '+nation+' division '+title.toLowerCase();
+     soldier.style.cssText='height:72px;width:auto;max-width:55px;object-fit:contain;flex:0 0 auto';
+     const name=document.createElement('h2');name.textContent=nation+' — '+title+' — '+(unit?.name||event.unitId||'Division');name.style.cssText='margin:0;cursor:move;font-size:19px';
+     headline.append(soldier,name);panel.append(headline);
      const detail=document.createElement('p');detail.textContent=event.type==='surrender'?'The division has surrendered.':event.type==='retreat-blocked'?'Retreat was blocked.':'This division must retreat after failing morale.';panel.append(detail);
      const extra=Math.max(0,Number(event.extraCasualties)||0);const losses=document.createElement('p');losses.textContent=(event.enemyZoc?'Enemy ZOC retreat casualties: ':'Additional retreat casualties: ')+extra.toLocaleString();panel.append(losses);
      if(event.from&&event.to){const destination=document.createElement('p');destination.textContent=`Retreat: (${event.from.col}, ${event.from.row}) → (${event.to.col}, ${event.to.row}). Movement begins after acknowledgment.`;panel.append(destination);}
@@ -1430,12 +1439,32 @@ window.armServerRequest=async function(path,options={}){
      renderer.visualPositions.set(unit.id,{col:event.to.col,row:event.to.row});renderer.render();
    }
  }
+ // M6.213: a production event is authoritative only after its matching new
+ // division has materialized in the new-day roster. Reconcile immediately when
+ // announcing it, not one more turn later.
+ async function materializeProducedDivision(event,day,renderer){
+   const game=window.ARMAGEDDON_M2;
+   if(!game?.scenario?.divisions||!event.unitId)return false;
+   try{
+     const result=await api(base+'/positions?token='+encodeURIComponent(ident.token));
+     if(Number(result.day)!==Number(day))throw Error('Server day differs from replay day');
+     const updated=(result.divisions||[]).find(d=>String(d.id)===String(event.unitId));
+     if(!updated)throw Error('Production event unit not in authoritative roster');
+     if(!game.scenario.divisions.some(u=>String(u.id)===String(updated.id))){
+       game.scenario.divisions.push({...updated,stance:'Hold'});
+       trace('production-unit-materialized',{day,id:updated.id,hex:[updated.col,updated.row]});
+     }
+     renderer.refreshHexControl?.();renderer.render();
+     return true;
+   }catch(error){trace('production-unit-materialize-failed',{day,id:event.unitId,error:String(error)});return false;}
+ }
  async function showProductionReport(event,day,renderer){
    const mine=current?.players?.find(p=>p.id===ident.playerId);if(event.side!==mine?.side)return;
+   const displayed=await materializeProducedDivision(event,day,renderer);
    if(event.hex)await centerCombat(renderer,event.hex);
    return new Promise(resolve=>{const panel=document.createElement('section');panel.style.cssText='position:fixed;z-index:100020;width:min(390px,calc(100vw - 35px));background:#10283c;border:2px solid #e2ad58;border-radius:10px;color:white;padding:18px;font:15px/1.5 Arial;box-shadow:0 12px 30px #0009';
    const h=document.createElement('h2');h.textContent='New Division Produced';h.style.cssText='margin:0 0 8px;cursor:move';
-   const desc=document.createElement('p');desc.textContent=(event.unitType||event.typeName||'Division')+' produced at '+(event.cityName||'city')+' · '+(event.controllerName||event.side||'Unknown controller')+' controls it.';
+   const desc=document.createElement('p');desc.textContent=(event.unitType||event.typeName||'Division')+' produced at '+(event.cityName||'city')+' · '+(event.controllerName||event.side||'Unknown controller')+' controls it.'+(displayed?' It is now on the map and will be available to order during Planning.':' The map has not yet confirmed its deployment; the game will retry synchronization.');
    const btn=document.createElement('button');btn.textContent='Acknowledge';btn.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:36px;line-height:1;padding:10px 18px;background:#235c8b;color:white;border:1px solid #bfd1df;border-radius:5px';btn.onclick=()=>{clear();panel.remove();resolve()};panel.append(h,desc,btn);document.body.append(panel);const clear=anchoredReplayNotice(panel,h,renderer,event.hex);});
  }
  function nextFrame(){return new Promise(resolve=>requestAnimationFrame(resolve))}
@@ -1467,9 +1496,11 @@ window.armServerRequest=async function(path,options={}){
    // Hex offset coordinates are discrete: interpolate centers in pixels, never
    // fractional columns/rows (parity flips make diagonal moves jump sideways).
    const pixelTween=(from,to,f)=>{
-     const a=renderer.worldPixel(from.col,from.row),b=renderer.worldPixel(to.col,to.row);
-     return {pixelX:(a.x+(b.x-a.x)*f-renderer.pan.x)/renderer.zoom,
-             pixelY:(a.y+(b.y-a.y)*f-renderer.pan.y)/renderer.zoom};
+     // Stable unpanned/unzoomed world positions. The renderer adds current camera
+     // pan and zoom on every frame, including while the player drags the map.
+     const base=renderer.baseSize, world=hex=>{const q=hex.col-Math.floor(hex.row/2);return {x:base*Math.sqrt(3)*(q+hex.row/2),y:base*1.5*hex.row}};
+     const a=world(from),b=world(to);
+     return {pixelX:a.x+(b.x-a.x)*f,pixelY:a.y+(b.y-a.y)*f};
    };
    const moves=(events||[]).filter(e=>e.type==='move'&&e.from&&e.to&&byId.has(String(e.unitId)));
    const tiPositions=new Map((events||[]).filter(e=>e.type==='ti-positions').map(e=>[Number(e.ti),e.positions]));
@@ -1536,6 +1567,15 @@ window.armServerRequest=async function(path,options={}){
    const result=await api(base+'/positions?token='+encodeURIComponent(ident.token));
    trace('positions-response',{requestedDay:day,responseDay:result.day,divisions:result.divisions?.length});if(result.day!==day){trace('position-day-mismatch',{day,responseDay:result.day});return;}
    const byId=new Map(result.divisions.map(d=>[String(d.id),d]));
+   // M6.213: units produced after the initial battlefield was created must
+   // be inserted, not ignored. This also restores them after reconnect/load.
+   const localIds=new Set(game.scenario.divisions.map(d=>String(d.id)));
+   for(const updated of result.divisions){
+     if(localIds.has(String(updated.id)))continue;
+     game.scenario.divisions.push({...updated,stance:'Hold'});
+     localIds.add(String(updated.id));
+     trace('server-new-division-added',{day,id:String(updated.id),side:updated.side,col:updated.col,row:updated.row});
+   }
    for(const unit of game.scenario.divisions){const updated=byId.get(String(unit.id));if(!updated)continue;
      unit.col=updated.col;unit.row=updated.row;unit.tis=updated.tis;
      if(Number.isFinite(updated.strength))unit.strength=updated.strength;
@@ -1555,8 +1595,15 @@ window.armServerRequest=async function(path,options={}){
      }
    }
    clock.engine.day=day;clock.engine.ti=0;
-   // Server orders have been consumed; clear local route overlays.
+   // M6.214: remaining server orders survive nightfall. Rebuild the route
+   // overlay from authoritative current-day orders, not prior-day animation.
    game.planner.routes.clear();
+   for(const order of current?.myOrders||[]){
+     if(order.type!=='move'||!Array.isArray(order.route)||!order.route.length)continue;
+     const owner=current?.assetOwners?.['unit:'+String(order.unitId)];
+     if(owner!==ident.playerId)continue;
+     game.planner.routes.set(String(order.unitId),order.route.map(p=>({col:p.col,row:p.row,pauseCount:Number(p.pauseCount)||0})));
+   }
    game.renderer.visualPositions?.clear();game.renderer.spottingPositions?.clear();game.renderer.render();
    const label=document.getElementById('tiLabel');if(label)label.textContent='Day '+day+' · Planning';
    const gameClock=document.getElementById('gameClock');if(gameClock)gameClock.textContent='Turn '+day+' 7:00';
@@ -1580,7 +1627,7 @@ window.armServerRequest=async function(path,options={}){
    const game=window.ARMAGEDDON_M2;if(!game?.planner||!game?.scenario)throw Error('Battlefield not initialized in browser');
    const me=current.players.find(p=>p.id===ident.playerId);
    const mode=window.ARMAGEDDON_VIEW_MODE;
-   const orders=game.scenario.divisions.filter(d=>d.side===me.side&&!d.destroyed&&game.planner.get(d.id).length)
+   const orders=game.scenario.divisions.filter(d=>d.side===me.side&&!d.destroyed&&current?.assetOwners?.['unit:'+String(d.id)]===ident.playerId&&game.planner.get(d.id).length)
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
@@ -1618,6 +1665,7 @@ window.armServerRequest=async function(path,options={}){
    else {pacificationRevealTi=0;pacPanel.hidden=true;pacCityHex=null;updatePacificationArrow();}
    if(st.day>1&&st.executionEvents?.length)window.ARMAGEDDON_SET_SERVER_REPORT?.(st.day-1,st.executionEvents,st.battlefield);
    trace('server-state',{day:st.day,phase:st.phase,status:st.executionStatus,ready:st.players.filter(p=>p.ready).length,events:st.executionEvents?.length,trace:st.executionTrace?.slice(-5)});
+   if(st.phase==='planning'&&st.day===lastAppliedDay&&window.ARMAGEDDON_M2?.planner){const planner=window.ARMAGEDDON_M2.planner;for(const o of st.myOrders||[]){if(o.type!=='move'||!Array.isArray(o.route)||!o.route.length||st.assetOwners?.['unit:'+String(o.unitId)]!==ident.playerId)continue;if(!planner.get(String(o.unitId)).length)planner.routes.set(String(o.unitId),o.route.map(p=>({col:p.col,row:p.row,pauseCount:Number(p.pauseCount)||0})));}window.ARMAGEDDON_M2.renderer?.render();}
    // Clear planned route overlays as soon as server leaves Planning.
    // Do not erase orders while waiting for other players to become Ready.
    if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}

@@ -573,7 +573,7 @@
       else if(unitKey||cityKey)toggleAsset(unitKey||cityKey);
       return true},get active(){return mode}};
   })();
-  canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;const p=localPoint(e);down=p;moved=false;drag={x:p.x,y:p.y,panX:renderer.pan.x,panY:renderer.pan.y,pointerId:e.pointerId};canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointerdown',e=>{if(e.button!==0||document.getElementById('gtBattleReport')?.hidden===false)return;const p=localPoint(e);down=p;moved=false;drag={x:p.x,y:p.y,panX:renderer.pan.x,panY:renderer.pan.y,pointerId:e.pointerId};canvas.setPointerCapture(e.pointerId);});
   const terrainTooltip={hidden:true};
   canvas.addEventListener('pointerleave',()=>{renderer.hoverCell=null;renderer.render();});
   canvas.addEventListener('pointermove',e=>{const p=localPoint(e);

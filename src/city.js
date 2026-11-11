@@ -23,8 +23,9 @@
         const occupying=occupation(s);
         if(occupying===s.owner){s.occupier=null;s.pacification=0;continue;}
         if(occupying!==s.occupier){s.occupier=occupying;s.pacification=0;}
-        // Occupation begins immediately, but pacification advances only at day end.
-        if(occupying){s.production=null;s.productions={};}
+        // Never destroy a pending production job when an enemy gains control.
+        // Any pacification > 0 freezes it, preserving the owner's RP investment
+        // and the opportunity to cancel for a full refund.
       }
     }
     function advancePacification(){
@@ -66,21 +67,22 @@
     }
     function render(){onChange();if(!active||panel.hidden)return;const s=active,side=owner(s);title.textContent=s.city.name+(s.city.isCapital?' ★':'');title.style.color=side==='Blue'?'#64b0ff':'#ff7474';body.replaceChildren();const ownerId=global.ARMAGEDDON_ASSET_OWNERS?.['city:'+s.city.name];const ownerName=ownerId?global.ARMAGEDDON_PLAYER_NAMES?.[ownerId]:null;const controller=ownerName||((side==='Blue'?'Bluenstein':'Redonia')+' AI');line('Controlled by',controller);const controllerValue=body.lastElementChild?.querySelector('strong');if(controllerValue)controllerValue.style.color=global.ARMAGEDDON_PLAYER_COLORS?.[ownerId]||(side==='Blue'?'#64b0ff':'#ff7474');line('Pacification',s.occupier?`${s.pacification}/5 (${s.occupier} controlling)`:'None');if(canManage(s)&&!s.occupier)line('Resource Points (RP)',treasury[side].toFixed(1));line('City hexes',String(cityHexCount(s)));
       if(!showEnemyProduction(s)){line('Production','Unknown');}
-      else if(s.occupier||s.pacification>0)body.append(el('p','City under pacification — production unavailable.'));
       else {
+        const paused=Number(s.pacification)>0||!!s.occupier;
+        if(paused){const warning=el('p','PACIFICATION '+s.pacification+'/5 — production paused. Existing jobs will resume when pacification returns to 0. Cancel any job for a full RP refund.');warning.style.cssText='padding:10px;border:2px dashed #ffd34e;border-radius:6px;background:#5c3f1d;color:#fff3be;font-weight:bold';body.append(warning);}
         const slots=productionSlots(s),hexes=productionHexes(s);
         line('Production capacity',hexes.length+' city hexes');
         for(const hex of hexes){
           const key=hex.col+','+hex.row,prod=slots[key];
           const header=el('h3','Production slot '+(hexes.indexOf(hex)+1));header.style.cssText='font-size:13px;margin:13px 0 6px;border-top:1px solid #456078;padding-top:7px';body.append(header);
-          if(prod){line('Producing',prod.type+' · '+prod.remaining+' turns remaining');
+          if(prod){line(paused?'Paused production':'Producing',prod.type+' · '+prod.remaining+' turns remaining');
             if(canManage(s))button('Cancel production',async()=>{
               if(!window.confirm('Cancel '+prod.type+' production and refund '+prod.cost+' RP?'))return;
               try{const result=await sendProduction(s.city.name,'cancel',undefined,hex);
                 if(result?.treasury)Object.assign(treasury,result.treasury);else treasury[side]+=prod.cost;
                 delete slots[key];render();renderer.render();}catch(e){alert('Production cancellation failed: '+e.message)}
             });
-          }else if(canManage(s)){
+          }else if(canManage(s)&&!paused){
             const types=Object.entries(specs).filter(([t,v])=>treasury[side]>=v.cost);
             for(const [type,v] of types)button(type+' · '+v.cost+' RP · '+v.turns+' turns',async()=>{
               try{const result=await sendProduction(s.city.name,'start',type,hex);
@@ -106,7 +108,7 @@
         if(totals[d.side]!==undefined)totals[d.side]+=(maintenanceRates[d.type]||0)*d.strength;
       }
       // Divisions under production pay in proportion to completed turns.
-      for(const s of state)for(const p of Object.values(productionSlots(s))){if(!p)continue;
+      for(const s of state)for(const p of Object.values(productionSlots(s))){if(!p||s.occupier||Number(s.pacification)>0)continue;
         const spec=specs[p.type];if(!spec||totals[p.side]===undefined)continue;
         const elapsed=Math.max(0,Math.min(spec.turns,spec.turns-p.remaining));
         totals[p.side]+=(maintenanceRates[p.type]||0)*10000*elapsed/spec.turns;
@@ -161,6 +163,7 @@
     function finishTurn(){
       advancePacification();
       for(const s of state)for(const [slot,prod] of Object.entries(productionSlots(s))){
+        if(s.occupier||Number(s.pacification)>0)continue; // No progress or deployment during pacification.
         if(prod.remaining>0)prod.remaining--;
         if(prod.remaining===0){const [col,row]=slot.split(',').map(Number);
           const completed={type:prod.type,city:s,side:prod.side,origin:{col,row}};
