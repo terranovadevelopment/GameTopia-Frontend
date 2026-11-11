@@ -215,9 +215,16 @@
       const stat=(label,value,kind='')=>{const card=make('div','report-stat '+kind);card.append(make('span','',label),make('strong','',value));grid.append(card);};
       const fmt=n=>Number(n||0).toLocaleString();
       stat('Combat engagements',fmt(r.engagements));stat('Movement events',fmt(r.moves));
-      stat('Blue casualties',fmt(r.losses?.Blue),'blue');stat('Red casualties',fmt(r.losses?.Red),'red');
-      stat('Blue troops remaining',fmt(r.remaining?.Blue),'blue');stat('Red troops remaining',fmt(r.remaining?.Red),'red');
-      stat('Blue divisions lost',fmt(r.destroyed?.Blue),'blue');stat('Red divisions lost',fmt(r.destroyed?.Red),'red');
+      // M6.209: a nation's military statistics are private except in Both Sides playtest.
+      const reportBoth=window.ARMAGEDDON_VIEW_MODE==='Both';
+      const reportSide=window.ARMAGEDDON_PLAYER_SIDE==='Red'?'Red':'Blue';
+      for(const side of ['Blue','Red']){
+        if(!reportBoth&&side!==reportSide)continue;
+        const title=side==='Blue'?'Bluenstein':'Redonia';
+        stat(title+' casualties',fmt(r.losses?.[side]),side.toLowerCase());
+        stat(title+' troops remaining',fmt(r.remaining?.[side]),side.toLowerCase());
+        stat(title+' divisions lost',fmt(r.destroyed?.[side]),side.toLowerCase());
+      }
       const other=make('section','report-section');other.append(make('h3','','Operations & logistics'));body.append(other);
       const accountingDay=Number(r.accountingDay)||r.day+1;other.append(make('p','report-accounting-day','RP settlement for Day '+accountingDay+' Planning — income and maintenance posted before orders.'));const list=make('div','report-nations');other.append(list);
       const fmtRP=(value,decimal=false)=>value!==null&&value!==undefined&&Number.isFinite(Number(value))?(decimal?Number(value).toFixed(1):Math.round(Number(value)).toLocaleString('en-US'))+' RP':'Not recorded';
@@ -225,6 +232,7 @@
       const fmtRPInteger=value=>fmtRP(value,false);
       const sides=[['Blue','Bluenstein'],['Red','Redonia']];
       for(const [side,nation] of sides){
+        if(!reportBoth&&side!==reportSide)continue;
         const column=make('section','report-nation '+side.toLowerCase());list.append(column);
         column.append(make('h4','',nation));
         const item=(label,value)=>{const row=make('div','report-operation');row.append(make('span','',label),make('strong','',value));column.append(row);};
@@ -588,7 +596,7 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
       if(cities.deployment){if(hex&&!cities.deployAt(hex.col,hex.row))status.textContent='Invalid deployment: choose an empty, friendly-controlled city hex belonging to the producing city.';drag=null;down=null;canvas.classList.remove('dragging');return;}
       if(d){
         sound.uiCue('select');selectedCity=null;renderer.selectedCityHex=null;selectedId=d.id;stanceOffset=null;renderer.setSelection(selectedId);updateReport(d);refreshChoices();
-        status.textContent=(d.side===(window.ARMAGEDDON_PLAYER_SIDE||'Blue')||planner.playtest)?'Selected '+d.name+'. Right-click a destination to plot; right-click a route hex or the division to add a 1-TI pause.':'Enemy division selected.';
+        status.textContent=(d.side===(window.ARMAGEDDON_PLAYER_SIDE||'Blue')||planner.playtest)?'Selected '+d.name+'. Left-click selects a unit; Shift+left-click an occupied city opens its city report. Right-click a route hex or the division to add a 1-TI pause.':'Enemy division selected.';
       }else{
         sound.uiCue('open');selectedCity=null;renderer.selectedCityHex=null;selectedId=null;renderer.setSelection(null);closeDivisionPopup();status.textContent='Selection cleared.';
       }

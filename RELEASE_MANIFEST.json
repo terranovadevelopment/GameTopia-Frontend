@@ -171,5 +171,8 @@
     "music/exciting-trailer.mp3": "11876fdee63d983fe9cb6dd4e3140d49b53055f47f04480e1ddacbde4628b7c8",
     "music/at-launch.mp3": "52215f8ad85bfbced05752052adadd58bffa5caef16696f6cea4d9d49a647a8e",
     "music/black-vortex.mp3": "a00af27dc5d6daa2d6f00c417c921f077c9092a986ad279323ce457689b5cad8"
-  }
+  },
+  "version": "M6.209",
+  "frontend": "M6.209",
+  "notes": "M6.209 frontend playtest fixes; backend M6.198 unchanged."
 }

@@ -176,7 +176,9 @@
    if(!game?.scenario?.divisions||!game?.renderer){trace('replay-no-game',{day});await applyServerPositions(day);return}
    // M6.88: execution replay must never display Planning route overlays.
    // Server orders were submitted before Ready; clearing this map affects visuals only.
-   game.planner?.routes?.clear();
+   // Do not destroy planning routes when replay begins. Their remaining
+   // waypoints are reconciled against the authoritative move events below.
+   window.ARMAGEDDON_EXECUTION_HIDE_ROUTES=true;
    replayBusy=true;replayPaused=false;replaySkip=false;replaySpeed=1;
    replayBar.hidden=false;replayBar.querySelector('#gtReplayPause').textContent='Pause';
    const renderer=game.renderer, units=game.scenario.divisions;
@@ -244,10 +246,21 @@
          renderer.render();
        }
        for(const e of surrenders.filter(e=>e.ti===ti)){window.ARMAGEDDON_SOUND?.surrender?.();const u=byId.get(String(e.unitId));if(u)u.destroyed=true;renderer.render();}
-       for(const event of productions.filter(e=>e.ti===ti)){if(replaySkip)break;await showProductionReport(event,day,renderer);}
+       for(const event of productions.filter(e=>e.ti===ti)){
+         if(replaySkip)break;
+         // Production is authoritative at TI 10, so place its counter at the
+         // same moment the arrival notification is displayed.
+         if(event.unitId&&!byId.has(String(event.unitId))&&event.hex){
+           const fresh={id:event.unitId,name:event.unitType+' Reinforcement',side:event.side,type:event.unitType||'Infantry',
+             col:event.hex.col,row:event.hex.row,strength:10000,effectiveness:100,experience:90,supply:1,tis:0};
+           units.push(fresh);byId.set(String(fresh.id),fresh);renderer.render();
+         }
+         await showProductionReport(event,day,renderer);
+       }
      }
    }finally{
-     await applyServerPositions(day);renderer.visualPositions.clear();renderer.render();
+     await applyServerPositions(day);renderer.visualPositions.clear();
+     window.ARMAGEDDON_EXECUTION_HIDE_ROUTES=false;renderer.render();
      replayBar.hidden=true;replayBusy=false;trace('replay-complete',{day,skipped:replaySkip,moves:moves.length});if(current?.day===day)void acknowledgePacification(current);
    }
  }
@@ -262,6 +275,10 @@
      game.scenario.divisions.push({...updated,type:updated.type||'Infantry',side:updated.side||'Blue',name:updated.name||String(updated.id)});
    for(const unit of game.scenario.divisions){const updated=byId.get(String(unit.id));if(!updated)continue;
      unit.col=updated.col;unit.row=updated.row;unit.tis=updated.tis;
+     if(Number.isFinite(updated.supply))unit.supply=updated.supply;
+     if(Number.isFinite(updated.experience))unit.experience=updated.experience;
+     if(Number.isFinite(updated.replacementsOnWay))unit.replacementsOnWay=updated.replacementsOnWay;
+     if(Number.isFinite(updated.totalReplacementsReceived))unit.totalReplacementsReceived=updated.totalReplacementsReceived;
      if(Number.isFinite(updated.strength))unit.strength=updated.strength;
      if(Number.isFinite(updated.effectiveness))unit.effectiveness=updated.effectiveness;
      if(Number.isFinite(updated.totalCasualties))unit.totalCasualties=updated.totalCasualties;
@@ -274,8 +291,28 @@
      cityState.render?.();
    }
    clock.engine.day=day;clock.engine.ti=0;
-   // Server orders have been consumed; clear local route overlays.
-   game.planner.routes.clear();
+   // M6.209: remove waypoints actually traversed, leaving the residual plot
+   // visible in the next Planning phase. The server must independently retain
+   // the authoritative route; local graphics cannot confer server orders.
+   const events=current?.executionEvents||[];
+   const unitMap=new Map(game.scenario.divisions.map(u=>[String(u.id),u]));
+   for(const [routeId,waypoints] of [...game.planner.routes.entries()]){
+     const moved=events.filter(e=>e.type==='move'&&String(e.unitId)===String(routeId));
+     if(!Array.isArray(waypoints)||!waypoints.length)continue;
+     const unit=unitMap.get(String(routeId));
+     if(!unit||unit.destroyed){game.planner.routes.delete(routeId);continue;}
+     let consumed=0;
+     for(const ev of moved){
+       const step=waypoints.findIndex((p,i)=>i>=consumed&&p.col===ev.to?.col&&p.row===ev.to?.row);
+       if(step>=consumed)consumed=step+1;
+     }
+     if(consumed)game.planner.routes.set(routeId,waypoints.slice(consumed));
+   }
+   // Restore the original movement target association for positive credit.
+   if(clock.engine.lastRouteHeads)for(const unit of game.scenario.divisions){
+     const route=game.planner.get(unit.id);
+     clock.engine.lastRouteHeads.set(unit.id,route?.length?route[0].col+','+route[0].row:null);
+   }
    game.renderer.visualPositions?.clear();game.renderer.render();
    const label=document.getElementById('tiLabel');if(label)label.textContent='Day '+day+' · Planning';
    const gameClock=document.getElementById('gameClock');if(gameClock)gameClock.textContent='Turn '+day+' 7:00';
@@ -316,7 +353,8 @@
    if(st.day===lastAppliedDay&&!replayBusy)void acknowledgePacification(st);trace('server-state',{day:st.day,phase:st.phase,status:st.executionStatus,ready:st.players.filter(p=>p.role==='active'&&p.online&&p.ready).length,events:st.executionEvents?.length,trace:st.executionTrace?.slice(-5)});
    // Clear planned route overlays as soon as server leaves Planning.
    // Do not erase orders while waiting for other players to become Ready.
-   if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}
+   if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_EXECUTION_HIDE_ROUTES=true;window.ARMAGEDDON_M2?.renderer?.render();}
+   if(st.phase==='planning'&&!replayBusy)window.ARMAGEDDON_EXECUTION_HIDE_ROUTES=false;
    if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else await applyServerPositions(st.day);}
 status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.online&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.phase==='planning'&&st.players.some(p=>p.role==='active'&&!p.online))status.textContent+=' · Offline players block execution until they reconnect and mark Ready, or are explicitly kicked by their side’s senior player';if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent='#'+p.seniority+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.online?(p.ready?'Ready':'Not Ready'):'Offline · Not Ready';state.style.color=(p.online&&p.ready)?'#7de3a3':'#ffbd62';line.append(name,state);
  if(p.id!==ident.playerId&&p.role==='active'&&st.phase==='planning'&&st.players.filter(x=>x.role==='active'&&x.side===p.side).sort((a,b)=>a.seniority-b.seniority)[0]?.id===ident.playerId){

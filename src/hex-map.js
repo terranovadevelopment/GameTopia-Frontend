@@ -490,10 +490,26 @@
           g.lineCap='butt';g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke();g.restore();
         }
       }
-      // Pure blue lake fill; no embedded shorelines or vegetation.
+      // M6.209: keep an open-water center but tint lake edges with the exact
+      // adjacent LAND terrain. This does not change passability or hex borders.
       for(const p of points.filter(p=>p.t==='Lake')){
-        g.save();g.beginPath();hexPoints(p.x,p.y,S+.4).forEach((v,i)=>i?g.lineTo(v.x,v.y):g.moveTo(v.x,v.y));g.closePath();
-        g.fillStyle='#126da4';g.fill();g.restore();
+        g.save();g.beginPath();const vertices=hexPoints(p.x,p.y,S+.4);
+        vertices.forEach((v,i)=>i?g.lineTo(v.x,v.y):g.moveTo(v.x,v.y));g.closePath();g.clip();
+        g.fillStyle='#126da4';g.fillRect(p.x-S*1.2,p.y-S*1.2,S*2.4,S*2.4);
+        const shore={Plains:'#b6ae79',Forest:'#557b49',Hills:'#99936b',Mountains:'#7b7772',Urban:'#aaa79b',Swamp:'#548279',River:'#5193a5'};
+        for(let i=0;i<6;i++){
+          const a=vertices[i],b=vertices[(i+1)%6],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+          const nx=(mx-p.x)/Math.max(1,Math.hypot(mx-p.x,my-p.y)),ny=(my-p.y)/Math.max(1,Math.hypot(mx-p.x,my-p.y));
+          const axial=pixelToAxial(mx+nx*S*.72,my+ny*S*.72,S),offset=offsetFromAxial(axial.q,axial.r);
+          const other=byCoord.get(hexKey(offset.col,offset.row));
+          if(!other||other.t==='Lake'||!shore[other.t])continue;
+          const inner=S*.45;
+          const grad=g.createLinearGradient(mx-nx*inner,my-ny*inner,mx+nx*S*.08,my+ny*S*.08);
+          grad.addColorStop(0,'#126da4');grad.addColorStop(.62,'#377b9d');grad.addColorStop(1,shore[other.t]);
+          g.globalAlpha=.60;g.strokeStyle=grad;g.lineWidth=inner*1.65;g.lineCap='round';
+          g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke();
+        }
+        g.restore();
       }
       // Draw smooth connected waterways and roads. Previously this helper was missing,
       // causing a ReferenceError midway through map generation (the all-green screen).
@@ -765,7 +781,7 @@
       for(const d of routeDrawOrder){
         if(d.destroyed||d.strength<=0)continue;
         if(d.side!==(window.ARMAGEDDON_PLAYER_SIDE||"Blue")&&window.ARMAGEDDON_VIEW_MODE!=="Both")continue;
-        const route=this.routes.get(d.id);
+        const route=this.routes.get(d.id)||this.routes.get(String(d.id));
         if((d.pauseTIs||0)>0){
           const p=this.worldPixel(d.col,d.row);
           ctx.save();ctx.font='bold 15px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -774,7 +790,18 @@
           ctx.strokeText(label,p.x+this.size*.45,p.y-this.size*.5);
           ctx.fillText(label,p.x+this.size*.45,p.y-this.size*.5);ctx.restore();
         }
-        if(!route.length)continue;
+        if(!route?.length)continue;
+        // On a new day the first waypoint shows hours STILL required for entry.
+        // Example: a 13-hour entry with 10 hours credited reads 'NEXT 3h'.
+        const first=route[0],unitTerrain=window.ARMAGEDDON_DATA.terrainAt;
+        const firstCost=window.ARMAGEDDON_MOVEMENT.cost(d,unitTerrain(first.col,first.row),d,first,unitTerrain);
+        const remainingFirst=Number.isFinite(firstCost)?Math.max(0,Math.ceil(firstCost-(Number(d.tis)||0)-1e-9)):Infinity;
+        const anchor=this.worldPixel(d.col,d.row);
+        ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 11px Arial';
+        const nextLabel='NEXT '+(Number.isFinite(remainingFirst)?remainingFirst+'h':'∞');
+        ctx.lineWidth=3;ctx.strokeStyle='#081c2a';ctx.fillStyle='#ffefad';
+        ctx.strokeText(nextLabel,anchor.x,anchor.y+this.size*.77);
+        ctx.fillText(nextLabel,anchor.x,anchor.y+this.size*.77);ctx.restore();
         const selected=!window.ARMAGEDDON_ROUTES_FROZEN&&(d.id===this.selectedId||d.id===window.ARMAGEDDON_READY_GOLD_ROUTE);
         ctx.save();
         ctx.strokeStyle=selected?"#ffdf55":"#f14b55";
