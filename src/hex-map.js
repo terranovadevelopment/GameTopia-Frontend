@@ -544,7 +544,7 @@
             const t=j/pieces;
             const low=Math.sin(Math.PI*t),wave=Math.sin(2*Math.PI*t)*bendA*.62+Math.sin(3*Math.PI*t)*bendB*.21;
             const fine=(noise(p.c*5.7+i*2.1+t*5.5,p.r*4.2-i+t*3.2)-.5)*.035;
-            const margin=S*(.22+low*(.18+wave*.22+fine));
+            const margin=S*(.035+low*(.055+wave*.055+fine*.35));
             edge.push({x:a.x+(b.x-a.x)*t+nx*margin,y:a.y+(b.y-a.y)*t+ny*margin});
           }
           // A rounded shoreline interpolates each intermediate point; avoid
@@ -574,8 +574,8 @@
           // A thin translucent waterline softens the coast without obscuring
           // the clearly drawn hex boundaries over the entire map.
           g.save();g.beginPath();smoothBank();
-          g.strokeStyle='rgba(180,215,177,.55)';g.lineWidth=Math.max(1.2,S*.057);
-          g.shadowColor='rgba(17,89,112,.65)';g.shadowBlur=S*.12;g.stroke();g.restore();
+          g.strokeStyle='rgba(155,198,172,.28)';g.lineWidth=Math.max(.6,S*.024);
+          g.shadowColor='rgba(17,89,112,.18)';g.shadowBlur=S*.035;g.stroke();g.restore();
         }
         g.restore();
       }

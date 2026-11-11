@@ -1184,7 +1184,7 @@ window.armServerRequest=async function(path,options={}){
    const soldier=document.createElement('img');
    soldier.src='assets/battle-winner-'+(winningSide==='Blue'?'blue':winningSide==='Red'?'red':'white')+'.png';
    soldier.alt=winningSide==='Blue'?'Blue soldier: Bluenstein victory':winningSide==='Red'?'Red soldier: Redonia victory':'White soldier: draw';
-   soldier.style.cssText='height:72px;width:auto;max-width:55px;object-fit:contain;flex:0 0 auto;display:block';
+   soldier.style.cssText='height:72px;width:auto;max-width:55px;object-fit:contain;flex:0 0 auto;display:block;background:#f5eddc;border:2px solid #b9c7ca;border-radius:5px;padding:2px;filter:drop-shadow(0 1px 3px #1118)';
    const winnerInfo=document.createElement('div');
    winnerInfo.style.cssText='display:flex;flex-direction:column;gap:4px;flex:1;min-width:0';
    winnerInfo.append(winnerText,lossText);
@@ -1378,7 +1378,7 @@ window.armServerRequest=async function(path,options={}){
    // Do not let a map drag capture mouse input once the firing window is open.
    if(renderer.canvas){try{for(const id of [1,2,3,4,5])if(renderer.canvas.hasPointerCapture?.(id))renderer.canvas.releasePointerCapture(id)}catch(_){}}
    battleDialog.hidden=false;battleDialog.style.transform='none';battleDialog.style.top=Math.max(78,Math.min(innerHeight-battleDialog.offsetHeight-12,canvasRect.top+20))+'px';
-   const dw=battleDialog.offsetWidth, gap=Math.max(106,renderer.size*1.2+75),right=bx+gap,left=bx-gap-dw;
+   const dw=battleDialog.offsetWidth, gap=240,right=bx+gap,left=bx-gap-dw; // M6.218: ~2.5 in at CSS 96px/in
    battleDialog.style.left=(right+dw<innerWidth-8?right:left>8?left:Math.max(8,Math.min(innerWidth-dw-8,right)))+'px';
    battlePointer.style.display='block';updateBattlePointer();
    // Map pan/zoom and draggable reports change pixel positions independently
@@ -1431,7 +1431,7 @@ window.armServerRequest=async function(path,options={}){
      const name=document.createElement('h2');name.textContent=nation+' — '+title+' — '+(unit?.name||event.unitId||'Division');name.style.cssText='margin:0;cursor:move;font-size:19px';
      headline.append(soldier,name);panel.append(headline);
      const detail=document.createElement('p');detail.textContent=event.type==='surrender'?'The division has surrendered.':event.type==='retreat-blocked'?'Retreat was blocked.':'This division must retreat after failing morale.';panel.append(detail);
-     const extra=Math.max(0,Number(event.extraCasualties)||0);const losses=document.createElement('p');losses.textContent=(event.enemyZoc?'Enemy ZOC retreat casualties: ':'Additional retreat casualties: ')+extra.toLocaleString();panel.append(losses);
+     const extra=Math.max(0,Number(event.extraCasualties)||0),combat=Math.max(0,Number(event.combatCasualties)||0);const losses=document.createElement('p');losses.textContent=(event.enemyZoc?'Enemy ZOC retreat: '+combat.toLocaleString()+' combat + '+extra.toLocaleString()+' extra casualties':'Additional retreat casualties: '+extra.toLocaleString());panel.append(losses);
      if(event.from&&event.to){const destination=document.createElement('p');destination.textContent=`Retreat: (${event.from.col}, ${event.from.row}) → (${event.to.col}, ${event.to.row}). Movement begins after acknowledgment.`;panel.append(destination);}
      const button=document.createElement('button');button.textContent='Acknowledge';button.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:36px;line-height:1;padding:9px 18px;background:#245b86;color:#fff;border:1px solid #b2d5ef;border-radius:5px';button.onclick=()=>{window.ARMAGEDDON_SOUND?.unlock?.();clear();panel.remove();resolve();};panel.append(button);document.body.append(panel);const clear=anchoredReplayNotice(panel,name,renderer,source);button.focus();
    });
@@ -1558,7 +1558,7 @@ window.armServerRequest=async function(path,options={}){
        while(!pacPanel.hidden){await new Promise(r=>setTimeout(r,100));}
        for(const battle of combats.filter(e=>e.ti===ti)){if(replaySkip)break;await showBattleReport(battle,day,byId,renderer);}
        for(const event of moraleOutcomes.filter(e=>Number(e.ti||10)===ti)){if(replaySkip)break;await showMoraleOutcome(event,byId,renderer);}
-       // M6.217: advances occur AFTER morale/retreat. The server emits them
+       // M6.218: advances occur AFTER morale/retreat. The server emits them
        // at TI 10. Animate from authoritative hex centers, not pan-adjusted pixels.
        for(const advance of (events||[]).filter(e=>e.type==='advance'&&Number(e.ti||10)===ti&&e.from&&e.to)){
          if(replaySkip)break;
@@ -1581,7 +1581,7 @@ window.armServerRequest=async function(path,options={}){
      }
    }finally{
      await applyServerPositions(day);renderer.visualPositions.clear();renderer.spottingPositions?.clear();renderer.refreshHexControl();renderer.render();
-     replayBar.hidden=true;replayBusy=false;if(!replaySkip&&day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();if(executeButton){executeButton.textContent='READY';executeButton.style.background='#15803d';executeButton.style.color='#fff';}pacificationRevealTi=10;if(current)showPacificationNotices(current);trace('replay-complete',{day,skipped:replaySkip,moves:moves.length});
+     replayBar.hidden=true;replayBusy=false;if(day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();if(executeButton){executeButton.textContent='READY';executeButton.style.background='#15803d';executeButton.style.color='#fff';}pacificationRevealTi=10;if(current)showPacificationNotices(current);trace('replay-complete',{day,skipped:replaySkip,moves:moves.length});
    }
  }
  async function applyServerPositions(day){
@@ -1654,7 +1654,7 @@ window.armServerRequest=async function(path,options={}){
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
-  // M6.217: Publish each actual Planning route revision so allied humans can
+  // M6.218: Publish each actual Planning route revision so allied humans can
   // see it on their next state poll. Sending only at Ready hid plotted routes.
   let lastSharedRouteSignature=null, sharingRoutes=false;
   function ownRoutesSignature(){
@@ -1719,7 +1719,7 @@ window.armServerRequest=async function(path,options={}){
    // Clear planned route overlays as soon as server leaves Planning.
    // Do not erase orders while waiting for other players to become Ready.
    if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}
-   if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else await applyServerPositions(st.day);}
+   if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else {await applyServerPositions(st.day);if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();}}
 const loginBadge=box.querySelector('#gtLoginStatus');if(loginBadge){const who=st.players.find(p=>p.id===ident.playerId);loginBadge.textContent=who?.accountId?'Signed in: '+who.name+' · Account ID '+who.accountId:'Guest: '+(who?.name||'Player')+' · Register / Log In via Games Underway';}
 status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}const sameSideSenior=st.players.filter(x=>x.role==='active'&&x.side===me?.side).sort((a,b)=>a.seniority-b.seniority)[0];topKick.hidden=!(me&&sameSideSenior?.id===ident.playerId&&st.phase==='planning');topLeave.hidden=!(me&&me.role==='active');topLeave.disabled=st.phase!=='planning';if(!voice.hidden)renderChannels();syncCommAvailability();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});if(e.message==='Admission required'||e.message==='Active player required'){showRemovedFromGame();return;}status.textContent='Server: '+e.message}}
  ready.onclick=async()=>{try{if(!current||current.phase!=='planning')return;window.ARMAGEDDON_SOUND?.unlock?.();window.ARMAGEDDON_SOUND?.unlockMedia?.();ready.disabled=true;const me=current?.players.find(p=>p.id===ident.playerId);trace('ready-click',{day:current.day,readyBefore:!!me?.ready});if(!me?.ready)await submitPlottedRoutes();trace('sending-ready',{ready:!me?.ready});if(!me?.ready){ready.textContent='Waiting';ready.className='gt-ready';const bar=document.getElementById('readyButton');if(bar){bar.textContent='READY';bar.style.background='#15803d';}}await api(base+'/ready',{method:'POST',body:JSON.stringify({token:ident.token,ready:!me?.ready})});trace('ready-accepted',{ready:!me?.ready});await refresh()}catch(e){trace('ready-error',{error:e.message});alert(e.message);await refresh()}};

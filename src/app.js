@@ -294,7 +294,8 @@
       replacements:{Blue:'See replacement overlay',Red:'See replacement overlay'},routes:0};
     latestCombatDetail='Server-recorded combat and movement for completed Day '+day;
   };
-  window.ARMAGEDDON_SHOW_DAILY_REPORT=()=>{if(latestReport)showReport();};
+  let lastAutomaticDailyReportDay=0;
+  window.ARMAGEDDON_SHOW_DAILY_REPORT=()=>{if(latestReport && latestReport.day!==lastAutomaticDailyReportDay){lastAutomaticDailyReportDay=latestReport.day;showReport();}};
   reportButton.addEventListener('click',showReport);document.getElementById('sidebarReportButton').addEventListener('click',showReport);document.getElementById('dayReportClose').addEventListener('click',()=>dayOverlay.hidden=true);
   // Click the report itself or any visible battlefield area to dismiss it.
   // The report remains open for scrolling and selection until explicitly closed.
