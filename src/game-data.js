@@ -432,18 +432,33 @@
     const exact={};
     const types=forceTypes.flatMap(([type,count])=>{const k=side.toLowerCase()+type;const requested=params.get(k)??exact[k];const n=requested!==undefined?Math.max(0,Math.min(500,Math.floor(Number(requested)||0))):Math.round(count*scale*handicap[side].units/100);return Array.from({length:n},()=>type);});
     const friendlyCities=shuffled(cityHexes.filter(p=>isSide(p,side)),side==='Blue'?9:19);
-    const adjacent=shuffled(allCells.filter(p=>isSide(p,side)&&terrainAt(p.col,p.row)!=='Lake'&&friendlyCities.some(city=>hexDistance(p,city)===1)),side==='Blue'?27:37);
-    const nearBorder=shuffled(allCells.filter(p=>isSide(p,side)&&!urbanCells.has(key(p.col,p.row))&&terrainAt(p.col,p.row)!=='Lake'&&enemyDistance[side].get(key(p.col,p.row))>=3&&enemyDistance[side].get(key(p.col,p.row))<=6),side==='Blue'?47:57);
-    const cityDeploymentCount=mobilized?Math.floor(types.length/3):types.length;
+    const adjacent=shuffled(allCells.filter(p=>isSide(p,side)&&terrainAt(p.col,p.row)!=='Lake'&&!urbanCells.has(key(p.col,p.row))&&friendlyCities.some(city=>hexDistance(p,city)===1)),side==='Blue'?27:37);
+    // The frontline is the nearest enemy-national hex (distance 0 on the
+    // opposite side); mobilized forward divisions stand exactly 3 or 4 hexes
+    // from it. All random choices are deterministically seeded for replay.
+    const nearBorder=shuffled(allCells.filter(p=>isSide(p,side)&&!urbanCells.has(key(p.col,p.row))&&terrainAt(p.col,p.row)!=='Lake'&&[3,4].includes(enemyDistance[side].get(key(p.col,p.row)))),side==='Blue'?47:57);
+    // 20% of a mobilized force remains in random urban hexes behind the front.
+    // Prefer genuinely rearward city hexes, with a stable random order within
+    // distance tiers. Exclude frontline urban hexes when a rear city exists.
+    const rearCities=shuffled(friendlyCities,side==='Blue'?107:117)
+      .sort((a,b)=>(enemyDistance[side].get(key(b.col,b.row))||0)-(enemyDistance[side].get(key(a.col,a.row))||0));
+    const mobilizedCityCount=mobilized?Math.round(types.length*.20):types.length;
     const pick=(pool)=>pool.find(p=>!used.has(key(p.col,p.row)));
+    // Select which 20% of divisions serve as rear-city garrisons randomly;
+    // do not always assign the first (often infantry) types to the rear.
+    const rearUnitIds=new Set(mobilized?shuffled(types.map((_,index)=>({col:index,row:0,index})),side==='Blue'?137:147)
+      .slice(0,mobilizedCityCount).map(p=>p.index):types.map((_,index)=>index));
     for(let i=0;i<types.length;i++){
-      const spot=i<cityDeploymentCount?pick(friendlyCities):mobilized?pick(nearBorder):pick(adjacent);
+      const rearCityUnit=rearUnitIds.has(i);
+      const spot=mobilized
+        ?(rearCityUnit?pick(rearCities):pick(nearBorder))
+        :(pick(friendlyCities)||pick(adjacent));
       if(!spot)throw Error('Not enough valid '+(mobilized?'mobilized':'unmobilized')+' deployment hexes for '+side);
       used.add(key(spot.col,spot.row));
       const type=types[i],n=i+1;
       scenario.divisions.push({id:(side==='Blue'?'B':'R')+'-'+String(n).padStart(2,'0'),side,name:n+'th '+type,type,strength:10000,experience:90,supply:1,col:spot.col,row:spot.row});
     }
   }
-  global.ARMAGEDDON_FORCE_COUNTS={size:sizeName,scale,perSide:unitsPerSide,cityHexTarget:targetCityHexes,actualCityHexesPerSide:{Blue:cityHexes.filter(p=>isSide(p,'Blue')).length,Red:cityHexes.filter(p=>isSide(p,'Red')).length},mobilizedCityUnits:mobilized?Math.floor(unitsPerSide/3):unitsPerSide,handicap};
+  global.ARMAGEDDON_FORCE_COUNTS={size:sizeName,scale,perSide:unitsPerSide,cityHexTarget:targetCityHexes,actualCityHexesPerSide:{Blue:cityHexes.filter(p=>isSide(p,'Blue')).length,Red:cityHexes.filter(p=>isSide(p,'Red')).length},mobilizedCityUnits:mobilized?Math.round(unitsPerSide*.20):unitsPerSide,handicap};
   global.ARMAGEDDON_DATA={scenario,terrainAt};
 })(window);

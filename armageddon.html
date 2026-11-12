@@ -15,9 +15,9 @@
 #dayCombatDetail{padding:12px;background:#091a27;border-radius:7px;min-height:100px}
 </style>
 <style>
-/* M6.30: keep counter style caption and selector on a single horizontal row. */
+/* M6.224: keep counter style caption and selector fully readable without clipping. */
 #setupThreeColumns.m493-restored .m493-column>label:has(> #unitSymbolStyle){display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;width:100%!important;max-width:none!important;white-space:nowrap!important}
-#setupThreeColumns.m493-restored .m493-column>label>#unitSymbolStyle{display:inline-block!important;width:190px!important;max-width:60%!important;flex:0 1 190px!important;margin:0!important;padding:8px!important}
+#setupThreeColumns.m493-restored .m493-column>label>#unitSymbolStyle{display:inline-block!important;width:210px!important;max-width:58%!important;flex:0 1 210px!important;min-height:44px!important;height:auto!important;line-height:1.5!important;box-sizing:border-box!important;overflow:visible!important;margin:0!important;padding:9px 8px!important}
 </style>
 
 <script>
@@ -88,13 +88,13 @@ if(location.protocol==='file:') {
         <p style="font-size:12px;margin:0 0 14px">Choose how much terrain to generate. Applying starts a new game and clears current orders.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
           <label style="font-size:13px">Map size<select id="mapSize" style="display:block;width:100%;padding:8px;background:#293d4b;color:white"><option value="small">Small (×0.5)</option><option value="medium">Medium (×1)</option><option value="large">Large (×2)</option><option value="huge">Huge (×3)</option></select></label>
-          <label style="font-size:13px">Deployment<select id="deployment" style="display:block;width:100%;padding:8px;background:#293d4b;color:white"><option value="unmobilized">Unmobilized</option><option value="mobilized">Mobilized (default)</option></select></label>
+          <label style="font-size:13px">Deployment<select id="deployment" style="display:block;width:100%;padding:8px;background:#293d4b;color:white"><option value="unmobilized">Unmobilized — cities first</option><option value="mobilized">Mobilized — 80% near front / 20% rear cities</option></select></label>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;align-items:start">
           <label>Custom width (hexes)<input id="customWidth" type="number" min="12" max="200" value="42" style="display:block;width:100%" /></label>
           <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
             <label>Custom height (hexes)<input id="customHeight" type="number" min="12" max="150" value="28" style="display:block;width:100%" /></label>
-            <label style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;font-size:13px;min-width:0;white-space:nowrap"><span>Unit counter style</span><select id="unitSymbolStyle" style="width:190px;max-width:100%;flex:0 1 190px;min-width:0;padding:8px;background:#293d4b;color:white;border:1px solid #688293"><option value="nato">NATO symbols</option><option value="silhouettes">Illustrated silhouettes</option></select></label>
+            <label style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;font-size:13px;min-width:0;white-space:nowrap"><span style="display:inline-block;line-height:1.5;white-space:nowrap;overflow:visible;padding-bottom:3px">Unit counter style</span><select id="unitSymbolStyle" style="width:210px;max-width:100%;flex:0 1 210px;min-width:0;min-height:44px;box-sizing:border-box;padding:10px 8px;line-height:1.5;overflow:visible;vertical-align:middle;background:#293d4b;color:white;border:1px solid #688293"><option value="nato">NATO symbols</option><option value="silhouettes">Illustrated silhouettes</option></select></label>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px"><label>Single-player nation<select id="playerSide" style="display:block;width:100%;padding:8px;background:#293d4b;color:white"><option value="Blue">Bluenstein (Blue)</option><option value="Red">Redonia (Red)</option></select></label><label>Map seed (click to copy)<input id="mapSeed" type="text" readonly title="Click to copy map seed" style="display:block;width:100%;padding:8px;background:#293d4b;color:#f3d78e;cursor:copy;border:1px solid #688293"/></label></div>
