@@ -223,8 +223,14 @@
         const title=side==='Blue'?'Bluenstein':'Redonia';
         stat(title+' casualties',fmt(r.losses?.[side]),side.toLowerCase());
         stat(title+' troops remaining',fmt(r.remaining?.[side]),side.toLowerCase());
-        stat(title+' divisions lost',fmt(r.destroyed?.[side]),side.toLowerCase());
-        stat(title+' divisions surrendered',fmt(r.surrendered?.[side]),side.toLowerCase());
+        // Military event totals are shown for both nations below, not 'divisions lost'.
+      }
+      // All players see event COUNTS for both nations; detailed force strengths,
+      // casualties, and RP figures still respect the side-visibility setting.
+      for(const side of ['Blue','Red']){
+        const nation=side==='Blue'?'Bluenstein':'Redonia';
+        stat(nation+' divisions retreated',fmt(r.retreated?.[side]),side.toLowerCase());
+        stat(nation+' divisions surrendered',fmt(r.surrendered?.[side]),side.toLowerCase());
       }
       const other=make('section','report-section');other.append(make('h3','','Operations & logistics'));body.append(other);
       const accountingDay=Number(r.accountingDay)||r.day+1;other.append(make('p','report-accounting-day','RP settlement for Day '+accountingDay+' Planning — income and maintenance posted before orders.'));const list=make('div','report-nations');other.append(list);
@@ -265,7 +271,7 @@
     if(latestReport?.day===day)return;
     const initial=events.find(e=>e.type==='ti-initial-units')?.units||[];
     const byId=new Map([...data.scenario.divisions,...initial].map(u=>[String(u.id),u]));
-    const losses={Blue:0,Red:0},remaining={Blue:0,Red:0},destroyed={Blue:0,Red:0},surrendered={Blue:0,Red:0};
+    const losses={Blue:0,Red:0},remaining={Blue:0,Red:0},destroyed={Blue:0,Red:0},retreated={Blue:0,Red:0},surrendered={Blue:0,Red:0};
     const fireLines=[];
     const supply=events.find(e=>e.type==='supply-report');
     const economy=events.find(e=>e.type==='maintenance');
@@ -276,6 +282,11 @@
         fireLines.push({hour:event.ti,side:unit?.side||'Unknown',unit:unit?.name||String(shot.sourceId),unitId:unit?.id,
           target:target?.name||String(shot.targetId),role:shot.role||'Fire',damage:shot.casualtiesInflicted??shot.rawDamage??0});
       }
+    }
+    const retreatedIds=new Set();
+    for(const ev of events)if(ev.type==='retreat'&&!ev.displaced&&!ev.advance){
+      const id=String(ev.unitId),side=ev.side||byId.get(id)?.side;
+      if(side in retreated&&!retreatedIds.has(id)){retreated[side]++;retreatedIds.add(id);}
     }
     const surrenderedIds=new Set();
     for(const ev of events)if(ev.type==='surrender'){const id=String(ev.unitId),side=ev.side||byId.get(id)?.side;if(side in surrendered&&!surrenderedIds.has(id)){surrendered[side]++;surrenderedIds.add(id);}}
@@ -289,7 +300,7 @@
       if(end?.active===false||unit.destroyed||troops<=0||surrenderedIds.has(String(unit.id)))destroyed[unit.side]++;
     }
     latestReport={day,engagements:events.filter(e=>e.type==='combat').length,
-      moves:events.filter(e=>e.type==='move').length,losses,remaining,destroyed,surrendered,fireLines,
+      moves:events.filter(e=>e.type==='move').length,losses,remaining,destroyed,retreated,surrendered,fireLines,
       accountingDay:economy?.accountingDay||day+1,opening:economy?.opening||null,maintenance:upkeep,income:economy?.income||null,net:economy?.net||null,balances:economy?.balances||null,supplyVerified:!!supply?.verified,outOfSupply:supply?.outOfSupply||{Blue:[],Red:[]},negativeSupply:supply?.negativeSupply||{Blue:[],Red:[]},
       replacements:{Blue:'See replacement overlay',Red:'See replacement overlay'},routes:0};
     latestCombatDetail='Server-recorded combat and movement for completed Day '+day;
@@ -411,7 +422,7 @@
     const moraleFailing=showSensitive&&d.lastMoraleCheck==='failed';
     moraleLabel.textContent=moraleFailing?'Morale — FAILING':'Morale';
     moraleLabel.classList.toggle('morale-failing',moraleFailing);
-    document.getElementById('divisionEffectiveness').textContent=showSensitive?(Number.isFinite(d.effectiveness)?d.effectiveness.toFixed(1):'100.0'):'—';
+    document.getElementById('divisionEffectiveness').textContent=showSensitive?(Number.isFinite(d.effectiveness)&&d.effectiveness>=25?d.effectiveness.toFixed(1):'—'):'—';
     document.getElementById('divisionExperience').textContent=showSensitive?(Number.isFinite(d.experience)?d.experience.toFixed(1):'—'):'—';
     // Show actual accumulated movement credit, not the 10-hour daily allowance.
     // A negative balance is a genuine movement deficit (e.g. after retreat).
@@ -600,7 +611,7 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
       if(cities.deployment){if(hex&&!cities.deployAt(hex.col,hex.row))status.textContent='Invalid deployment: choose an empty, friendly-controlled city hex belonging to the producing city.';drag=null;down=null;canvas.classList.remove('dragging');return;}
       if(d){
         sound.uiCue('select');selectedCity=null;renderer.selectedCityHex=null;selectedId=d.id;stanceOffset=null;renderer.setSelection(selectedId);updateReport(d);refreshChoices();
-        status.textContent=(d.side===(window.ARMAGEDDON_PLAYER_SIDE||'Blue')||planner.playtest)?'Selected '+d.name+'. Left-click selects a unit; Shift+left-click an occupied city opens its city report. Shift + right-click a route hex or the division to add a 1-TI pause.':'Enemy division selected.';
+        status.textContent=(d.side===(window.ARMAGEDDON_PLAYER_SIDE||'Blue')||planner.playtest)?'Selected '+d.name+'. Left-click selects a unit; Shift+left-click an occupied city opens its city report. Right-click the selected division to pause; Shift + right-click pauses route waypoints.':'Enemy division selected.';
       }else{
         sound.uiCue('open');selectedCity=null;renderer.selectedCityHex=null;selectedId=null;renderer.setSelection(null);closeDivisionPopup();status.textContent='Selection cleared.';
       }
@@ -612,6 +623,7 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
     e.preventDefault();
     if(delegation?.active){status.textContent='Finish delegation before changing movement orders.';return;}
     if(executing)return;
+    if(window.ARMAGEDDON_ORDERS_LOCKED){status.textContent='Orders are locked while Ready. Select Not Ready before plotting.';return;}
     if(renderer.showEndPositions){status.textContent='End Positions preview is read-only. Turn it off to issue orders.';return;}
     if(!selectedId){status.textContent='Left-click a division to select it for movement, or right-click a division to inspect it.';return;}
     // The destination click closes inspection while retaining the selected division.
@@ -621,13 +633,13 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
     if(window.ARMAGEDDON_ASSET_CONTROL&&!window.ARMAGEDDON_ASSET_CONTROL.owns('unit',String(selectedId))){status.textContent='Only the owning player may plot this division’s route.';return;}
     const onRoute=cell&&planner.get(selectedId).some(p=>p.col===cell.col&&p.row===cell.row);
     const onUnit=cell&&unit&&unit.col===cell.col&&unit.row===cell.row;
-    // M6.210: ONLY Shift + right-click creates a pause waypoint.
-    // Ordinary right-click always means plot / extend a route.
+    // On the selected division, ordinary right-click adds a 1-TI pause.
+    // Shift + right-click also pauses an existing route waypoint.
     if(e.shiftKey && !(onRoute||onUnit)){
       status.textContent='Shift + right-click the selected division or a hex already on its route to add a 1-TI pause.';
       return;
     }
-    const result=e.shiftKey?planner.addPause(selectedId,cell):planner.plotTo(selectedId,cell);
+    const result=(e.shiftKey||onUnit)?planner.addPause(selectedId,cell):planner.plotTo(selectedId,cell);
     if(result.ok)sound.uiCue('destination');
     status.textContent=result.ok?(result.count?`Pause added: ${result.count} TI(s) at ${result.location}.`:`Route extended to ${planner.get(selectedId).length} hex(es).`):result.reason;
     renderer.render();closeDivisionPopup();if(typeof refreshChoices==='function')refreshChoices();
@@ -1003,7 +1015,7 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
     // Resume from the next unprocessed TI if a prior execution was interrupted.
     // Diagnostics stay in memory; do not show a debug overlay.
     const charged=cities.getMaintenance()?.totals||{Blue:0,Red:0};
-    const daySummary={day:engine.day,moves:0,engagements:0,losses:{Blue:0,Red:0},destroyed:{Blue:0,Red:0},remaining:{Blue:0,Red:0},routes:0,maintenance:{...charged},supplyProblems:{Blue:0,Red:0},outOfSupply:{Blue:[],Red:[]},negativeSupply:{Blue:[],Red:[]},replacements:{Blue:'No replacements dispatched or received',Red:'No replacements dispatched or received'}};
+    const daySummary={day:engine.day,moves:0,engagements:0,losses:{Blue:0,Red:0},destroyed:{Blue:0,Red:0},remaining:{Blue:0,Red:0},retreated:{Blue:0,Red:0},surrendered:{Blue:0,Red:0},routes:0,maintenance:{...charged},supplyProblems:{Blue:0,Red:0},outOfSupply:{Blue:[],Red:[]},negativeSupply:{Blue:[],Red:[]},replacements:{Blue:'No replacements dispatched or received',Red:'No replacements dispatched or received'}};
     dayOverlay.hidden=true;
     sound.unlock();
     // Preserve the complete planning snapshot BEFORE the first execution increment.
@@ -1171,7 +1183,12 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
         log.textContent=combatAudit.length?combatAudit.join('\n\n'):'No combat engagements yet.';
         for(const dead of combatResult.destroyed)planner.get(dead.id).length=0;
         const lostPackets=replacements.removeDestroyed();for(const side of ["Blue","Red"]){if(lostPackets[side])daySummary.replacements[side]+=`; ${lostPackets[side]} lost with destroyed divisions`;}
-        if(combatResult.retreats?.length){status.textContent=`Hour ${ti}/10 · ${combatResult.retreats.length} retreat/displacement move(s)`;await animateRetreat(combatResult.retreats);}
+        if(combatResult.retreats?.length){
+          for(const r of combatResult.retreats){
+            if(r.advance||r.displaced)continue;
+            const d=byId(r.id);if(d?.side in daySummary.retreated)daySummary.retreated[d.side]++;
+          }
+          status.textContent=`Hour ${ti}/10 · ${combatResult.retreats.length} retreat/displacement move(s)`;await animateRetreat(combatResult.retreats);}
         if(combatResult.destroyed.length)await animateSurrender(combatResult.destroyed,before);
         if(selectedId&&byId(selectedId)?.destroyed){selectedId=null;renderer.setSelection(null);refreshChoices();}
         if(engagements.length||combatResult.destroyed.length)updateReport(selectedId?byId(selectedId):null);
@@ -1179,7 +1196,14 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
       }
       // M5.49: all combat and movement is complete before the sole morale check.
       const endMorale=window.ARMAGEDDON_COMBAT.endTurn(data.scenario,data.terrainAt,engine.day,dailyCombatParticipants,planner);
-      for(const fallen of endMorale.destroyed){daySummary.destroyed[fallen.side]++;planner.get(fallen.id).length=0;}
+      for(const fallen of endMorale.destroyed){
+        daySummary.destroyed[fallen.side]++;if(fallen.surrender)daySummary.surrendered[fallen.side]++;
+        planner.get(fallen.id).length=0;
+      }
+      for(const retreat of endMorale.retreats){
+        if(retreat.advance||retreat.displaced)continue;
+        const d=byId(retreat.id);if(d?.side in daySummary.retreated)daySummary.retreated[d.side]++;
+      }
       if(endMorale.retreats.length){status.textContent='End-of-turn morale retreats and advances';await animateRetreat(endMorale.retreats);}
       if(endMorale.destroyed.length)await animateSurrender(endMorale.destroyed,new Map(data.scenario.divisions.map(d=>[d.id,{col:d.col,row:d.row}])));
       if(selectedId&&byId(selectedId)?.destroyed){selectedId=null;renderer.setSelection(null);refreshChoices();}

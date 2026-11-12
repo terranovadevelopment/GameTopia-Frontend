@@ -703,8 +703,10 @@ document.addEventListener('DOMContentLoaded',function(){
  document.addEventListener('click',e=>{if(!overlayMenu.contains(e.target))closeOverlaysMenu();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlaysMenu();});
  updateLabels();
+ const controlsShortcut=document.getElementById('mapControlsToggle');
+ if(controlsShortcut){controlsShortcut.textContent='Mouse & Keyboard Controls';actions.insertBefore(controlsShortcut,overlayMenu);controlsShortcut.style.display='inline-flex';}
  const deploy=document.getElementById('deployReinforcement');if(deploy){deploy.style.display='none';deploy.title='Deploy reinforcements (D)';}
- for(const id of ['battleMusicToggle','unitSymbolsToggle','replacementToggle','endPositionsToggle','zocToggle','citiesOverlayToggle','hexControlToggle','mapControlsToggle','moraleOverlayToggle']){
+ for(const id of ['battleMusicToggle','unitSymbolsToggle','replacementToggle','endPositionsToggle','zocToggle','citiesOverlayToggle','hexControlToggle','moraleOverlayToggle']){
   const button=document.getElementById(id);if(button)button.style.display='none';
  }
 });
@@ -1378,7 +1380,7 @@ window.armServerRequest=async function(path,options={}){
    // Do not let a map drag capture mouse input once the firing window is open.
    if(renderer.canvas){try{for(const id of [1,2,3,4,5])if(renderer.canvas.hasPointerCapture?.(id))renderer.canvas.releasePointerCapture(id)}catch(_){}}
    battleDialog.hidden=false;battleDialog.style.transform='none';battleDialog.style.top=Math.max(78,Math.min(innerHeight-battleDialog.offsetHeight-12,canvasRect.top+20))+'px';
-   const dw=battleDialog.offsetWidth, gap=240,right=bx+gap,left=bx-gap-dw; // M6.219: ~2.5 in at CSS 96px/in
+   const dw=battleDialog.offsetWidth, gap=240,right=bx+gap,left=bx-gap-dw; // M6.221: ~2.5 in at CSS 96px/in
    battleDialog.style.left=(right+dw<innerWidth-8?right:left>8?left:Math.max(8,Math.min(innerWidth-dw-8,right)))+'px';
    battlePointer.style.display='block';updateBattlePointer();
    // Map pan/zoom and draggable reports change pixel positions independently
@@ -1480,7 +1482,7 @@ window.armServerRequest=async function(path,options={}){
    game.planner?.routes?.clear();
    // M6.197: close both Planning inspection popups before authoritative replay.
    window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();
-   replayBusy=true;replayPaused=false;replaySkip=false;replaySpeed=1;
+   replayBusy=true;replayPaused=false;replaySkip=false;replaySpeed=1;executionTrumpet();
    const executeButton=document.getElementById('readyButton');if(executeButton){executeButton.textContent='EXECUTING';executeButton.style.background='#eab308';executeButton.style.color='#101820';}const playerExecuteButton=document.getElementById('gtReadyToggle');if(playerExecuteButton){playerExecuteButton.textContent='EXECUTING';playerExecuteButton.className='gt-executing';}
    pacificationRevealTi=0;pacPanel.hidden=true;pacCityHex=null;updatePacificationArrow();
    replayBar.hidden=false;replayBar.querySelector('#gtReplayPause').textContent='Pause';
@@ -1546,7 +1548,7 @@ window.armServerRequest=async function(path,options={}){
        }
        for(const e of batch){const u=byId.get(String(e.unitId));renderer.visualPositions.set(u.id,{...e.to});renderer.spottingPositions.set(String(u.id),{...e.to})}
        const authoritative=tiPositions.get(ti);
-       if(authoritative){for(const p of authoritative){const u=byId.get(String(p.id));if(!u)continue;renderer.spottingPositions.set(String(p.id),{col:p.col,row:p.row});renderer.visualPositions.set(u.id,{col:p.col,row:p.row});if(typeof p.active==='boolean')u.destroyed=!p.active;if(Number.isFinite(p.strength))u.strength=p.strength;if(Number.isFinite(p.effectiveness))u.effectiveness=p.effectiveness;}trace('ti-authoritative-positions',{ti,count:authoritative.length});}
+       if(authoritative){for(const p of authoritative){const u=byId.get(String(p.id));if(!u)continue;renderer.spottingPositions.set(String(p.id),{col:p.col,row:p.row});renderer.visualPositions.set(u.id,{col:p.col,row:p.row});if(typeof p.active==='boolean')u.destroyed=!p.active;if(Number.isFinite(p.strength))u.strength=p.strength;if(Number.isFinite(p.effectiveness)&&p.effectiveness>=25)u.effectiveness=p.effectiveness;}trace('ti-authoritative-positions',{ti,count:authoritative.length});}
        renderer.refreshHexControl();
        // Recompute with authoritative positions and log any impossible adjacent-hidden enemy.
        for(const enemy of units){const observerSide=window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_SETUP?.playerSide||'Blue';if(enemy.side===observerSide||enemy.destroyed||enemy.strength<=0)continue;const ep=renderer.spottingPositions.get(String(enemy.id))||enemy;for(const friend of units){if(friend.side!==observerSide||friend.destroyed||friend.strength<=0)continue;const fp=renderer.spottingPositions.get(String(friend.id))||friend;if(renderer.spottingDistance(fp,ep)===1&&!renderer.visibleDivision(enemy))trace('CRITICAL-ADJACENT-HIDDEN',{ti,enemyId:enemy.id,friendlyId:friend.id,enemy:ep,friendly:fp,detail:renderer.visibilityInfo(enemy)});}}
@@ -1557,8 +1559,17 @@ window.armServerRequest=async function(path,options={}){
        if(current)showPacificationNotices(current);
        while(!pacPanel.hidden){await new Promise(r=>setTimeout(r,100));}
        for(const battle of combats.filter(e=>e.ti===ti)){if(replaySkip)break;await showBattleReport(battle,day,byId,renderer);}
-       for(const event of moraleOutcomes.filter(e=>Number(e.ti||10)===ti)){if(replaySkip)break;await showMoraleOutcome(event,byId,renderer);}
-       // M6.219: advances occur AFTER morale/retreat. The server emits them
+       // Surrender notification and map removal ALWAYS precede retreat/advance.
+       for(const event of moraleOutcomes.filter(e=>e.type==='surrender'&&Number(e.ti||10)===ti)){
+         if(replaySkip)break;
+         await showMoraleOutcome(event,byId,renderer);
+         const surrendered=byId.get(String(event.unitId));
+         if(surrendered){surrendered.destroyed=true;surrendered.strength=0;renderer.visualPositions.delete(String(event.unitId));renderer.spottingPositions?.delete(String(event.unitId));renderer.render();}
+       }
+       for(const event of moraleOutcomes.filter(e=>e.type!=='surrender'&&Number(e.ti||10)===ti)){
+         if(replaySkip)break;await showMoraleOutcome(event,byId,renderer);
+       }
+       // M6.221: advances occur AFTER morale/retreat. The server emits them
        // at TI 10. Animate from authoritative hex centers, not pan-adjusted pixels.
        for(const advance of (events||[]).filter(e=>e.type==='advance'&&Number(e.ti||10)===ti&&e.from&&e.to)){
          if(replaySkip)break;
@@ -1592,8 +1603,40 @@ window.armServerRequest=async function(path,options={}){
      }
    }finally{
      await applyServerPositions(day);renderer.visualPositions.clear();renderer.spottingPositions?.clear();renderer.refreshHexControl();renderer.render();
-     replayBar.hidden=true;replayBusy=false;if(day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();if(executeButton){executeButton.textContent='READY';executeButton.style.background='#15803d';executeButton.style.color='#fff';}pacificationRevealTi=10;if(current)showPacificationNotices(current);trace('replay-complete',{day,skipped:replaySkip,moves:moves.length});
+     replayBar.hidden=true;replayBusy=false;if(day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();
+     if(current?.victory?.side)window.ARMAGEDDON_SHOW_VICTORY?.(current.victory.side);if(executeButton){executeButton.textContent='READY';executeButton.style.background='#15803d';executeButton.style.color='#fff';}pacificationRevealTi=10;if(current)showPacificationNotices(current);trace('replay-complete',{day,skipped:replaySkip,moves:moves.length});
    }
+ }
+ // M6.221: Multiplayer Replay Turn is a visual replay, NOT the legacy
+ // single-player destructive localStorage turn restore/re-execution.
+ const replayTurnControl=document.getElementById('replayTurnButton');
+ replayTurnControl?.addEventListener('click',e=>{
+   if(!current?.gameId)return; // Offline/local mode retains its own replay.
+   e.preventDefault();e.stopImmediatePropagation();
+   if(replayBusy){alert('Replay is already running.');return;}
+   if(!current.executionEvents?.length||Number(current.day)<=1){alert('No completed server turn available to replay.');return;}
+   void playServerMovements(current.day,current.executionEvents).catch(err=>{
+     trace('replay-manual-error',{error:String(err)});alert('Replay unavailable: '+err.message);
+   });
+ },true);
+ // Original, synthesized execution fanfare: no external files or music needed.
+ function executionTrumpet(){
+   if(window.ARMAGEDDON_SOUND?.enabled===false)return;
+   try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+    const ctx=window.__GT_FANFARE_CONTEXT||(window.__GT_FANFARE_CONTEXT=new C());
+    if(ctx.state==='suspended')void ctx.resume();
+    const now=ctx.currentTime+.025;
+    // Short original trumpet call, deliberately distinct from background music.
+    for(const [i,freq,dur] of [[0,392,.14],[1,523.25,.14],[2,659.25,.18],[3,783.99,.45]]){
+      const start=now+i*.155,osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.type='sawtooth';osc.frequency.value=freq;
+      const filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=1800;
+      gain.gain.setValueAtTime(.0001,start);gain.gain.linearRampToValueAtTime(.11,start+.025);
+      gain.gain.setValueAtTime(.09,start+dur*.65);gain.gain.exponentialRampToValueAtTime(.0001,start+dur);
+      osc.connect(filter);filter.connect(gain);gain.connect(ctx.destination);
+      osc.start(start);osc.stop(start+dur+.01);
+    }
+   }catch(err){trace('trumpet-audio-error',{error:String(err)});}
  }
  async function applyServerPositions(day){
    const game=window.ARMAGEDDON_M2,clock=window.ARMAGEDDON_M3;
@@ -1613,7 +1656,7 @@ window.armServerRequest=async function(path,options={}){
    for(const unit of game.scenario.divisions){const updated=byId.get(String(unit.id));if(!updated)continue;
      unit.col=updated.col;unit.row=updated.row;unit.tis=updated.tis;
      if(Number.isFinite(updated.strength))unit.strength=updated.strength;
-     if(Number.isFinite(updated.effectiveness))unit.effectiveness=updated.effectiveness;
+     if(Number.isFinite(updated.effectiveness)&&updated.effectiveness>=25)unit.effectiveness=updated.effectiveness;
      if(Number.isFinite(updated.experience))unit.experience=updated.experience;
      if(Number.isFinite(updated.supply))unit.supply=updated.supply;
      if(Number.isFinite(updated.totalCasualties))unit.totalCasualties=updated.totalCasualties;
@@ -1665,7 +1708,7 @@ window.armServerRequest=async function(path,options={}){
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
-  // M6.219: Publish each actual Planning route revision so allied humans can
+  // M6.221: Publish each actual Planning route revision so allied humans can
   // see it on their next state poll. Sending only at Ready hid plotted routes.
   let lastSharedRouteSignature=null, sharingRoutes=false;
   function ownRoutesSignature(){
@@ -1732,11 +1775,12 @@ window.armServerRequest=async function(path,options={}){
    if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}
    if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else {await applyServerPositions(st.day);if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();}}
 const loginBadge=box.querySelector('#gtLoginStatus');if(loginBadge){const who=st.players.find(p=>p.id===ident.playerId);loginBadge.textContent=who?.accountId?'Signed in: '+who.name+' · Account ID '+who.accountId:'Guest: '+(who?.name||'Player')+' · Register / Log In via Games Underway';}
+window.ARMAGEDDON_ORDERS_LOCKED=!!me?.ready||st.phase!=='planning'||replayBusy;
 status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}const sameSideSenior=st.players.filter(x=>x.role==='active'&&x.side===me?.side).sort((a,b)=>a.seniority-b.seniority)[0];topKick.hidden=!(me&&sameSideSenior?.id===ident.playerId&&st.phase==='planning');topLeave.hidden=!(me&&me.role==='active');topLeave.disabled=st.phase!=='planning';if(!voice.hidden)renderChannels();syncCommAvailability();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});if(e.message==='Admission required'||e.message==='Active player required'){showRemovedFromGame();return;}status.textContent='Server: '+e.message}}
- ready.onclick=async()=>{try{if(!current||current.phase!=='planning')return;window.ARMAGEDDON_SOUND?.unlock?.();window.ARMAGEDDON_SOUND?.unlockMedia?.();ready.disabled=true;const me=current?.players.find(p=>p.id===ident.playerId);trace('ready-click',{day:current.day,readyBefore:!!me?.ready});if(!me?.ready)await submitPlottedRoutes();trace('sending-ready',{ready:!me?.ready});if(!me?.ready){ready.textContent='Waiting';ready.className='gt-ready';const bar=document.getElementById('readyButton');if(bar){bar.textContent='READY';bar.style.background='#15803d';}}await api(base+'/ready',{method:'POST',body:JSON.stringify({token:ident.token,ready:!me?.ready})});trace('ready-accepted',{ready:!me?.ready});await refresh()}catch(e){trace('ready-error',{error:e.message});alert(e.message);await refresh()}};
+ ready.onclick=async()=>{try{if(!current||current.phase!=='planning')return;window.ARMAGEDDON_SOUND?.unlock?.();window.ARMAGEDDON_SOUND?.unlockMedia?.();ready.disabled=true;const me=current?.players.find(p=>p.id===ident.playerId);trace('ready-click',{day:current.day,readyBefore:!!me?.ready});if(!me?.ready)await submitPlottedRoutes();trace('sending-ready',{ready:!me?.ready});if(!me?.ready){window.ARMAGEDDON_ORDERS_LOCKED=true;ready.textContent='Waiting';ready.className='gt-ready';const bar=document.getElementById('readyButton');if(bar){bar.textContent='READY';bar.style.background='#15803d';}}await api(base+'/ready',{method:'POST',body:JSON.stringify({token:ident.token,ready:!me?.ready})});trace('ready-accepted',{ready:!me?.ready});await refresh()}catch(e){trace('ready-error',{error:e.message});alert(e.message);await refresh()}};
  // M6.136: WebRTC peer-to-peer live voice; the backend carries signaling ONLY.
  const voice=document.createElement('section');voice.id='gtVoiceWindow';voice.hidden=true;
- voice.innerHTML='<div id="gtVoiceDrag" class="gt-voice-title"><strong>Communications · Recorded Voice</strong><button type="button" id="gtVoiceClose" aria-label="Close communications">Close</button></div><div class="gt-voice-content"><p>Choose who can hear you:</p><div id="gtVoiceChannels"></div><p id="gtVoiceSelection" aria-live="polite">No channel selected.</p><label style="display:block;margin:8px 0 4px" for="gtMicChoice">Microphone source</label><select id="gtMicChoice" style="display:block;width:100%;padding:5px;background:#183b55;color:white;border:1px solid #8cbadd"><option value="default">Windows / browser default microphone</option></select><small id="gtMicLevel" style="display:block;margin:5px 0">Input level: not tested</small><button type="button" id="gtVoicePTT" disabled>Hold to Record</button> <button type="button" id="gtVoiceTestMic">Test Microphone</button> <button type="button" id="gtVoiceReplay" disabled>Play Last Recording</button><label style="display:block;margin:8px 0"><input id="gtVoiceEcho" type="checkbox" checked> Hear my recording after release</label><p id="gtVoiceWarning">Hold to record (maximum 15 seconds); release to send. Recordings are temporary, not archived. Enable echo to check your speakers.</p><p style="margin:6px 0;font-size:12px">Local playback (choose your headset or speakers in Windows):</p><audio id="gtVoiceLocalAudio" controls preload="none" style="display:block;width:100%;max-width:400px" aria-label="Your last recorded message"></audio><div id="gtVoiceRemote"></div></div>';
+ voice.innerHTML='<div id="gtVoiceDrag" class="gt-voice-title"><strong>Communications · Live Push-to-Talk</strong><button type="button" id="gtVoiceClose" aria-label="Close communications">Close</button></div><div class="gt-voice-content"><p>Choose who can hear you:</p><div id="gtVoiceChannels"></div><p id="gtVoiceSelection" aria-live="polite">No channel selected.</p><label style="display:block;margin:8px 0 4px" for="gtMicChoice">Microphone source</label><select id="gtMicChoice" style="display:block;width:100%;padding:5px;background:#183b55;color:white;border:1px solid #8cbadd"><option value="default">Windows / browser default microphone</option></select><small id="gtMicLevel" style="display:block;margin:5px 0">Input level: not tested</small><button type="button" id="gtVoicePTT" disabled>Hold to Talk</button> <button type="button" id="gtVoiceTestMic">Test Microphone</button> <button type="button" id="gtVoiceReplay" disabled>Play Last Recording</button><label style="display:block;margin:8px 0"><input id="gtVoiceEcho" type="checkbox" checked> Hear my recording after release</label><p id="gtVoiceWarning">Hold to talk live. Release to mute. Requires microphone permission and WebRTC connectivity. A TURN server may be required across restrictive networks.</p><p style="margin:6px 0;font-size:12px">Local playback (choose your headset or speakers in Windows):</p><audio id="gtVoiceLocalAudio" controls preload="none" style="display:block;width:100%;max-width:400px" aria-label="Your last recorded message"></audio><div id="gtVoiceRemote"></div></div>';
  document.body.append(voice);
  const channels=voice.querySelector('#gtVoiceChannels'),selection=voice.querySelector('#gtVoiceSelection'),ptt=voice.querySelector('#gtVoicePTT'),voiceNote=voice.querySelector('#gtVoiceWarning');
  let selectedChannel=null,micStream=null,speaking=false,voiceCursor=0,voiceBusy=false,voicePressEpoch=0;
@@ -1791,6 +1835,80 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
    const result=player.play();if(result?.catch)result.catch(e=>{voiceNote.textContent='Chrome could not autoplay the recording: '+e.message+'. Click Play on the audio player.';});
   }catch(e){voiceNote.textContent='Recording playback error: '+e.message;}
  }
+
+ // M6.221: real-time WebRTC. Only signal descriptions/candidates traverse the
+ // GameTopia backend. No recorded voice clips are sent for live push-to-talk.
+ const livePeers=new Map(),queuedCandidates=new Map();
+ function sendLiveSignal(to,kind,data){return api(voiceUrl+'/send',{method:'POST',body:JSON.stringify({token:ident.token,type:'signal',to,signal:{kind,data}})});}
+ function livePeer(remote){
+   if(livePeers.has(remote))return livePeers.get(remote);
+   const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+   const state={pc,sender:null,remote,active:false};livePeers.set(remote,state);
+   pc.onicecandidate=ev=>{if(ev.candidate)void sendLiveSignal(remote,'candidate',ev.candidate.toJSON()).catch(err=>trace('voice-ice-send-error',{error:String(err)}));};
+   pc.ontrack=ev=>{
+     let out=document.getElementById('gtVoiceLive_'+remote);
+     if(!out){out=document.createElement('audio');out.id='gtVoiceLive_'+remote;out.autoplay=true;out.controls=true;out.style.width='95%';out.setAttribute('playsinline','');voice.querySelector('#gtVoiceRemote').append(out);}
+     out.srcObject=ev.streams[0]||new MediaStream([ev.track]);
+     void out.play().catch(()=>{voiceNote.textContent='Remote live audio ready. Press Play on the remote audio control if browser autoplay is blocked.';});
+   };
+   pc.onconnectionstatechange=()=>{if(['failed','closed'].includes(pc.connectionState)){livePeers.delete(remote);try{pc.close();}catch(_){}}};
+   return state;
+ }
+ async function receiveLiveSignal(event){
+   const remote=String(event.from),payload=event.payload||{},kind=payload.kind,pcState=livePeer(remote),pc=pcState.pc;
+   try{
+    if(kind==='offer'){
+      await pc.setRemoteDescription(payload.data);
+      for(const candidate of queuedCandidates.get(remote)||[])await pc.addIceCandidate(candidate);
+      queuedCandidates.delete(remote);
+      const answer=await pc.createAnswer();await pc.setLocalDescription(answer);
+      await sendLiveSignal(remote,'answer',pc.localDescription.toJSON());
+    }else if(kind==='answer'){
+      if(pc.signalingState==='have-local-offer')await pc.setRemoteDescription(payload.data);
+      for(const candidate of queuedCandidates.get(remote)||[])await pc.addIceCandidate(candidate);
+      queuedCandidates.delete(remote);
+    }else if(kind==='candidate'){
+      if(pc.remoteDescription)await pc.addIceCandidate(payload.data);
+      else{const q=queuedCandidates.get(remote)||[];q.push(payload.data);queuedCandidates.set(remote,q);}
+    }
+   }catch(err){trace('voice-live-signal-error',{remote,kind,error:String(err)});voiceNote.textContent='Live voice signaling error: '+err.message;}
+ }
+ async function beginLiveTalk(){
+   if(speaking||pressPending||ptt.disabled||!selectedChannel)return;
+   pressPending=true;const epoch=++voicePressEpoch;
+   ptt.textContent='Connecting live voice…';
+   try{
+     if(!window.RTCPeerConnection)throw Error('Live WebRTC not supported by this browser');
+     const stream=await acquireMic();if(epoch!==voicePressEpoch)return;
+     const track=stream.getAudioTracks()[0];if(!track)throw Error('Microphone has no audio track');
+     track.enabled=true;speaking=true;
+     const targets=recipients();
+     if(selectedChannel.kind==='private'&&targets[0]?.side!==mePlayer()?.side){
+       void sendLiveDisclosure(targets[0].id);
+     }
+     for(const target of targets){
+       const state=livePeer(target.id),pc=state.pc;
+       const firstSender=!state.sender;
+       if(firstSender)state.sender=pc.addTrack(track,stream);
+       else await state.sender.replaceTrack(track);
+       state.active=true;
+       // A peer that initially received only audio needs a new offer when
+       // it transmits its own microphone for the first time.
+       if(pc.signalingState==='stable'&&(firstSender||!pc.remoteDescription)){
+         const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+         await sendLiveSignal(target.id,'offer',pc.localDescription.toJSON());
+       }
+     }
+     if(epoch!==voicePressEpoch){endTalk();return;}
+     voiceNote.textContent=targets.length?'LIVE — transmitting to '+targets.map(x=>x.name).join(', '):'No recipients selected. Microphone is on locally.';
+     ptt.textContent='LIVE — release to mute';ptt.setAttribute('aria-pressed','true');
+   }catch(err){voiceNote.textContent='Live PTT unavailable: '+err.message;endTalk();}
+   finally{pressPending=false;}
+ }
+ async function sendLiveDisclosure(to){
+   try{await api(voiceUrl+'/send',{method:'POST',body:JSON.stringify({token:ident.token,type:'disclosure',to})});}catch(err){trace('voice-disclosure-error',{error:String(err)});}
+ }
+
  let recorder=null,voiceChunks=[],recordStarted=0,recordStopper=null,pressPending=false;
  const preferredMime=()=>['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].find(m=>MediaRecorder.isTypeSupported(m))||'';
  async function startRecorder(){if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){voiceNote.textContent='Recording requires HTTPS or localhost and a browser with MediaRecorder support.';return;}
@@ -1813,18 +1931,24 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
    voiceNote.textContent='Captured '+Math.round(blob.size/1024)+' KB / '+(duration/1000).toFixed(1)+'s; sent to '+result.recipients+' player(s). Click Play Last Recording to test speakers.';
   }catch(err){voiceNote.textContent='Voice delivery error: '+err.message;trace('recorded-voice-error',{error:String(err)});}
  }
- function endTalk(){++voicePressEpoch;pressPending=false;speaking=false;if(recordStopper){clearTimeout(recordStopper);recordStopper=null;}ptt.textContent='Hold to Record';ptt.setAttribute('aria-pressed','false');if(recorder?.state==='recording')recorder.stop();}
+ function endTalk(){
+   ++voicePressEpoch;pressPending=false;speaking=false;
+   if(recordStopper){clearTimeout(recordStopper);recordStopper=null;}
+   micStream?.getAudioTracks()?.forEach(t=>{t.enabled=false;});
+   for(const state of livePeers.values())if(state.sender){state.active=false;void state.sender.replaceTrack(null).catch(err=>trace('voice-mute-error',{error:String(err)}));}
+   ptt.textContent='Hold to Talk';ptt.setAttribute('aria-pressed','false');
+ }
  const noticePanel=document.createElement('div');noticePanel.id='gtVoiceDisclosure';noticePanel.hidden=true;noticePanel.style.cssText='position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:100050;padding:20px;max-width:450px;background:#152d40;color:#fff;border:3px solid #e6ae51;border-radius:9px;box-shadow:0 10px 35px #000a';document.body.append(noticePanel);
  let notices=[];function showNotice(){if(!notices.length){noticePanel.hidden=true;return;}const n=notices[0];noticePanel.replaceChildren();const description=document.createElement('p');description.textContent='Opposing-side private voice conversation: '+n.sender+' and '+n.recipient+'. (Contents remain private.)';const btn=document.createElement('button');btn.textContent='Acknowledge';btn.style.cssText='background:#235c8b;color:white;padding:10px;border:1px solid #fff;border-radius:5px';btn.onclick=()=>{notices.shift();showNotice();if(!notices.length&&replayBusy){replayPaused=false;replayBar.querySelector('#gtReplayPause').textContent='Pause';}};noticePanel.append(description,btn);noticePanel.hidden=false;if(replayBusy){replayPaused=true;replayBar.querySelector('#gtReplayPause').textContent='Play';}}
- async function pollVoice(){if(membershipRevoked||voiceBusy||!current)return;voiceBusy=true;try{const res=await api(voiceUrl+'/poll?token='+encodeURIComponent(ident.token)+'&since='+voiceCursor);for(const event of res.events||[]){if(event.type==='clip'){playClip(event.payload.audio,event.payload.mime);voiceNote.textContent='Received recording from '+event.payload.sender;}if(event.type==='disclosure'){notices.push(event.payload);showNotice();}}voiceCursor=Math.max(voiceCursor,res.cursor||0);}catch(err){trace('voice-poll-error',{error:String(err)});}finally{voiceBusy=false;}}
- ptt.addEventListener('pointerdown',e=>{if(e.button!==0||ptt.disabled)return;ptt.setPointerCapture(e.pointerId);startRecorder();e.preventDefault();});
+ async function pollVoice(){if(membershipRevoked||voiceBusy||!current)return;voiceBusy=true;try{const res=await api(voiceUrl+'/poll?token='+encodeURIComponent(ident.token)+'&since='+voiceCursor);for(const event of res.events||[]){if(event.type==='signal'){await receiveLiveSignal(event);}if(event.type==='clip'){voiceNote.textContent='Legacy recorded message received; playback available only in recorded-voice mode.';}if(event.type==='disclosure'){notices.push(event.payload);showNotice();}}voiceCursor=Math.max(voiceCursor,res.cursor||0);}catch(err){trace('voice-poll-error',{error:String(err)});}finally{voiceBusy=false;}}
+ ptt.addEventListener('pointerdown',e=>{if(e.button!==0||ptt.disabled)return;ptt.setPointerCapture(e.pointerId);void beginLiveTalk();e.preventDefault();});
  for(const eventName of ['pointerup','pointercancel','lostpointercapture'])ptt.addEventListener(eventName,endTalk);
- ptt.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&!e.repeat){e.preventDefault();startRecorder();}});ptt.addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='Enter')endTalk();});
+ ptt.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&!e.repeat){e.preventDefault();void beginLiveTalk();}});ptt.addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='Enter')endTalk();});
  window.addEventListener('blur',endTalk);document.addEventListener('visibilitychange',()=>{if(document.hidden)endTalk();});
  comm.onclick=()=>{if(comm.disabled)return;voice.hidden=!voice.hidden;if(!voice.hidden){renderChannels();void loadMicrophones();}};
  voice.querySelector('#gtVoiceClose').onclick=()=>{endTalk();voice.hidden=true};
  voice.querySelector('#gtVoiceReplay').onclick=()=>{if(lastAudio)playClip(lastAudio.data,lastAudio.mime);};
- voice.querySelector('#gtVoiceTestMic').onclick=async()=>{try{if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw Error('HTTPS or localhost is required');micStream=await acquireMic();monitorMic();const track=micStream.getAudioTracks()[0];voiceNote.textContent='Microphone: '+(track?.label||'selected input')+' · '+(track?.readyState||'unknown')+(track?.muted?' · MUTED':'')+'. Choose a channel and hold to record.';}catch(err){voiceNote.textContent='Microphone test failed: '+err.message;}};
+ voice.querySelector('#gtVoiceTestMic').onclick=async()=>{try{if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw Error('HTTPS or localhost is required');micStream=await acquireMic();monitorMic();const track=micStream.getAudioTracks()[0];voiceNote.textContent='Microphone: '+(track?.label||'selected input')+' · '+(track?.readyState||'unknown')+(track?.muted?' · MUTED':'')+'. Choose a channel and hold to talk live.';}catch(err){voiceNote.textContent='Microphone test failed: '+err.message;}};
  setInterval(pollVoice,850);
  const voiceHandle=voice.querySelector('#gtVoiceDrag');let voiceDrag=null;
  voiceHandle.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.button!==0)return;const r=voice.getBoundingClientRect();voiceDrag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};voiceHandle.setPointerCapture(e.pointerId);e.preventDefault()});
