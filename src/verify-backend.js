@@ -20,9 +20,9 @@
   modal=document.createElement('div');modal.id='gtVerifyOverlay';modal.style.cssText=STYLE;
   const panel=document.createElement('div');panel.style.cssText='max-width:580px;width:100%;background:#132b42;border:2px solid #a4c3df;border-radius:12px;padding:25px;box-shadow:0 16px 55px #000a';
   const heading=document.createElement('h2');heading.textContent='GameTopia — Backend Verification';heading.style.cssText='margin:0 0 16px;font-size:23px';
-  message=document.createElement('p');message.setAttribute('role','alert');message.textContent='Checking GameTopia backend version…';
+  message=document.createElement('p');message.setAttribute('role','alert');message.style.cssText='min-height:46px;display:flex;align-items:center;justify-content:center;text-align:center;margin:12px 0';message.textContent='Checking GameTopia backend version…';
   details=document.createElement('pre');details.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;background:#071525;border-radius:6px;padding:12px;font:13px/1.5 monospace';
-  retry=document.createElement('button');retry.type='button';retry.textContent='Retry Verification';retry.style.cssText='padding:12px 20px;border-radius:7px;border:1px solid #c9d9ef;background:#1467a7;color:white;font-weight:700;cursor:pointer';retry.onclick=()=>check(true);
+  retry=document.createElement('button');retry.type='button';retry.textContent='Retry Verification';retry.style.cssText='display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;line-height:1.3;padding:12px 20px;border-radius:7px;border:1px solid #c9d9ef;background:#1467a7;color:white;font-weight:700;cursor:pointer';retry.onclick=()=>check(true);
   panel.append(heading,message,details,retry);modal.appendChild(panel);document.body.appendChild(modal);
  }
  async function check(showOverlay){

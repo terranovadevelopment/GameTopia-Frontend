@@ -199,6 +199,21 @@
     }
     path[steps]={...join};waterways.push(path);
   }
+  // M6.228: a seeded drainage axis. Earlier every river flowed north-to-south.
+  // Transform whole river networks (including tributary joins) together, so
+  // lakes, bridges and hex-edge crossings still use the same geometry below.
+  const drainageAxis=['north-south','west-east','northwest-southeast','northeast-southwest'][Math.floor(hash(1773,987)*4)];
+  if(drainageAxis!=='north-south'){
+    const shapeRiver=p=>{
+      const along=p.row/(rows-1),lateral=p.col/(cols-1)-.5;
+      if(drainageAxis==='west-east')return {col:along*(cols-1),row:(.5-lateral)*(rows-1)};
+      if(drainageAxis==='northwest-southeast')return {
+        col:(along+.62*lateral)*(cols-1),row:(along-.62*lateral)*(rows-1)};
+      return {col:(1-along+.62*lateral)*(cols-1),row:(along+.62*lateral)*(rows-1)};
+    };
+    for(const path of waterways)for(let i=0;i<path.length;i++)path[i]=shapeRiver(path[i]);
+  }
+  global.ARMAGEDDON_RIVER_DIRECTION=drainageAxis;
   // Build the actual hex-side graph. Vertex keys are quantized coordinates;
   // therefore neighboring hexes share precisely the same graph edges.
   const streamEdges=[],streamKeys=new Set(),edgeGraph=new Map(),vertexPositions=new Map();
@@ -367,7 +382,7 @@
   const visibleStreamEdges=streamEdges.filter(edge=>!touchesLake(edge));
   global.ARMAGEDDON_RIVER_EDGES=visibleRiverEdges;
   const crossingKeys=exactCrossings(visibleStreamEdges);
-  global.ARMAGEDDON_DRAINAGE={trunks:trunkCount,tributaries:Math.max(0,riverCount-trunkCount),outlets:'map edges or main river',seed:mapSeed,model:'connected-drainage-graph'};
+  global.ARMAGEDDON_DRAINAGE={trunks:trunkCount,tributaries:Math.max(0,riverCount-trunkCount),outlets:'map edges or main river',seed:mapSeed,model:'connected-drainage-graph',direction:drainageAxis};
   global.ARMAGEDDON_WATERWAYS=waterways;
   global.ARMAGEDDON_STREAM_EDGES=visibleStreamEdges;
   global.ARMAGEDDON_STREAM_KEYS=crossingKeys;
