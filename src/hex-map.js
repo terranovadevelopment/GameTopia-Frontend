@@ -132,6 +132,20 @@
         if(distance===1)return {visible:true,reason:'adjacent-unit',terrain,urban,maxRange,nearest:distance,side};
         if(distance>1&&distance<=maxRange&&this.lineOfSight(at(f),target))return {visible:true,reason:'spotted-los',terrain,urban,maxRange,nearest:distance,side};
       }
+      // M6.219: friendly fully controlled cities spot enemy divisions like a
+      // friendly combat division; they have no omniscient sight in concealment.
+      const friendlyCities=this.cityStates||[];
+      for(const entry of friendlyCities){
+        const c=entry.city||entry;
+        const owner=entry.owner||c.side;
+        if(owner!==side||Number(entry.pacification)>0||entry.occupier)continue;
+        const station={col:c.c??c.col,row:c.r??c.row};
+        if(!Number.isInteger(station.col)||!Number.isInteger(station.row))continue;
+        const distance=this.spottingDistance(station,target);
+        nearest=Math.min(nearest,distance);
+        if(distance===1)return {visible:true,reason:'adjacent-friendly-city',terrain,urban,maxRange,nearest:distance,side};
+        if(distance>1&&distance<=maxRange&&this.lineOfSight(station,target))return {visible:true,reason:'city-spotted-los',terrain,urban,maxRange,nearest:distance,side};
+      }
       return {visible:false,reason:'out-of-range',terrain,urban,maxRange,nearest,side};
     }
     visibleDivision(d){return this.visibilityInfo(d).visible;}
@@ -506,11 +520,11 @@
           const neighborAx=pixelToAxial(mx+ux*S*.68,my+uy*S*.68,S);
           const near=offsetFromAxial(neighborAx.q,neighborAx.r),other=byCoord.get(hexKey(near.col,near.row));
           if(!other||other.t===p.t||!blendColors[other.t])continue;
-          const depth=S*.22;
+          const depth=S*.34; // M6.219: stronger inside-only transition band
           const grad=g.createLinearGradient(mx-ux*depth,my-uy*depth,mx+ux*.5,my+uy*.5);
           grad.addColorStop(0,'rgba(0,0,0,0)');
-          grad.addColorStop(.85,blendColors[other.t]+'95');
-          grad.addColorStop(1,blendColors[other.t]+'a0');
+          grad.addColorStop(.70,blendColors[other.t]+'9c');
+          grad.addColorStop(1,blendColors[other.t]+'b4');
           g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);
           g.lineTo(b.x-ux*depth,b.y-uy*depth);g.lineTo(a.x-ux*depth,a.y-uy*depth);g.closePath();
           g.fillStyle=grad;g.fill();
@@ -544,7 +558,7 @@
             const t=j/pieces;
             const low=Math.sin(Math.PI*t),wave=Math.sin(2*Math.PI*t)*bendA*.62+Math.sin(3*Math.PI*t)*bendB*.21;
             const fine=(noise(p.c*5.7+i*2.1+t*5.5,p.r*4.2-i+t*3.2)-.5)*.035;
-            const margin=S*(.035+low*(.055+wave*.055+fine*.35));
+            const margin=S*(.045+low*(.095+wave*.065+fine*.4)); // M6.219: slightly more prominent, curved, INSIDE-lake shore
             edge.push({x:a.x+(b.x-a.x)*t+nx*margin,y:a.y+(b.y-a.y)*t+ny*margin});
           }
           // A rounded shoreline interpolates each intermediate point; avoid
@@ -687,6 +701,15 @@
           const near=sites.map((_,j)=>({j,d:distance(i,j)})).filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);
           if(near.length){addEdge(i,near[0].j);if(near.length>1&&hash(i,51)>.32)addEdge(i,near[1].j);}
         }
+        // M6.219: 50% more distinct city-to-city connections. This graph
+        // shares actual roads/bridge keys with movement rules; not just ink.
+        const existing=edges.length,goal=Math.ceil(existing*1.5);
+        const extra=[];
+        for(let i=0;i<sites.length;i++)for(let j=i+1;j<sites.length;j++){
+          if(!edgeSet.has(i+':'+j))extra.push({i,j,d:distance(i,j)});
+        }
+        extra.sort((a,b)=>a.d-b.d||a.i-b.i||a.j-b.j);
+        for(const link of extra){if(edges.length>=goal)break;addEdge(link.i,link.j);}
       }
       // Roads are sequences of adjacent hex CENTERS, never arbitrary splines.
       const offsetNeighbors=(c,r)=>((r&1)?[[1,0],[-1,0],[0,-1],[1,-1],[0,1],[1,1]]:[[1,0],[-1,0],[-1,-1],[0,-1],[-1,1],[0,1]]).map(([dc,dr])=>[c+dc,r+dr]).filter(([x,y])=>x>=0&&y>=0&&x<cols&&y<rows);
@@ -879,7 +902,7 @@
         // Ally plots are read-only and use their owner's personal player color.
         const owner=window.ARMAGEDDON_ASSET_OWNERS?.['unit:'+String(d.id)];
         const allyColor=window.ARMAGEDDON_PLAYER_COLORS?.[owner]||'#8fe3ff';
-        ctx.strokeStyle=selected?'#ffdf55':allyRoute?allyColor:'#f14b55';
+        ctx.strokeStyle=selected?'#ffffff':allyRoute?allyColor:'#f14b55';
         ctx.lineWidth=selected?4:allyRoute?3.4:3;
         ctx.lineCap="round";ctx.lineJoin="round";
         ctx.setLineDash([Math.max(7,11*this.zoom),Math.max(5,8*this.zoom)]);
@@ -907,7 +930,7 @@
           const r=Math.max(10,Math.min(17,this.size*.32));
           const cx=p.x,cy=p.y-this.size*.57;
           ctx.beginPath();ctx.ellipse(cx,cy,r*1.24,r*1.24,0,0,Math.PI*2);
-          ctx.fillStyle=selected?'#ffe072':'#ff7075';ctx.fill();
+          ctx.fillStyle=selected?'#ffffff':'#ff7075';ctx.fill();
           ctx.strokeStyle='#172332';ctx.lineWidth=2;ctx.stroke();
           ctx.fillStyle='#111927';ctx.font=`bold ${Math.round(r*1.2)}px Arial`;
           const hour=frozen?frozen.hour:arrivalTI;

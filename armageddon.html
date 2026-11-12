@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded',function(){
   ['moraleOverlayToggle','Morale','M']
  ];
  const moraleToggle=document.createElement('button');moraleToggle.id='moraleOverlayToggle';moraleToggle.type='button';moraleToggle.setAttribute('aria-pressed','false');moraleToggle.addEventListener('click',()=>{const r=window.ARMAGEDDON_M2?.renderer;if(!r){console.warn('Morale overlay: map renderer not ready');return;}r.showMorale=!r.showMorale;moraleToggle.setAttribute('aria-pressed',String(r.showMorale));r.render();document.dispatchEvent(new CustomEvent('gt-morale-updated',{detail:{enabled:r.showMorale}}));});document.body.append(moraleToggle);
- document.addEventListener('keydown',e=>{if(e.altKey||e.ctrlKey||e.metaKey||e.target?.matches?.('input,textarea,select,[contenteditable]'))return;if(e.key?.toLowerCase()==='m'){e.preventDefault();moraleToggle.click();}});
+ document.addEventListener('keydown',e=>{if(e.altKey||e.ctrlKey||e.metaKey||e.target?.matches?.('input,textarea,select,[contenteditable]'))return;if(e.key?.toLowerCase()==='m'){e.preventDefault();moraleToggle.click();}else if(e.key?.toLowerCase()==='u'&&!e.repeat){e.preventDefault();document.getElementById('unitSymbolsToggle')?.click();}});
  const updateLabels=()=>{
   for(const [id,label,key] of entries){
    const source=document.getElementById(id);
@@ -1378,7 +1378,7 @@ window.armServerRequest=async function(path,options={}){
    // Do not let a map drag capture mouse input once the firing window is open.
    if(renderer.canvas){try{for(const id of [1,2,3,4,5])if(renderer.canvas.hasPointerCapture?.(id))renderer.canvas.releasePointerCapture(id)}catch(_){}}
    battleDialog.hidden=false;battleDialog.style.transform='none';battleDialog.style.top=Math.max(78,Math.min(innerHeight-battleDialog.offsetHeight-12,canvasRect.top+20))+'px';
-   const dw=battleDialog.offsetWidth, gap=240,right=bx+gap,left=bx-gap-dw; // M6.218: ~2.5 in at CSS 96px/in
+   const dw=battleDialog.offsetWidth, gap=240,right=bx+gap,left=bx-gap-dw; // M6.219: ~2.5 in at CSS 96px/in
    battleDialog.style.left=(right+dw<innerWidth-8?right:left>8?left:Math.max(8,Math.min(innerWidth-dw-8,right)))+'px';
    battlePointer.style.display='block';updateBattlePointer();
    // Map pan/zoom and draggable reports change pixel positions independently
@@ -1558,13 +1558,24 @@ window.armServerRequest=async function(path,options={}){
        while(!pacPanel.hidden){await new Promise(r=>setTimeout(r,100));}
        for(const battle of combats.filter(e=>e.ti===ti)){if(replaySkip)break;await showBattleReport(battle,day,byId,renderer);}
        for(const event of moraleOutcomes.filter(e=>Number(e.ti||10)===ti)){if(replaySkip)break;await showMoraleOutcome(event,byId,renderer);}
-       // M6.218: advances occur AFTER morale/retreat. The server emits them
+       // M6.219: advances occur AFTER morale/retreat. The server emits them
        // at TI 10. Animate from authoritative hex centers, not pan-adjusted pixels.
        for(const advance of (events||[]).filter(e=>e.type==='advance'&&Number(e.ti||10)===ti&&e.from&&e.to)){
          if(replaySkip)break;
          const u=byId.get(String(advance.unitId));if(!u)continue;
          replayBar.querySelector('#gtReplayStatus').textContent='ADVANCE AFTER COMBAT · '+(u.name||u.id);
          await centerCombat(renderer,advance.to);
+         await new Promise(resolve=>{
+           const panel=document.createElement('section');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');
+           panel.style.cssText='position:fixed;z-index:100020;width:min(410px,92vw);background:#10283c;color:#fff;border:2px solid #e2ad58;border-radius:9px;padding:18px;box-shadow:0 15px 30px #000b;font:15px/1.5 Arial';
+           const title=document.createElement('h2');title.textContent=(u.side==='Red'?'Redonia':'Bluenstein')+' — ADVANCE AFTER COMBAT';title.style.cssText='font-size:19px;margin:0 0 12px;cursor:move';
+           const detail=document.createElement('p');detail.textContent=(u.name||u.id)+' will advance into the vacated hex. The movement animation lasts three seconds.';
+           const button=document.createElement('button');button.textContent='Acknowledge — Advance';button.style.cssText='padding:9px 18px;background:#245b86;color:white;border:1px solid #b2d5ef;border-radius:5px;cursor:pointer';
+           panel.append(title,detail,button);document.body.append(panel);
+           const clear=anchoredReplayNotice(panel,title,renderer,advance.to);
+           button.onclick=()=>{window.ARMAGEDDON_SOUND?.unlock?.();clear();panel.remove();resolve();};button.focus();
+         });
+         // Movement SFX is a fallback until a dedicated advance.mp3 is chosen.
          window.ARMAGEDDON_SOUND?.movement?.(u.type||'Infantry',{duration:3,volume:.8});
          trace('advance-after-combat',{unitId:u.id,from:advance.from,to:advance.to,durationSeconds:3});
          const base=renderer.baseSize;
@@ -1654,7 +1665,7 @@ window.armServerRequest=async function(path,options={}){
      .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
-  // M6.218: Publish each actual Planning route revision so allied humans can
+  // M6.219: Publish each actual Planning route revision so allied humans can
   // see it on their next state poll. Sending only at Ready hid plotted routes.
   let lastSharedRouteSignature=null, sharingRoutes=false;
   function ownRoutesSignature(){

@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded',function(){
    const item=overlayList.querySelector('[data-overlay-id="'+id+'"]');
    if(!source||!item)continue;
    const pressed=source.getAttribute('aria-pressed')==='true';
-   if(id==='battleMusicToggle'){const m=window.ARMAGEDDON_MARCH;const on=!!m?.battleEnabled;item.textContent='Music: '+(on?'On':'Off')+' (U)';item.setAttribute('aria-checked',String(on));continue;}
+   if(id==='battleMusicToggle'){const m=window.ARMAGEDDON_MARCH;const on=!!m?.battleEnabled;item.textContent='Music: '+(on?'On':'Off');item.setAttribute('aria-checked',String(on));continue;}
    if(id==='unitSymbolsToggle'){item.textContent='Unit symbols: '+(pressed?'Silhouettes':'NATO');item.setAttribute('aria-checked',String(pressed));continue;}
    if(id==='soundToggle'){const on=!!window.ARMAGEDDON_SOUND?.enabled;item.textContent='Sound Effects: '+(on?'On':'Off')+' (V)';item.setAttribute('aria-checked',String(on));continue;}
    const visible=id==='mapControlsToggle'?!document.getElementById('mapControlsOverlay')?.hidden:pressed;

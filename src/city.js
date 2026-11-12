@@ -79,8 +79,20 @@
             if(canManage(s))button('Cancel production',async()=>{
               if(!window.confirm('Cancel '+prod.type+' production and refund '+prod.cost+' RP?'))return;
               try{const result=await sendProduction(s.city.name,'cancel',undefined,hex);
-                if(result?.treasury)Object.assign(treasury,result.treasury);else treasury[side]+=prod.cost;
-                delete slots[key];render();renderer.render();}catch(e){alert('Production cancellation failed: '+e.message)}
+                // Server response is authoritative: an accepted cancellation
+                // must remove the job from the actual production roster before
+                // announcing the RP refund. Never fake a successful cancel.
+                if(result){
+                  if(result.productions?.[key])throw Error('Server still reports this unit under production');
+                  if(!result.treasury)throw Error('Server did not confirm the RP refund');
+                  Object.assign(treasury,result.treasury);
+                  s.productions={...(result.productions||{})};
+                }else{
+                  treasury[side]+=Number(prod.cost)||0;
+                  delete slots[key];
+                }
+                render();renderer.render();
+              }catch(e){alert('Production cancellation failed: '+e.message)}
             });
           }else if(canManage(s)&&!paused){
             const types=Object.entries(specs).filter(([t,v])=>treasury[side]>=v.cost);
