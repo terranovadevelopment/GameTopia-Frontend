@@ -44,7 +44,7 @@ if(location.protocol==='file:') {
 #selectionPanel{position:fixed!important;display:none;left:20px;top:158px;z-index:9400;width:min(330px,calc(100vw - 24px));max-height:75vh;overflow:auto;background:#10283c;border:2px solid #d7a54e;box-shadow:0 16px 36px #000c}
 #selectionPanel:has(#divisionDetails:not([hidden])){display:block!important}
 #cityPanel[hidden],#selectionPanel[hidden]{display:none!important}
-#cityPanel{left:auto;right:28px;top:110px;z-index:9450}
+#cityPanel{z-index:9450} /* M6.223: JS positions panel beside selected city */
 #playtestTopLabel{display:none!important}
 </style><style>#divisionDetails .detail-row > span {color:#fff!important;opacity:1!important;}</style>
 <style id="gt-m6193-gameplay-and-setup">
@@ -1017,6 +1017,45 @@ window.armServerRequest=async function(path,options={}){
    pacCityHex=n.hex&&Number.isFinite(Number(n.hex.col))&&Number.isFinite(Number(n.hex.row))?n.hex:null;updatePacificationArrow();
  }
  const status=box.querySelector('#gtTurnStatus'),players=box.querySelector('#gtPlayersList'),ready=box.querySelector('#gtReadyToggle'),comm=document.getElementById('gtCommToggle');let current=null;
+ // M6.223: every game day begins with a per-player, click-anywhere splash.
+ // The server may already be in Planning; this overlay protects the local
+ // planning controls until the viewer acknowledges the new day.
+ const daySplash=document.createElement('div');daySplash.id='gtNewDaySplash';
+ daySplash.setAttribute('role','button');daySplash.setAttribute('aria-label','Click anywhere to begin planning this game day');
+ daySplash.tabIndex=0;
+ daySplash.style.cssText='position:fixed;inset:0;z-index:2147483005;display:none;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;background:#050c16;color:#fff;cursor:pointer;user-select:none;touch-action:manipulation;font-family:Georgia,serif;text-align:center';
+ daySplash.innerHTML='<img src="assets/armageddon-turn-splash.jpg" alt="Bluenstein and Redonia soldiers in battle" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;pointer-events:none"><div style="position:absolute;inset:0;background:linear-gradient(180deg,#030914d9 0%,#03091430 38%,#03091435 62%,#030914df 100%);pointer-events:none"></div><div style="position:relative;text-shadow:0 4px 15px #000,0 2px 5px #000;font-size:clamp(28px,5vw,74px);font-weight:900;letter-spacing:.1em">ARMAGEDDON</div><div id="gtTurnSplashNumber" style="position:relative;margin-top:6vh;color:#ffe09a;font:bold clamp(40px,8vw,120px) Georgia,serif;text-shadow:0 3px 22px #000">DAY 1</div><div style="position:absolute;bottom:7vh;left:12px;right:12px;font:700 clamp(15px,2.2vw,30px) Arial,sans-serif;letter-spacing:.12em;text-shadow:0 2px 10px #000">CLICK ANYWHERE TO BEGIN PLANNING</div>';
+ document.body.appendChild(daySplash);
+ const splashShownDays=new Set();let splashOnDismiss=null,splashBuglePlayed=false;
+ function showDaySplash(day,onDismiss){
+  day=Number(day);
+  if(!Number.isInteger(day)||day<1||splashShownDays.has(day)||current?.victory?.side)return false;
+  splashShownDays.add(day);splashOnDismiss=typeof onDismiss==='function'?onDismiss:null;
+  daySplash.querySelector('#gtTurnSplashNumber').textContent='DAY '+day;
+  daySplash.style.display='flex';window.ARMAGEDDON_ORDERS_LOCKED=true;
+  // On returning to the game the audio context may already be unlocked.
+  // On Day 1 the browser may require the player's first click to play sound.
+  splashBuglePlayed=false;
+  if(window.ARMAGEDDON_SOUND?.enabled!==false && window.__GT_FANFARE_CONTEXT?.state==='running'){
+   executionTrumpet();splashBuglePlayed=true;
+  }
+  trace('day-splash-shown',{day});daySplash.focus({preventScroll:true});return true;
+ }
+ function dismissDaySplash(event){
+  if(daySplash.style.display==='none')return;
+  event?.preventDefault?.();event?.stopPropagation?.();
+  if(!splashBuglePlayed && window.ARMAGEDDON_SOUND?.enabled!==false){
+   window.ARMAGEDDON_SOUND?.unlock?.();executionTrumpet();splashBuglePlayed=true;
+  }
+  daySplash.style.display='none';
+  const me=current?.players?.find(p=>p.id===ident.playerId);
+  window.ARMAGEDDON_ORDERS_LOCKED=!!me?.ready||current?.phase!=='planning'||replayBusy;
+  trace('day-splash-dismissed',{day:current?.day});
+  const fn=splashOnDismiss;splashOnDismiss=null;if(fn)fn();
+ }
+ daySplash.addEventListener('click',dismissDaySplash);
+ daySplash.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){dismissDaySplash(e);}});
+
  // Authoritative RP updates are streamed to every browser on each purchase
  // and at the day boundary; normal state polling is only a fallback.
  let lastEconomyRevision=-1;
@@ -1377,10 +1416,12 @@ window.armServerRequest=async function(path,options={}){
    table.append(tbody);body.append(table);
    const canvasRect=renderer.canvas.getBoundingClientRect(),battlePos=renderer.worldPixel(event.hex.col,event.hex.row);
    const bx=canvasRect.left+battlePos.x*canvasRect.width/renderer.dims.w;
+   const by=canvasRect.top+battlePos.y*canvasRect.height/renderer.dims.h;
    // Do not let a map drag capture mouse input once the firing window is open.
    if(renderer.canvas){try{for(const id of [1,2,3,4,5])if(renderer.canvas.hasPointerCapture?.(id))renderer.canvas.releasePointerCapture(id)}catch(_){}}
-   battleDialog.hidden=false;battleDialog.style.transform='none';battleDialog.style.top=Math.max(78,Math.min(innerHeight-battleDialog.offsetHeight-12,canvasRect.top+20))+'px';
-   const dw=battleDialog.offsetWidth, gap=240,right=bx+gap,left=bx-gap-dw; // M6.221: ~2.5 in at CSS 96px/in
+   battleDialog.hidden=false;battleDialog.style.transform='none';
+   battleDialog.style.top=Math.max(75,Math.min(innerHeight-battleDialog.offsetHeight-12,by-battleDialog.offsetHeight*.35))+'px';
+   const dw=battleDialog.offsetWidth, gap=215,right=bx+gap,left=bx-gap-dw; // M6.223: about 2.2 CSS inches from battle
    battleDialog.style.left=(right+dw<innerWidth-8?right:left>8?left:Math.max(8,Math.min(innerWidth-dw-8,right)))+'px';
    battlePointer.style.display='block';updateBattlePointer();
    // Map pan/zoom and draggable reports change pixel positions independently
@@ -1556,6 +1597,17 @@ window.armServerRequest=async function(path,options={}){
        // Reveal only the notices generated at this TI. Acknowledgment stops
        // this viewer before the next TI, not the server or other players.
        pacificationRevealTi=ti;
+       // M6.223: synchronize each city's visible pacification at the TI where
+       // the authoritative server event happened, before the notice is shown.
+       for(const pac of (events||[]).filter(e=>e.type==='pacification'&&Number(e.ti||10)===ti)){
+         const state=window.ARMAGEDDON_M3?.cities?.state?.find(s=>String(s.city?.name)===String(pac.cityName));
+         if(state&&Number.isFinite(Number(pac.progress))){
+           state.pacification=Math.max(0,Math.min(5,Number(pac.progress)));
+           state.occupier=state.pacification>0?(pac.enemySide||state.occupier):null;
+         }
+       }
+       window.ARMAGEDDON_M3?.cities?.render?.();
+       renderer.render();
        if(current)showPacificationNotices(current);
        while(!pacPanel.hidden){await new Promise(r=>setTimeout(r,100));}
        for(const battle of combats.filter(e=>e.ti===ti)){if(replaySkip)break;await showBattleReport(battle,day,byId,renderer);}
@@ -1603,7 +1655,7 @@ window.armServerRequest=async function(path,options={}){
      }
    }finally{
      await applyServerPositions(day);renderer.visualPositions.clear();renderer.spottingPositions?.clear();renderer.refreshHexControl();renderer.render();
-     replayBar.hidden=true;replayBusy=false;if(day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();
+     replayBar.hidden=true;replayBusy=false;if(!current?.victory?.side)showDaySplash(day,()=>{if(day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();});else if(day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();
      if(current?.victory?.side)window.ARMAGEDDON_SHOW_VICTORY?.(current.victory.side);if(executeButton){executeButton.textContent='READY';executeButton.style.background='#15803d';executeButton.style.color='#fff';}pacificationRevealTi=10;if(current)showPacificationNotices(current);trace('replay-complete',{day,skipped:replaySkip,moves:moves.length});
    }
  }
@@ -1773,9 +1825,10 @@ window.armServerRequest=async function(path,options={}){
    // Clear planned route overlays as soon as server leaves Planning.
    // Do not erase orders while waiting for other players to become Ready.
    if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}
-   if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else {await applyServerPositions(st.day);if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();}}
+   if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else {await applyServerPositions(st.day);showDaySplash(st.day,()=>{if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();});}}
+if(st.phase==='planning'&&!replayBusy&&st.day===lastAppliedDay&&!st.victory?.side&&!st.players.find(p=>p.id===ident.playerId)?.ready)showDaySplash(st.day,()=>{if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();});
 const loginBadge=box.querySelector('#gtLoginStatus');if(loginBadge){const who=st.players.find(p=>p.id===ident.playerId);loginBadge.textContent=who?.accountId?'Signed in: '+who.name+' · Account ID '+who.accountId:'Guest: '+(who?.name||'Player')+' · Register / Log In via Games Underway';}
-window.ARMAGEDDON_ORDERS_LOCKED=!!me?.ready||st.phase!=='planning'||replayBusy;
+window.ARMAGEDDON_ORDERS_LOCKED=!!st.players.find(p=>p.id===ident.playerId)?.ready||st.phase!=='planning'||replayBusy||daySplash.style.display!=='none';
 status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.role==='active'&&p.ready).length+'/'+st.players.filter(p=>p.role==='active').length+' Ready' + (st.executionStatus==='paused-combat-required'?' · STOPPED: combat required (movement only)':st.executionStatus==='movement-completed'?' · Delegation and ownership day completed':st.executionStatus?.startsWith('movement-error')?' · '+st.executionStatus:'');if(st.executionEvents?.length){status.textContent+=' · '+st.executionEvents.filter(e=>e.type==='move').length+' moves recorded';}players.replaceChildren();for(const p of st.players){const line=document.createElement('div');line.className='gt-member';const name=document.createElement('span');name.textContent=(Number.isInteger(Number(p.accountId))&&Number(p.accountId)>=1000&&Number(p.accountId)<100000000?'ID '+p.accountId:'Guest')+' · '+p.name+' · ';name.style.borderLeft='5px solid '+(p.color||'#ccc');name.style.paddingLeft='6px';const side=document.createElement('strong');side.textContent=p.side==='Blue'?'Bluenstein':p.side==='Red'?'Redonia':p.side;side.style.color=p.side==='Blue'?'#65b0ff':'#ff7777';name.append(side);const state=document.createElement('strong');state.textContent=p.ready?'Ready':'Not Ready';state.style.color=p.ready?'#7de3a3':'#ffbd62';line.append(name,state);players.append(line)}const me=st.players.find(p=>p.id===ident.playerId);ready.textContent=replayBusy?'Executing':me?.ready?'Waiting':'Click when ready';ready.className=replayBusy?'gt-executing':me?.ready?'gt-ready':'gt-notready';ready.disabled=replayBusy||me?.role!=='active'||st.phase!=='planning';const toolbarReady=document.getElementById('readyButton');if(toolbarReady){toolbarReady.textContent=replayBusy?'EXECUTING':me?.ready?'READY':'NOT READY';toolbarReady.style.background=replayBusy?'#eab308':me?.ready?'#15803d':'#d97706';toolbarReady.style.color=replayBusy?'#101820':'#fff';toolbarReady.disabled=ready.disabled;toolbarReady.setAttribute('aria-pressed',String(!!me?.ready));}const sameSideSenior=st.players.filter(x=>x.role==='active'&&x.side===me?.side).sort((a,b)=>a.seniority-b.seniority)[0];topKick.hidden=!(me&&sameSideSenior?.id===ident.playerId&&st.phase==='planning');topLeave.hidden=!(me&&me.role==='active');topLeave.disabled=st.phase!=='planning';if(!voice.hidden)renderChannels();syncCommAvailability();box.querySelector('.gt-drag span').textContent='Players · '+st.phase;}catch(e){trace('refresh-error',{error:e.message});if(e.message==='Admission required'||e.message==='Active player required'){showRemovedFromGame();return;}status.textContent='Server: '+e.message}}
  ready.onclick=async()=>{try{if(!current||current.phase!=='planning')return;window.ARMAGEDDON_SOUND?.unlock?.();window.ARMAGEDDON_SOUND?.unlockMedia?.();ready.disabled=true;const me=current?.players.find(p=>p.id===ident.playerId);trace('ready-click',{day:current.day,readyBefore:!!me?.ready});if(!me?.ready)await submitPlottedRoutes();trace('sending-ready',{ready:!me?.ready});if(!me?.ready){window.ARMAGEDDON_ORDERS_LOCKED=true;ready.textContent='Waiting';ready.className='gt-ready';const bar=document.getElementById('readyButton');if(bar){bar.textContent='READY';bar.style.background='#15803d';}}await api(base+'/ready',{method:'POST',body:JSON.stringify({token:ident.token,ready:!me?.ready})});trace('ready-accepted',{ready:!me?.ready});await refresh()}catch(e){trace('ready-error',{error:e.message});alert(e.message);await refresh()}};
  // M6.136: WebRTC peer-to-peer live voice; the backend carries signaling ONLY.
