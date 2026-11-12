@@ -15,7 +15,7 @@
 #dayCombatDetail{padding:12px;background:#091a27;border-radius:7px;min-height:100px}
 </style>
 <style>
-/* M6.224: keep counter style caption and selector fully readable without clipping. */
+/* M6.226: keep counter style caption and selector fully readable without clipping. */
 #setupThreeColumns.m493-restored .m493-column>label:has(> #unitSymbolStyle){display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;width:100%!important;max-width:none!important;white-space:nowrap!important}
 #setupThreeColumns.m493-restored .m493-column>label>#unitSymbolStyle{display:inline-block!important;width:210px!important;max-width:58%!important;flex:0 1 210px!important;min-height:44px!important;height:auto!important;line-height:1.5!important;box-sizing:border-box!important;overflow:visible!important;margin:0!important;padding:9px 8px!important}
 </style>
@@ -201,7 +201,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
   (function(){
     const fields=document.getElementById('densityFields'),panel=document.getElementById('mapSetupPanel');
     const names=[['cities','Cities'],['forest','Forests'],['hills','Rough'],['mountains','Mountains'],['swamp','Swamps'],['lakes','Lakes'],['rivers','Rivers'],['streams','Streams']];
-    for(const [key,label] of names){const wrapper=document.createElement('label');wrapper.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';wrapper.textContent=label;const sel=document.createElement('select');sel.dataset.density=key;sel.style.cssText='padding:7px;background:#293d4b;color:white;border:1px solid #688293;border-radius:4px';for(const [v,text] of (key==='cities'?[['low','Low'],['normal','Normal'],['high','High']]:[['off','None'],['low','Low'],['normal','Normal'],['high','High']])){const option=document.createElement('option');option.value=v;option.textContent=text;sel.appendChild(option);}sel.value=(window.ARMAGEDDON_DENSITY||{})[key]||'normal';wrapper.appendChild(sel);fields.appendChild(wrapper);}
+    for(const [key,label] of names){const wrapper=document.createElement('label');wrapper.style.cssText='display:flex;flex-direction:column;gap:4px;font-size:13px';wrapper.textContent=label;const sel=document.createElement('select');sel.dataset.density=key;sel.style.cssText='padding:7px;background:#293d4b;color:white;border:1px solid #688293;border-radius:4px';for(const [v,text] of (key==='cities'?[['low','Low (0.5×)'],['normal','Medium (1.0×)'],['high','High (2.0×)']]:[['off','None'],['low','Low (0.5×)'],['normal','Medium (1.0×)'],['high','High (2.0×)']])){const option=document.createElement('option');option.value=v;option.textContent=text;sel.appendChild(option);}sel.value=(window.ARMAGEDDON_DENSITY||{})[key]||'normal';wrapper.appendChild(sel);fields.appendChild(wrapper);}
     document.getElementById('mapSize').value=window.ARMAGEDDON_SETUP?.size||'medium';
     document.getElementById('deployment').value=window.ARMAGEDDON_SETUP?.deployment||'mobilized';
     const seedControl=document.getElementById('mapSeed');
@@ -632,7 +632,8 @@ document.addEventListener('DOMContentLoaded',function(){
   ['citiesOverlayToggle','Cities','C'],
   ['supplyOverlayToggle','Supply','S'],
   ['hexControlToggle','Hex Control','H'],
-  ['mapControlsToggle','Map Controls','?'],
+  ['mapControlsToggle','Mouse & Keyboard Controls','?'],
+  ['soundToggle','Sound effects','V'],
   ['moraleOverlayToggle','Morale','M']
  ];
  const moraleToggle=document.createElement('button');moraleToggle.id='moraleOverlayToggle';moraleToggle.type='button';moraleToggle.setAttribute('aria-pressed','false');moraleToggle.addEventListener('click',()=>{const r=window.ARMAGEDDON_M2?.renderer;if(!r){console.warn('Morale overlay: map renderer not ready');return;}r.showMorale=!r.showMorale;moraleToggle.setAttribute('aria-pressed',String(r.showMorale));r.render();document.dispatchEvent(new CustomEvent('gt-morale-updated',{detail:{enabled:r.showMorale}}));});document.body.append(moraleToggle);
@@ -645,6 +646,7 @@ document.addEventListener('DOMContentLoaded',function(){
    const pressed=source.getAttribute('aria-pressed')==='true';
    if(id==='battleMusicToggle'){const m=window.ARMAGEDDON_MARCH;const on=!!m?.battleEnabled;item.textContent=(on?'☑ ':'☐ ')+'Music On/Off';item.setAttribute('aria-checked',String(on));continue;}
    if(id==='unitSymbolsToggle'){item.textContent='Unit symbols: '+(pressed?'Silhouettes':'NATO')+' (U)';item.setAttribute('aria-checked',String(pressed));continue;}
+   if(id==='soundToggle'){item.textContent='Sound: '+(pressed?'ON':'OFF')+' (V)';item.setAttribute('aria-checked',String(pressed));continue;}
    const visible=id==='mapControlsToggle'?!document.getElementById('mapControlsOverlay')?.hidden:pressed;
    item.textContent=(visible?'☑ ':'☐ ')+label+' ('+key+')';
    item.setAttribute('aria-checked',String(visible));
@@ -703,10 +705,10 @@ document.addEventListener('DOMContentLoaded',function(){
  document.addEventListener('click',e=>{if(!overlayMenu.contains(e.target))closeOverlaysMenu();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlaysMenu();});
  updateLabels();
- const controlsShortcut=document.getElementById('mapControlsToggle');
- if(controlsShortcut){controlsShortcut.textContent='Mouse & Keyboard Controls';actions.insertBefore(controlsShortcut,overlayMenu);controlsShortcut.style.display='inline-flex';}
+ // Mouse & Keyboard Controls is available inside Options, not a separate top-bar button.
+
  const deploy=document.getElementById('deployReinforcement');if(deploy){deploy.style.display='none';deploy.title='Deploy reinforcements (D)';}
- for(const id of ['battleMusicToggle','unitSymbolsToggle','replacementToggle','endPositionsToggle','zocToggle','citiesOverlayToggle','hexControlToggle','moraleOverlayToggle']){
+ for(const id of ['battleMusicToggle','soundToggle','mapControlsToggle','unitSymbolsToggle','replacementToggle','endPositionsToggle','zocToggle','citiesOverlayToggle','hexControlToggle','moraleOverlayToggle']){
   const button=document.getElementById(id);if(button)button.style.display='none';
  }
 });

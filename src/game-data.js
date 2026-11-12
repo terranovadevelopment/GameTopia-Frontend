@@ -66,7 +66,7 @@
   }
   global.ARMAGEDDON_BORDER=border;
   global.ARMAGEDDON_BORDER_COUNTS={Red:border.reduce((a,b)=>a+b,0),Blue:cols*rows-border.reduce((a,b)=>a+b,0)};
-  const multiplier={off:0,low:.5,normal:1,high:1.6};
+  const multiplier={off:0,low:.5,normal:1,high:2};
   // Terrain coverage is proportional to playable hex area (medium = 42 x 28).
   const areaScale=(cols*rows)/(42*28);
   // One city hex per division on each side, regardless of mobilization.
@@ -108,14 +108,15 @@
   };
   chooseCapital('Red');
   chooseCapital('Blue');
-  // For a medium map, 17 noncapital cities per side: 11 size 1, 4 size 2,
-  // 2 size 3 (25 hexes), plus the capital (3 hexes) = 28 urban hexes.
+  // City DENSITY scales the NONCAPITAL CITY COUNT, not just terrain.
+  // Each nation always has one 3-hex capital so the victory and supply rules work.
+  // Low = 50%, Medium/Normal = 100%, High = 200% of the baseline
+  // noncapital settlements. None/off yields no noncapital settlements.
+  // Keep the existing roughly 65/25/10 distribution of 1/2/3-hex towns.
   const otherHexTarget=Math.max(0,targetCityHexes-3);
-  const cityCount=Math.max(1,Math.round(otherHexTarget/1.47));
+  const baselineCityCount=Math.max(1,Math.round(otherHexTarget/1.47));
+  const cityCount=Math.max(0,Math.round(baselineCityCount*multiplier[density.cities]));
   let n3=Math.round(cityCount*.10),n2=Math.round(cityCount*.25),n1=cityCount-n3-n2;
-  // Adjust to retain the original approximate city-hex total.
-  while(n1+2*n2+3*n3<otherHexTarget)n1++;
-  while(n1+2*n2+3*n3>otherHexTarget&&n1>0)n1--;
   const citySizes=[...Array(n1).fill(1),...Array(n2).fill(2),...Array(n3).fill(3)];
   // Shuffle sizes reproducibly so clusters do not follow a fixed pattern.
   for(let i=citySizes.length-1;i>0;i--){const j=Math.floor(hash(i*37,947)* (i+1));[citySizes[i],citySizes[j]]=[citySizes[j],citySizes[i]];}
@@ -155,7 +156,7 @@
   // M3.50: one seed-dependent drainage graph, not independently intersecting splines.
   // Trunks occupy separate drainage corridors. Tributaries join their own trunk.
   // Every river has a connected downstream path to a map edge.
-  const riverCount=Math.round(({off:0,low:1,normal:2,high:4}[density.rivers]??2)*cols/42);
+  const riverCount=Math.round(2*multiplier[density.rivers]*cols/42);
   const trunkCount=Math.min(riverCount,Math.max(1,Math.round(2*cols/42)));
   const waterways=[],trunkPaths=[];
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -219,7 +220,7 @@
   }
   // Streams are vertex-to-vertex walks. Each segment is a real hex side, not a
   // center-to-center line. Each reaches the boundary or a main river bank.
-  const streamCount=Math.round(({off:0,low:9,normal:19,high:30}[density.streams]??19)*areaScale);
+  const streamCount=Math.round(19*multiplier[density.streams]*areaScale);
   const vertexList=[...vertexPositions.keys()];
   const nearRiver=(v)=>{
     if(!waterways.length)return false;
