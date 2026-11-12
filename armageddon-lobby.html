@@ -30,7 +30,7 @@
 </style></head><body><main>
 <div class="top"><a class="btn" href="armageddon-backstory.html?step=3">← Back</a><a class="btn" href="index.html">GameTopia Welcome</a></div>
 <h1>ARMAGEDDON</h1>
-<div class="toolbar"><a class="btn" href="account.html?next=armageddon.html%3FcreateLobby%3D1">Start New Game</a><span id="gtAccountStatus" class="muted"></span><a class="btn" href="account.html">Account / Log In</a></div>
+<div class="toolbar"><a class="btn" id="gtStartNewGame" href="account.html?next=armageddon.html%3FcreateLobby%3D1">Start New Game</a><span id="gtAccountStatus" class="muted"></span><a class="btn" href="account.html">Account / Log In</a></div>
 <h2 style="margin:10px 0 9px">Available Games</h2>
 <div class="game-catalog" aria-label="Games available to resume, join, or load">
  <div class="game-head"><span>Game</span><span>Player (Host)</span><span>Created</span><span>Turn</span><span>Status</span><span>Action</span><span>Description</span></div>
@@ -190,3 +190,25 @@ async function refresh(){
 }
 refresh();setInterval(()=>{if(!document.hidden)refresh()},10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
 </script><script src="src/version.js?v=6.208"></script></body></html>
+<script>/* M6.229: new-game transition is an explicit voluntary departure. */
+(function(){
+ const start=document.getElementById('gtStartNewGame');if(!start)return;
+ start.addEventListener('click',async event=>{
+  const oldId=sessionStorage.getItem('armageddon_active_game');if(!oldId)return;
+  let identity=null;
+  try{identity=JSON.parse(sessionStorage.getItem('armageddon_identity_'+oldId)||localStorage.getItem('armageddon_identity_'+oldId)||'null')}catch(_){}
+  if(!identity?.token)return;
+  event.preventDefault();start.textContent='Leaving previous game…';start.style.pointerEvents='none';
+  try{
+   const response=await fetch('https://gametopia-backend.onrender.com/api/games/'+encodeURIComponent(oldId)+'/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:identity.token})});
+   const body=await response.json().catch(()=>({}));
+   if(!response.ok){
+    // Already-departed players may legitimately see an expired local membership.
+    if(response.status!==403&&response.status!==404)throw Error(body.error||'Leave failed (HTTP '+response.status+')');
+   }
+   sessionStorage.removeItem('armageddon_identity_'+oldId);localStorage.removeItem('armageddon_identity_'+oldId);sessionStorage.removeItem('armageddon_active_game');
+   location.href=start.href;
+  }catch(error){alert('Cannot start another game until departure from your current game is confirmed. '+error.message);start.textContent='Start New Game';start.style.pointerEvents='auto';}
+ });
+})();
+</script>

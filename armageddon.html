@@ -87,7 +87,7 @@ if(location.protocol==='file:') {
         <h2 style="margin:0 0 6px">Map Setup — Battlefield and Deployment</h2>
         <p style="font-size:12px;margin:0 0 14px">Choose how much terrain to generate. Applying starts a new game and clears current orders.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <label style="font-size:13px">Map size<select id="mapSize" style="display:block;width:100%;padding:8px;background:#293d4b;color:white"><option value="small">Small (×0.5)</option><option value="medium">Medium (×1)</option><option value="large">Large (×2)</option><option value="huge">Huge (×3)</option></select></label>
+          <label style="font-size:13px">Map size<select id="mapSize" style="display:block;width:100%;padding:8px;background:#293d4b;color:white"><option value="small">Small (×⅔)</option><option value="medium">Medium (×1)</option><option value="large">Large (×2)</option><option value="huge">Huge (×3)</option></select></label>
           <label style="font-size:13px">Deployment<select id="deployment" style="display:block;width:100%;padding:8px;background:#293d4b;color:white"><option value="unmobilized">Unmobilized — cities first</option><option value="mobilized">Mobilized — 80% near front / 20% rear cities</option></select></label>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;align-items:start">
@@ -102,11 +102,12 @@ if(location.protocol==='file:') {
           <table style="width:100%;border-collapse:collapse;table-layout:fixed"><thead><tr><th style="text-align:left;width:46%">Setting</th><th style="text-align:left;width:27%">Bluenstein</th><th style="text-align:left;width:27%">Redonia</th></tr></thead><tbody>
           <tr><td>Starting reinforcement (%)</td><td><input id="blueUnits" type="number" min="0" max="300" step="1" value="100" style="width:90%;box-sizing:border-box" /></td><td><input id="redUnits" type="number" min="0" max="300" step="1" value="100" style="width:90%;box-sizing:border-box" /></td></tr>
           <tr><td>Starting RP balance</td><td><input id="blueRP" type="number" min="0" max="999999" value="0" style="width:90%;box-sizing:border-box" /></td><td><input id="redRP" type="number" min="0" max="999999" value="0" style="width:90%;box-sizing:border-box" /></td></tr>
+          <tr><td>City RP income rate (%)</td><td><input id="blueCityRP" type="number" min="0" max="500" step="10" value="100" style="width:90%;box-sizing:border-box" /></td><td><input id="redCityRP" type="number" min="0" max="500" step="10" value="100" style="width:90%;box-sizing:border-box" /></td></tr>
           <tr><td>Replacements per city hex/day</td><td><input id="blueReplacementRate" type="number" min="0" max="100" step="1" value="100" style="width:90%;box-sizing:border-box" /></td><td><input id="redReplacementRate" type="number" min="0" max="100" step="1" value="100" style="width:90%;box-sizing:border-box" /></td></tr>
           </tbody></table></fieldset>
-        <p style="font-size:11px;color:#a8c2d3">Each eligible friendly city hex can generate up to the specified number of replacement soldiers per day (maximum 100).</p><p style="font-size:12px;color:#a8c2d3"><span id="forcePreview">Each side starts with 16 Infantry, 4 Motorized, 4 Mechanized, and 4 Armored divisions (28 total).</span></p>
+        <p style="font-size:11px;color:#a8c2d3">Each eligible friendly city hex can generate up to the specified number of replacement soldiers per day (maximum 100).</p><p style="font-size:12px;color:#a8c2d3"><span id="forcePreview">Each side starts with 12 Infantry, 3 Motorized, 3 Mechanized, and 3 Armored divisions (21 total).</span></p>
         
-        <div id="setupForceSummary"><strong>Starting forces</strong><table><thead><tr><th>Division type</th><th>Blue</th><th>Red</th></tr></thead><tbody id="setupForceRows"><tr><td>Infantry</td><td>16</td><td>16</td></tr><tr><td>Motorized</td><td>4</td><td>4</td></tr><tr><td>Mechanized</td><td>4</td><td>4</td></tr><tr><td>Armored</td><td>4</td><td>4</td></tr></tbody></table><p id="setupForceTotal">28 Blue / 28 Red</p></div><div id="densityFields" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+        <div id="setupForceSummary"><strong>Starting forces</strong><table><thead><tr><th>Division type</th><th>Blue</th><th>Red</th></tr></thead><tbody id="setupForceRows"><tr><td>Infantry</td><td>12</td><td>12</td></tr><tr><td>Motorized</td><td>3</td><td>3</td></tr><tr><td>Mechanized</td><td>3</td><td>3</td></tr><tr><td>Armored</td><td>3</td><td>3</td></tr></tbody></table><p id="setupForceTotal">21 Blue / 21 Red</p></div><div id="densityFields" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
         <div style="display:flex;gap:10px;margin-top:18px"><button id="applyMapSetup" class="text-button" style="background:#2d644b;color:white">Color Picker</button><button id="musicCreditsButton" class="text-button" type="button" style="background:#304c6c;color:#fff">Music Credits</button><button id="setupMusicToggle" class="text-button" type="button" aria-pressed="false" style="background:#304c6c;color:#fff">♫ Music On/Off</button><button id="closeMapSetup" class="text-button" style="background:#1765bd;color:#fff;border:1px solid #72b5ff;font-weight:700">Return to the Game</button></div>
         <p style="font-size:11px;margin:12px 0 0;color:#a8c2d3">Cities are balanced: each side gets one three-hex capital and identical numbers of other cities by size. Mountains, rough terrain, forests and swamps form scattered, mostly small clusters.</p>
       </div>
@@ -208,7 +209,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
     const existing=new URLSearchParams(location.search);
     seedControl.value=existing.get('seed')||String(Math.floor(Math.random()*4294967295)).padStart(10,'0');
     seedControl.addEventListener('click',async()=>{seedControl.select();try{await navigator.clipboard.writeText(seedControl.value);}catch(e){document.execCommand('copy');}seedControl.title='Copied: '+seedControl.value;});
-    for(const id of ['playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate']){if(existing.has(id))document.getElementById(id).value=existing.get(id);}
+    for(const id of ['playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','blueCityRP','redCityRP']){if(existing.has(id))document.getElementById(id).value=existing.get(id);}
     document.getElementById('unitSymbolStyle').value=existing.get('unitSymbolStyle')==='silhouettes'?'silhouettes':'nato';
     const sizeControl=document.getElementById('mapSize'),preview=document.getElementById('forcePreview');
     const standardDimensions={small:[30,20],medium:[42,28],large:[60,40],huge:[72,48]};
@@ -227,8 +228,8 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
     }else syncMapDimensions();
     sizeControl.addEventListener('change',syncMapDimensions);
     function updateForces(){
-      const scale={small:.5,medium:1,large:2,huge:3}[sizeControl.value]||1;
-      const types=[['Infantry',16],['Motorized',4],['Mechanized',4],['Armored',4]];
+      const scale={small:2/3,medium:1,large:2,huge:3}[sizeControl.value]||1;
+      const types=[['Infantry',12],['Motorized',3],['Mechanized',3],['Armored',3]];
       const counts={};
       for(const side of ['Blue','Red']){
         const pct=Math.max(0,Number(document.getElementById(side==='Blue'?'blueUnits':'redUnits').value)||0)/100;
@@ -243,7 +244,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
     }
     sizeControl.addEventListener('change',updateForces);for(const id of ['blueUnits','redUnits'])document.getElementById(id).addEventListener('input',updateForces);updateForces();
     const stage=document.getElementById('storyStage'),card=document.getElementById('storyCard');
-    const editableIds=['customWidth','customHeight','mapSize','deployment','playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','unitSymbolStyle'];
+    const editableIds=['customWidth','customHeight','mapSize','deployment','playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','blueCityRP','redCityRP','unitSymbolStyle'];
     let previousSettings=null;
     function openSetup(){
       if(document.body.classList.contains('pre-game'))return;
@@ -265,7 +266,19 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
     document.getElementById('mapSetupToggle').onclick=()=>{if(stage.hidden)openSetup();else closeSetup(true);};
     document.getElementById('closeMapSetup').onclick=()=>{if(window.ARMAGEDDON_FIRST_SETUP)return;closeSetup(true);};
     document.getElementById('applyMapSetup').onclick=async()=>{
-      if(!window.ARMAGEDDON_FIRST_SETUP&&!confirm('Start a new game? Current unsaved progress and plotted orders will be lost.'))return;
+      if(!window.ARMAGEDDON_FIRST_SETUP&&!confirm('Start a new game? Your membership in this game will end and your units/cities will transfer to the senior remaining teammate.'))return;
+      const previousId=new URLSearchParams(location.search).get('gameId');
+      if(previousId){
+        const former=JSON.parse(sessionStorage.getItem('armageddon_identity_'+previousId)||localStorage.getItem('armageddon_identity_'+previousId)||'null');
+        if(former?.token){
+          try{
+            const response=await fetch('https://gametopia-backend.onrender.com/api/games/'+encodeURIComponent(previousId)+'/leave',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:former.token})});
+            const result=await response.json().catch(()=>({}));
+            if(!response.ok)throw Error(result.error||'HTTP '+response.status);
+            sessionStorage.removeItem('armageddon_identity_'+previousId);localStorage.removeItem('armageddon_identity_'+previousId);sessionStorage.removeItem('armageddon_active_game');
+          }catch(err){alert('Cannot start a new game until current-game departure succeeds: '+err.message);return;}
+        }
+      }
       window.ARMAGEDDON_MARCH?.stop();const params=new URLSearchParams();
       params.set('size',document.getElementById('mapSize').value);
       params.set('customWidth',customWidth.value);
@@ -277,7 +290,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
       const day=86400000;
       const offset=Math.floor(Math.random()*((last-first)/day+1));
       params.set('startDate',new Date(first+offset*day).toISOString().slice(0,10));
-      for(const id of ['playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate'])params.set(id,document.getElementById(id).value);
+      for(const id of ['playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','blueCityRP','redCityRP'])params.set(id,document.getElementById(id).value);
       for(const [key,count] of Object.entries(window.ARMAGEDDON_EXACT_FORCES_SELECTED||{}))params.set(key,String(count));
       params.set('unitSymbolStyle',document.getElementById('unitSymbolStyle').value);
       for(const el of fields.querySelectorAll('select'))params.set(el.dataset.density,el.value);
@@ -291,11 +304,11 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
       }
     };
 
-    const loadButton=document.createElement('button');loadButton.type='button';loadButton.textContent='Load Saved Game';loadButton.className='text-button';loadButton.dataset.loadGame='1';loadButton.style.cssText='display:block;margin:12px auto;padding:11px 24px;background:#315d6c;color:white;border-radius:6px;cursor:pointer';
+    const loadButton=document.createElement('button');loadButton.type='button';loadButton.textContent='Load Saved Game';loadButton.className='text-button';loadButton.dataset.loadGame='1';loadButton.hidden=true;loadButton.style.cssText='display:block;margin:12px auto;padding:11px 24px;background:#315d6c;color:white;border-radius:6px;cursor:pointer';
     // Keep Load Saved Game beside Color Picker in the visible setup action bar.
     const setupActions=document.getElementById('applyMapSetup')?.parentElement;
-    if(setupActions){setupActions.id='setupActionBar';setupActions.insertBefore(loadButton,setupActions.children[1]||null);const credits=document.getElementById('musicCreditsButton');if(credits)setupActions.insertBefore(credits,setupActions.children[2]||null);}
-    else panel.appendChild(loadButton);
+    if(setupActions){setupActions.id='setupActionBar';const credits=document.getElementById('musicCreditsButton');if(credits)setupActions.insertBefore(credits,setupActions.children[2]||null);}
+    else loadButton.remove();
     // M6.136: two-stage server autosave browser. Credentials are local to this browser.
     loadButton.onclick=()=>window.GameTopiaShowSavedGames?.();
     window.GameTopiaShowSavedGames=async function(){
@@ -368,11 +381,11 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
   </script>
 <style>#handoffScreen[hidden]{display:none!important}#storyStage.setup #mapSetupPanel fieldset{min-width:0}#storyStage.setup #mapSetupPanel{font-size:14px}#mapSetupPanel{max-height:calc(100vh - 24px)!important}#mapSetupPanel button{max-width:100%}</style><script>
 (function(){
- const types=[['Infantry',16],['Motorized',4],['Mechanized',4],['Armored',4]];
- function refresh(){const b=Number(document.getElementById('blueUnits')?.value||100)/100,r=Number(document.getElementById('redUnits')?.value||100)/100;
+ const types=[['Infantry',12],['Motorized',3],['Mechanized',3],['Armored',3]];
+ function refresh(){const scale={small:2/3,medium:1,large:2,huge:3}[document.getElementById('mapSize')?.value]||1;const b=Number(document.getElementById('blueUnits')?.value||100)/100,r=Number(document.getElementById('redUnits')?.value||100)/100;
  const rows=document.getElementById('setupForceRows');if(!rows)return;
- rows.innerHTML=types.map(([name,n])=>`<tr><td>${name}</td><td>${Math.round(n*b)}</td><td>${Math.round(n*r)}</td></tr>`).join('');
- document.getElementById('setupForceTotal').textContent=`${types.reduce((t,[,n])=>t+Math.round(n*b),0)} Blue / ${types.reduce((t,[,n])=>t+Math.round(n*r),0)} Red`;
+ rows.innerHTML=types.map(([name,n])=>`<tr><td>${name}</td><td>${Math.round(n*scale*b)}</td><td>${Math.round(n*scale*r)}</td></tr>`).join('');
+ document.getElementById('setupForceTotal').textContent=`${types.reduce((t,[,n])=>t+Math.round(n*scale*b),0)} Blue / ${types.reduce((t,[,n])=>t+Math.round(n*scale*r),0)} Red`;
  }
  document.addEventListener('change',e=>{if(e.target?.id==='blueUnits'||e.target?.id==='redUnits')refresh()});document.addEventListener('DOMContentLoaded',refresh);
 })();
@@ -876,9 +889,9 @@ window.armServerRequest=async function(path,options={}){
 /* M6.27: editable exact starting forces for each side and type. */
 (function(){
  const types=['Infantry','Motorized','Mechanized','Armored'];
- const defaults=[16,4,4,4];
+ const defaults=[12,3,3,3];
  const params=new URLSearchParams(location.search);
- const values={};let writing=false;
+ const values={},manual=new Set();let writing=false;
  function draw(){
   const tbody=document.getElementById('setupForceRows');if(!tbody||writing)return;
   writing=true;tbody.replaceChildren();
@@ -887,21 +900,22 @@ window.armServerRequest=async function(path,options={}){
    for(const side of ['Blue','Red']){
     const key=side.toLowerCase()+types[i];const td=document.createElement('td'),input=document.createElement('input');
     input.type='number';input.min='0';input.max='500';input.step='1';input.style.cssText='width:76px;text-align:center;padding:4px';
-    input.value=values[key]??params.get(key)??Math.round(defaults[i]*({small:.5,medium:1,large:2,huge:3}[document.getElementById('mapSize')?.value]||1)*(Number(document.getElementById(side.toLowerCase()+'Units')?.value||100)/100));
+    input.value=values[key]??params.get(key)??Math.round(defaults[i]*({small:2/3,medium:1,large:2,huge:3}[document.getElementById('mapSize')?.value]||1)*(Number(document.getElementById(side.toLowerCase()+'Units')?.value||100)/100));
     values[key]=input.value;
-    input.addEventListener('input',()=>{values[key]=input.value;totals();});td.append(input);tr.append(td);
+    input.addEventListener('input',()=>{manual.add(key);values[key]=input.value;totals();});td.append(input);tr.append(td);
    }tbody.append(tr);
   }totals();writing=false;
  }
  function totals(){const sum=side=>types.reduce((n,type)=>n+Math.max(0,Number(values[side.toLowerCase()+type])||0),0);const el=document.getElementById('setupForceTotal');if(el)el.textContent=`${sum('Blue')} Blue / ${sum('Red')} Red`;}
  document.addEventListener('DOMContentLoaded',()=>{
   const tbody=document.getElementById('setupForceRows');if(!tbody)return;
-  const observer=new MutationObserver(()=>{if(!writing&&tbody.querySelector('input')===null)draw();});observer.observe(tbody,{childList:true});draw();
-  document.getElementById('mapSize')?.addEventListener('change',()=>{for(const k of Object.keys(values))delete values[k];setTimeout(draw,0)});
+  const observer=new MutationObserver(()=>{if(!writing&&tbody.querySelector('input')===null)draw();});observer.observe(tbody,{childList:true});draw();document.getElementById('mapSize')?.addEventListener('change',()=>{for(const type of types)for(const side of ['Blue','Red']){const k=side.toLowerCase()+type;if(!manual.has(k))delete values[k];}draw();});
+
   document.getElementById('applyMapSetup')?.addEventListener('click',()=>{
    const url=new URL(location.href);for(const [key,val] of Object.entries(values))url.searchParams.set(key,String(Math.max(0,Math.min(500,Math.floor(Number(val)||0)))));
    // setup submission may build a new URL; persist fields for its existing handler.
-   sessionStorage.setItem('ARMAGEDDON_EXACT_FORCES',JSON.stringify(values));
+   window.ARMAGEDDON_EXACT_FORCES_SELECTED=Object.fromEntries(Object.entries(values).map(([key,val])=>[key,Math.max(0,Math.min(500,Math.floor(Number(val)||0)))]));
+   sessionStorage.removeItem('ARMAGEDDON_EXACT_FORCES');
   },true);
  });
 })();
@@ -2153,7 +2167,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
    handicap=document.createElement('fieldset');handicap.id='combinedHandicap';
    handicap.innerHTML='<legend>Nation handicaps</legend><table><thead><tr><th>Setting</th><th>Bluenstein</th><th>Redonia</th></tr></thead><tbody><tr><th>Starting reinforcement (%)</th><td id="blueUnitsCell"></td><td id="redUnitsCell"></td></tr><tr><th>Starting RP balance</th><td id="blueRPCell"></td><td id="redRPCell"></td></tr><tr><th>Replacements per city hex/day</th><td id="blueReplacementRateCell"></td><td id="redReplacementRateCell"></td></tr></tbody></table>';
   }
-  for(const id of ['blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate']){
+  for(const id of ['blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','blueCityRP','redCityRP']){
    const el=document.getElementById(id),cell=handicap.querySelector('#'+id+'Cell');
    if(el&&cell){const lab=el.closest('label');cell.appendChild(lab||el);}
   }
@@ -2170,3 +2184,9 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 <script>/* M6.59 personal-color roster for unit counter rendering */
 (async function(){const id=new URLSearchParams(location.search).get('gameId');if(!id)return;try{const r=await fetch('https://gametopia-backend.onrender.com/api/games',{cache:'no-store'});if(!r.ok)return;const g=(await r.json()).find(x=>x.id===id);if(!g)return;window.ARMAGEDDON_GAME_PLAYERS=g.players||[];window.ARMAGEDDON_DEBUG_RENDERER?.render();}catch(e){console.warn('Player colors unavailable',e);}})();
 </script>
+
+<style>/* M6.229: autosaves are accessed from Games screen, not setup */
+#mapSetupPanel [data-load-game],#setupActionBar [data-load-game]{display:none!important}
+/* Vertically center all roster/player acknowledgement controls */
+#gtPlayersPanel button,#gtMemberAlert button,#dayReportClose{display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:normal!important;min-height:38px!important}
+</style>

@@ -106,7 +106,26 @@
         }
       }
     }
-    function open(s){global.ARMAGEDDON_CLOSE_DIVISION_PANEL?.();active=s;panel.hidden=false;render();}
+    function open(s){
+      global.ARMAGEDDON_CLOSE_DIVISION_PANEL?.();active=s;panel.hidden=false;render();
+      // Place the city report near the clicked city, never off the viewport.
+      // Approx. 2–3 CSS inches from the city marker (at 96 CSS px/in).
+      const cityPoint=renderer.worldPixel(s.city.c,s.city.r);
+      const canvasBox=renderer.canvas.getBoundingClientRect();
+      // worldPixel is measured in canvas backing pixels; convert to CSS screen pixels.
+      const x=canvasBox.left+cityPoint.x*canvasBox.width/renderer.dims.w;
+      const y=canvasBox.top+cityPoint.y*canvasBox.height/renderer.dims.h;
+      const width=panel.getBoundingClientRect().width||380;
+      const height=panel.getBoundingClientRect().height||300;
+      const edge=12,offset=225;
+      const preferredRight=x+offset;
+      const preferredLeft=x-offset-width;
+      const left=preferredRight+width<=innerWidth-edge?preferredRight:
+                 preferredLeft>=edge?preferredLeft:
+                 Math.max(edge,Math.min(innerWidth-width-edge,preferredRight));
+      const top=Math.max(edge,Math.min(innerHeight-height-edge,y-height*.32));
+      panel.style.right='auto';panel.style.left=Math.round(left)+'px';panel.style.top=Math.round(top)+'px';
+    }
     function close(){panel.hidden=true;active=null;}
     document.getElementById('cityClose').onclick=close;
     // RP upkeep per surviving division per day, charged before planning.
@@ -133,7 +152,7 @@
       for(const side of ['Blue','Red'])treasury[side]=Math.max(0,Math.round((treasury[side]-totals[side])*100)/100);
       lastMaintenance={day,totals};onChange();render();return lastMaintenance;
     }
-    function awardTurn(){renderer.refreshHexControl();updateOccupation();for(const s of state){if(s.occupier||s.pacification>0)continue;const side=owner(s);if(side==='Blue'||side==='Red')treasury[side]+=cityHexCount(s);}onChange();render();}
+    function awardTurn(){renderer.refreshHexControl();updateOccupation();for(const s of state){if(s.occupier||s.pacification>0)continue;const side=owner(s);if(side==='Blue'||side==='Red')treasury[side]+=cityHexCount(s)*(Number(global.ARMAGEDDON_SETUP?.cityIncomeRates?.[side]??100)/100);}onChange();render();}
     // Completed production deploys immediately: city, random adjacent, random open map hex.
     // Only water is impassable; mountains are valid division terrain.
     function autoDeploy(r){

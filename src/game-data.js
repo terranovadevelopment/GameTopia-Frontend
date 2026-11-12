@@ -5,7 +5,7 @@
   const dimensions={small:[30,20],medium:[42,28],large:[60,40],huge:[72,48]};
   const cw=Number(params.get('customWidth')),ch=Number(params.get('customHeight'));
   const [cols,rows]=(Number.isInteger(cw)&&Number.isInteger(ch)&&cw>=12&&cw<=200&&ch>=12&&ch<=150)?[cw,ch]:dimensions[sizeName];
-  const scenario={id:'m3-31-deployment',title:'National Border and Deployment',cols,rows,divisions:[]};
+  const scenario={id:'m6-229-deployment',title:'National Border and Deployment',cols,rows,divisions:[]};
   const mobilized=params.get('deployment')!=='unmobilized';
   const mapSeed=String(params.get('seed')||'0');
   let seedValue=2166136261;for(const ch of mapSeed){seedValue=Math.imul(seedValue^ch.charCodeAt(0),16777619)>>>0;}
@@ -14,7 +14,9 @@
   global.ARMAGEDDON_PLAYER_SIDE=playerSide;
   const replacementRates={Blue:Math.max(0,Math.min(100,Number(params.get('blueReplacementRate') ?? 100))),Red:Math.max(0,Math.min(100,Number(params.get('redReplacementRate') ?? 100)))};
   global.ARMAGEDDON_SETUP={replacementRates,size:sizeName,deployment:mobilized?'mobilized':'unmobilized',seed:mapSeed,playerSide,handicap};
-  scenario.resourcePointsPerCity={Blue:handicap.Blue.rp,Red:handicap.Red.rp};
+  const cityIncomeRates={Blue:Math.max(0,Math.min(500,Number(params.get('blueCityRP')??100))),Red:Math.max(0,Math.min(500,Number(params.get('redCityRP')??100)))};
+  global.ARMAGEDDON_SETUP.cityIncomeRates=cityIncomeRates;
+  scenario.resourcePointsPerCity={Blue:cityIncomeRates.Blue/100,Red:cityIncomeRates.Red/100};
   // M3.22: explicit urban hex clusters; each side has one 3-hex capital.
   // Remaining cities follow a deterministic 70/20/10 distribution (1/2/3 hexes).
   const hash=(a,b)=>{let x=Math.imul(a+173+(seedValue&65535),374761393)^Math.imul(b+91+(seedValue>>>16),668265263);x=Math.imul(x^(x>>>13),1274126177);return ((x^(x>>>16))>>>0)/4294967296;};
@@ -70,8 +72,8 @@
   // Terrain coverage is proportional to playable hex area (medium = 42 x 28).
   const areaScale=(cols*rows)/(42*28);
   // One city hex per division on each side, regardless of mobilization.
-  const scale={small:.5,medium:1,large:2,huge:3}[sizeName];
-  const unitsPerSide=Math.round(28*scale);
+  const scale={small:2/3,medium:1,large:2,huge:3}[sizeName];
+  const unitsPerSide=Math.round(21*scale);
   const targetCityHexes=unitsPerSide;
   // M4.31: roughly the same number of urban hexes per side, but randomized
   // independent settlement positions and approximately 65/25/10% 1/2/3-hex cities.
@@ -244,6 +246,16 @@
   };
   const riverVertices=waterways.length?vertexList.filter(nearRiver):[];
   const boundaryVertices=vertexList.filter(k=>{const p=vertexPositions.get(k);return p.y<-.45||p.y>1.5*(rows-1)+.45||p.x<-.4||p.x>Math.sqrt(3)*(cols-.15);});
+  // M6.229: streams usually originate in the interior and drain into a
+  // river, rather than appearing as arbitrary border-to-border channels.
+  const uplandSources=vertexList.filter(k=>{
+    const p=vertexPositions.get(k),approxCol=p.x/Math.sqrt(3),approxRow=p.y/1.5;
+    return approxCol>2&&approxCol<cols-3&&approxRow>2&&approxRow<rows-3&&!nearRiver(k);
+  }).sort((a,b)=>{
+    const av=vertexPositions.get(a),bv=vertexPositions.get(b);
+    const ah=heightAt(av.x/Math.sqrt(3),av.y/1.5),bh=heightAt(bv.x/Math.sqrt(3),bv.y/1.5);
+    return bh-ah||a.localeCompare(b);
+  });
   // A* over the vertex graph, directed toward a guaranteed terminal vertex.
   const routeVertex=(start,goal,maxSteps)=>{
     const goalP=vertexPositions.get(goal),seen=new Set([start]),came=new Map(),queue=[start];
@@ -260,15 +272,16 @@
   for(let i=0;i<streamCount;i++){
     const terminals=riverVertices.length?riverVertices:boundaryVertices;
     if(!terminals.length||!boundaryVertices.length)break;
-    const start=boundaryVertices[Math.floor(hash(i+721,41)*boundaryVertices.length)];
+    const sources=riverVertices.length&&uplandSources.length?uplandSources:boundaryVertices;
+    const start=sources[Math.floor(hash(i+721,41)*Math.min(sources.length,Math.max(100,streamCount*40)))];
     const startP=vertexPositions.get(start);
     // Prefer river outlets nearby, but allow edge outlets if there is no river.
     const sorted=terminals.map(k=>({k,d:Math.hypot(vertexPositions.get(k).x-startP.x,vertexPositions.get(k).y-startP.y)})).filter(o=>o.d>5).sort((a,b)=>a.d-b.d);
-    const goal=sorted[Math.min(sorted.length-1,Math.floor(hash(i+839,27)*Math.min(12,sorted.length)))]?.k;
+    const goal=sorted[Math.min(sorted.length-1,Math.floor(hash(i+839,27)*Math.min(5,sorted.length)))]?.k;
     if(!goal)continue;
     const path=routeVertex(start,goal,vertexList.length);
     // Avoid excessively long, overlapping, dense stream tangles.
-    if(path && path.length>Math.max(18,Math.round((cols+rows)*.38)))continue;
+    if(path && path.length>Math.max(18,Math.round((cols+rows)*.26)))continue;
     if(path && path.slice(1,-1).some(v=>(streamVertexUsage.get(v)||0)>=2))continue;
     if(!path||path.length<5)continue;
     for(const v of path)streamVertexUsage.set(v,(streamVertexUsage.get(v)||0)+1);
@@ -416,7 +429,7 @@
   global.ARMAGEDDON_CITIES=centers.Urban;
 
   // Force composition is per side. City-hex figures are scenario targets, not extra units.
-  const forceTypes=[['Infantry',16],['Motorized',4],['Mechanized',4],['Armored',4]];
+  const forceTypes=[['Infantry',12],['Motorized',3],['Mechanized',3],['Armored',3]];
   const hexDistance=(a,b)=>{const aq=a.col-Math.floor(a.row/2),bq=b.col-Math.floor(b.row/2),dr=a.row-b.row,dq=aq-bq;return Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr));};
   const used=new Set();
   const cityHexes=Array.from(urbanCells).map(k=>{const [col,row]=k.split(',').map(Number);return {col,row};});
@@ -449,10 +462,19 @@
     const types=forceTypes.flatMap(([type,count])=>{const k=side.toLowerCase()+type;const requested=params.get(k)??exact[k];const n=requested!==undefined?Math.max(0,Math.min(500,Math.floor(Number(requested)||0))):Math.round(count*scale*handicap[side].units/100);return Array.from({length:n},()=>type);});
     const friendlyCities=shuffled(cityHexes.filter(p=>isSide(p,side)),side==='Blue'?9:19);
     const adjacent=shuffled(allCells.filter(p=>isSide(p,side)&&terrainAt(p.col,p.row)!=='Lake'&&!urbanCells.has(key(p.col,p.row))&&friendlyCities.some(city=>hexDistance(p,city)===1)),side==='Blue'?27:37);
+    // Very low city density (especially None) cannot accommodate every division
+    // in urban hexes or the first ring. Use the nearest available second ring
+    // before allowing any broader, friendly-territory fallback; never stack units.
+    const adjacentKeys=new Set(adjacent.map(p=>key(p.col,p.row)));
+    const cityOverflow=shuffled(allCells.filter(p=>isSide(p,side)&&terrainAt(p.col,p.row)!=='Lake'&&!urbanCells.has(key(p.col,p.row))&&!adjacentKeys.has(key(p.col,p.row))),side==='Blue'?29:39);
+    const cityOverflowDist=new Map(cityOverflow.map(p=>[key(p.col,p.row),Math.min(...friendlyCities.map(c=>hexDistance(p,c)))]));
+    cityOverflow.sort((a,b)=>cityOverflowDist.get(key(a.col,a.row))-cityOverflowDist.get(key(b.col,b.row)));
     // The frontline is the nearest enemy-national hex (distance 0 on the
     // opposite side); mobilized forward divisions stand exactly 3 or 4 hexes
     // from it. All random choices are deterministically seeded for replay.
     const nearBorder=shuffled(allCells.filter(p=>isSide(p,side)&&!urbanCells.has(key(p.col,p.row))&&terrainAt(p.col,p.row)!=='Lake'&&[3,4].includes(enemyDistance[side].get(key(p.col,p.row)))),side==='Blue'?47:57);
+    const forwardOverflow=shuffled(allCells.filter(p=>isSide(p,side)&&terrainAt(p.col,p.row)!=='Lake'),side==='Blue'?49:59)
+      .sort((a,b)=>Math.abs((enemyDistance[side].get(key(a.col,a.row))||5)-3.5)-Math.abs((enemyDistance[side].get(key(b.col,b.row))||5)-3.5));
     // 20% of a mobilized force remains in random urban hexes behind the front.
     // Prefer genuinely rearward city hexes, with a stable random order within
     // distance tiers. Exclude frontline urban hexes when a rear city exists.
@@ -467,8 +489,8 @@
     for(let i=0;i<types.length;i++){
       const rearCityUnit=rearUnitIds.has(i);
       const spot=mobilized
-        ?(rearCityUnit?pick(rearCities):pick(nearBorder))
-        :(pick(friendlyCities)||pick(adjacent));
+        ?(rearCityUnit?(pick(rearCities)||pick(adjacent)||pick(cityOverflow)): (pick(nearBorder)||pick(forwardOverflow)))
+        :(pick(friendlyCities)||pick(adjacent)||pick(cityOverflow));
       if(!spot)throw Error('Not enough valid '+(mobilized?'mobilized':'unmobilized')+' deployment hexes for '+side);
       used.add(key(spot.col,spot.row));
       const type=types[i],n=i+1;
