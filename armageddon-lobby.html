@@ -131,9 +131,9 @@ function render(){
   const turn=live?.turn??live?.day??(entry.saves.length?Math.max(...entry.saves.map(x=>Number(x.turn)||0)):'—');
   // The Player column is the ORIGINAL HOST, never the player who saved a turn.
   // If the backend omits host metadata, show an explicit unknown instead of a wrong identity.
-  const saveHost=entry.saves.find(x=>x.originalHostName||x.hostName||x.creatorName||x.host?.name||x.creator?.name);
-  const hostValue=live?.originalHostName||live?.creatorName||live?.hostName||live?.creator?.name||live?.host?.name||entry.mine?.originalHostName||entry.mine?.creatorName||entry.mine?.hostName||saveHost?.originalHostName||saveHost?.hostName||saveHost?.creatorName||saveHost?.host?.name||saveHost?.creator?.name;
-  const player=typeof hostValue==='string'?hostValue:(typeof hostValue==='number'?String(hostValue):'Host unavailable');
+  const saveHost=entry.saves.find(x=>x.originalHostName||x.creator||x.hostName||x.creatorName||x.host?.name||x.creator?.name);
+  const hostValue=live?.originalHostName||live?.creator||live?.creatorName||live?.hostName||live?.creator?.name||live?.host?.name||entry.mine?.originalHostName||entry.mine?.creator||entry.mine?.creatorName||entry.mine?.hostName||saveHost?.originalHostName||saveHost?.creator||saveHost?.hostName||saveHost?.creatorName||saveHost?.host?.name||saveHost?.creator?.name;
+  const player=typeof hostValue==='string'?hostValue:(typeof hostValue==='number'?String(hostValue):'Unknown (legacy save)');
   // Date means game creation date; if not supplied, do not mislabel latest autosave date as creation.
   const datedSave=entry.saves.find(x=>x.gameCreatedAt||x.originalGameCreatedAt||x.gameCreated||x.game?.createdAt);
   const date=live?.createdAt||live?.created||entry.mine?.createdAt||entry.mine?.created||datedSave?.gameCreatedAt||datedSave?.originalGameCreatedAt||datedSave?.gameCreated||datedSave?.game?.createdAt||null;
@@ -184,7 +184,7 @@ async function refresh(){
  const myToken=++refreshToken;const errors=[];
  const tasks=[request('/api/games',{cache:'no-store'}).then(g=>({key:'public',value:Array.isArray(g)?g:[]})),
  account?.token?request('/api/accounts/games',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'enrolled',value:g.games||[]})):Promise.resolve({key:'enrolled',value:[]}),
- account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:Array.isArray(g)?g:Array.isArray(g.saves)?g.saves:Array.isArray(g.games)?g.games.flatMap(x=>Array.isArray(x.saves)?x.saves.map(save=>({...save,gameId:save.gameId||x.gameId||x.id,name:save.name||x.name,originalHostName:save.originalHostName||x.originalHostName||x.hostName||x.creatorName||'',gameCreatedAt:save.gameCreatedAt||x.gameCreatedAt||x.createdAt||''})):[]):[]})):Promise.resolve({key:'saves',value:[]})];
+ account?.token?request('/api/saved-games/catalog',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:account.token})}).then(g=>({key:'saves',value:Array.isArray(g)?g:Array.isArray(g.saves)?g.saves:Array.isArray(g.games)?g.games.flatMap(x=>Array.isArray(x.saves)?x.saves.map(save=>({...save,gameId:save.gameId||x.gameId||x.id,name:save.name||x.name,originalHostName:save.originalHostName||save.creator||x.originalHostName||x.creator||x.hostName||x.creatorName||'',gameCreatedAt:save.gameCreatedAt||x.gameCreatedAt||x.createdAt||''})):[]):[]})):Promise.resolve({key:'saves',value:[]})];
  const results=await Promise.allSettled(tasks);if(myToken!==refreshToken)return;
  results.forEach((r,i)=>{if(r.status==='fulfilled'){snapshot[r.value.key]=r.value.value;if(i===2)snapshot.saveCatalogOk=true;}else{if(i===2)snapshot.saveCatalogOk=false;errors.push(['Active games','My games','Autosaves'][i]+' request failed: '+(r.reason?.message||'network or CORS error'));}});snapshot.errors=errors;render();
 }

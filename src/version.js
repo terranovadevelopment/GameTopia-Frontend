@@ -1,7 +1,7 @@
 /* Canonical build label used on every GameTopia/ARMAGEDDON screen. */
 (function () {
   'use strict';
-  const VERSION='M6.226';
+  const VERSION='M6.227';
   window.GAMETOPIA_VERSION=VERSION;
   function showVersion() {
     if (!document.body) return;

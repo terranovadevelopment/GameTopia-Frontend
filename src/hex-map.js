@@ -558,7 +558,7 @@
             const t=j/pieces;
             const low=Math.sin(Math.PI*t),wave=Math.sin(2*Math.PI*t)*bendA*.62+Math.sin(3*Math.PI*t)*bendB*.21;
             const fine=(noise(p.c*5.7+i*2.1+t*5.5,p.r*4.2-i+t*3.2)-.5)*.035;
-            const margin=S*(.045+low*(.095+wave*.065+fine*.4)); // M6.219: slightly more prominent, curved, INSIDE-lake shore
+            const margin=S*(.055+low*(.112+wave*.068+fine*.4)); // M6.222: slightly thicker curving margin, clipped INSIDE lake hex
             edge.push({x:a.x+(b.x-a.x)*t+nx*margin,y:a.y+(b.y-a.y)*t+ny*margin});
           }
           // A rounded shoreline interpolates each intermediate point; avoid
@@ -661,64 +661,104 @@
       // Roads connect city centers, including bridges over the river.
       const cityCenters=(window.ARMAGEDDON_CITIES||[]).map(c=>[c.c,c.r]);
       const center=(c,r)=>{const a=axialFromOffset(c,r);return axialToPixel(a.q,a.r,S);};
-      // Logical road graph: connect all cities with a minimum-spanning backbone,
-      // then add short local connections. Avoid a spiderweb of long crossing roads.
+      // M6.227: A road graph based on actual nearby settlements. Build the
+      // shortest connected backbone, then add only useful short bypass roads.
+      // This avoids the old long-distance spiderweb and repeated parallel roads.
       const sites=cityCenters.map(([c,r])=>center(c,r));
       const distance=(i,j)=>Math.hypot(sites[i].x-sites[j].x,sites[i].y-sites[j].y);
       const edgeSet=new Set(),edges=[];
-      const addEdge=(i,j)=>{if(i===j)return;const k=[Math.min(i,j),Math.max(i,j)].join(':');if(!edgeSet.has(k)){edgeSet.add(k);edges.push([i,j]);}};
-      if(sites.length){
+      const addEdge=(i,j)=>{if(i===j)return false;const k=[Math.min(i,j),Math.max(i,j)].join(':');
+        if(edgeSet.has(k))return false;edgeSet.add(k);edges.push([i,j]);return true;};
+      if(sites.length>1){
         const connected=new Set([0]);
+        // Nearest-link minimum spanning tree guarantees every city has access.
         while(connected.size<sites.length){let best=null;
           for(const i of connected)for(let j=0;j<sites.length;j++)if(!connected.has(j)){
-            const d=distance(i,j);if(!best||d<best.d)best={i,j,d};
+            const d=distance(i,j);
+            if(!best||d<best.d-1e-8||(Math.abs(d-best.d)<1e-8&&(i<best.i||i===best.i&&j<best.j)))best={i,j,d};
           }
           if(!best)break;addEdge(best.i,best.j);connected.add(best.j);
         }
-        // Additional regional highways: join towns across longer distances,
-        // including links between different local road clusters. Cap links to
-        // avoid a dense spiderweb on large maps.
-        const longLinks=Math.max(2,Math.round(sites.length/11));
+        const linked=()=>{const graph=Array.from({length:sites.length},()=>[]);
+          for(const [i,j] of edges){graph[i].push([j,distance(i,j)]);graph[j].push([i,distance(i,j)]);}return graph;};
+        const shortestRoadDistance=(i,j,graph)=>{const dist=new Array(sites.length).fill(Infinity),used=new Set();dist[i]=0;
+          while(used.size<sites.length){let v=-1;
+            for(let k=0;k<sites.length;k++)if(!used.has(k)&&(v===-1||dist[k]<dist[v]))v=k;
+            if(v<0||!Number.isFinite(dist[v]))break;if(v===j)return dist[v];used.add(v);
+            for(const [n,len] of graph[v])dist[n]=Math.min(dist[n],dist[v]+len);
+          }return Infinity;};
+        const degree=new Array(sites.length).fill(0);
+        for(const [i,j] of edges){degree[i]++;degree[j]++;}
         const candidates=[];
-        for(let i=0;i<sites.length;i++){
-          const ordered=sites.map((_,j)=>({j,d:distance(i,j)})).filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);
-          const near=ordered[0]?.d||1;
-          for(const v of ordered.slice(3,Math.min(ordered.length,12))){
-            if(i<v.j && v.d>near*2.0)candidates.push({i,j:v.j,d:v.d});
-          }
-        }
-        candidates.sort((a,b)=>a.d-b.d);
-        const degree=new Map();let added=0;
-        for(const e of candidates){
-          if(added>=longLinks)break;
-          if((degree.get(e.i)||0)>=2||(degree.get(e.j)||0)>=2)continue;
-          const key=[e.i,e.j].join(':');if(edgeSet.has(key))continue;
-          addEdge(e.i,e.j);degree.set(e.i,(degree.get(e.i)||0)+1);
-          degree.set(e.j,(degree.get(e.j)||0)+1);added++;
-        }
-        // A secondary connection for most towns, prioritizing nearby neighbors.
-        for(let i=0;i<sites.length;i++){
-          const near=sites.map((_,j)=>({j,d:distance(i,j)})).filter(v=>v.j!==i).sort((a,b)=>a.d-b.d);
-          if(near.length){addEdge(i,near[0].j);if(near.length>1&&hash(i,51)>.32)addEdge(i,near[1].j);}
-        }
-        // M6.219: 50% more distinct city-to-city connections. This graph
-        // shares actual roads/bridge keys with movement rules; not just ink.
-        const existing=edges.length,goal=Math.ceil(existing*1.5);
-        const extra=[];
         for(let i=0;i<sites.length;i++)for(let j=i+1;j<sites.length;j++){
-          if(!edgeSet.has(i+':'+j))extra.push({i,j,d:distance(i,j)});
+          if(!edgeSet.has(i+':'+j))candidates.push({i,j,d:distance(i,j)});
         }
-        extra.sort((a,b)=>a.d-b.d||a.i-b.i||a.j-b.j);
-        for(const link of extra){if(edges.length>=goal)break;addEdge(link.i,link.j);}
+        candidates.sort((a,b)=>a.d-b.d||a.i-b.i||a.j-b.j);
+        // Add up to 50% as many *useful* local links as the backbone.
+        // No link if the existing road already connects these towns nearly directly.
+        const extraGoal=Math.round((sites.length-1)*.5);let added=0;
+        for(const {i,j,d} of candidates){if(added>=extraGoal)break;
+          if(degree[i]>=4||degree[j]>=4)continue;
+          const graph=linked(),direct=d||1;
+          if(shortestRoadDistance(i,j,graph)<direct*1.4)continue;
+          if(addEdge(i,j)){degree[i]++;degree[j]++;added++;}
+        }
       }
-      // Roads are sequences of adjacent hex CENTERS, never arbitrary splines.
+      // All roads take real adjacent hexes. The routefinder prefers existing
+      // road corridors, reasonable terrain and smooth headings, without ever
+      // creating a decorative road that movement rules cannot follow.
       const offsetNeighbors=(c,r)=>((r&1)?[[1,0],[-1,0],[0,-1],[1,-1],[0,1],[1,1]]:[[1,0],[-1,0],[-1,-1],[0,-1],[-1,1],[0,1]]).map(([dc,dr])=>[c+dc,r+dr]).filter(([x,y])=>x>=0&&y>=0&&x<cols&&y<rows);
       const axialDist=(c,r,x,y)=>{const a=axialFromOffset(c,r),b=axialFromOffset(x,y),dq=a.q-b.q,dr=a.r-b.r;return Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr));};
-      const routeRoad=(a,b)=>{const k=(c,r)=>c+','+r, start=k(...a),goal=k(...b),queue=[a],seen=new Set([start]),prev=new Map();
-        while(queue.length){const [c,r]=queue.shift();if(k(c,r)===goal)break;const ns=offsetNeighbors(c,r).sort((u,v)=>axialDist(...u,...b)-axialDist(...v,...b));for(const [x,y] of ns){const key=k(x,y);if(seen.has(key)||this.terrainAt(x,y)==='Lake')continue;seen.add(key);prev.set(key,[c,r]);queue.push([x,y]);}}
-        if(!seen.has(goal))return [];let cur=b,path=[cur];while(k(...cur)!==start){cur=prev.get(k(...cur));if(!cur)return [];path.push(cur);}return path.reverse().map(([c,r])=>center(c,r));};
-      // Publish the exact road hex-to-hex connections for movement and route ETA.
       const roadKeys=new Set();
+      const roadKey=(a,b)=>[a[0]+','+a[1],b[0]+','+b[1]].sort().join('|');
+      const terrainRoadCost=(col,row)=>{
+        const name=String(this.terrainAt(col,row)||'').toLowerCase();
+        if(name==='lake')return Infinity;
+        if(name==='mountains')return 3.5;
+        if(name==='swamp')return 2.6;
+        if(name==='hills'||name==='rough')return 1.7;
+        if(name==='forest')return 1.35;
+        return 1;
+      };
+      const routeRoad=(start,end)=>{
+        const k=(c,r)=>c+','+r,origin=k(...start),goal=k(...end);
+        const scores=new Map([[origin,0]]),prev=new Map(),dirs=new Map();
+        const heap=[];
+        const push=(item)=>{heap.push(item);let n=heap.length-1;
+          while(n>0){const parent=(n-1)>>1;if(heap[parent].priority<=item.priority)break;
+            heap[n]=heap[parent];n=parent;}heap[n]=item;};
+        const pop=()=>{const top=heap[0],last=heap.pop();if(heap.length){let n=0;
+          while(n*2+1<heap.length){let c=n*2+1;if(c+1<heap.length&&heap[c+1].priority<heap[c].priority)c++;
+            if(heap[c].priority>=last.priority)break;heap[n]=heap[c];n=c;}heap[n]=last;}return top;};
+        const heuristic=(c,r)=>axialDist(c,r,...end)*.48;
+        push({c:start[0],r:start[1],score:0,priority:heuristic(...start)});
+        let count=0;const cap=cols*rows*9;
+        while(heap.length&&count++<cap){const current=pop(),ck=k(current.c,current.r);
+          if(current.score>(scores.get(ck)??Infinity)+1e-8)continue;
+          if(ck===goal)break;
+          const parent=prev.get(ck);
+          for(const [x,y] of offsetNeighbors(current.c,current.r)){
+            const tile=terrainRoadCost(x,y);if(!Number.isFinite(tile))continue;
+            const nk=k(x,y),wasRoad=roadKeys.has(roadKey([current.c,current.r],[x,y]));
+            let bend=0;
+            if(parent){const px=parent[0],py=parent[1];
+              const p=center(px,py),here=center(current.c,current.r),next=center(x,y);
+              const ux=here.x-p.x,uy=here.y-p.y,vx=next.x-here.x,vy=next.y-here.y;
+              bend=(ux*vx+uy*vy)<0?1.2:Math.abs(ux*vy-uy*vx)>1e-5?.20:0;
+            }
+            const cost=current.score+(wasRoad?.49:tile)+bend;
+            if(cost>=(scores.get(nk)??Infinity)-1e-8)continue;
+            scores.set(nk,cost);prev.set(nk,[current.c,current.r]);
+            push({c:x,r:y,score:cost,priority:cost+heuristic(x,y)});
+          }
+        }
+        if(!scores.has(goal))return [];
+        let key=goal,path=[end];
+        while(key!==origin){const parent=prev.get(key);if(!parent)return [];
+          path.push(parent);key=k(...parent);if(path.length>cols*rows)return [];}
+        path.reverse();return path.map(([c,r])=>center(c,r));
+      };
+      // Publish the exact road hex-to-hex connections for movement and route ETA.
       const bridgeSegments=new Map();
       const waterSegments=[...(window.ARMAGEDDON_RIVER_EDGES||[]).map(e=>({edge:e,kind:'river'})),
         ...(window.ARMAGEDDON_STREAM_EDGES||[]).map(e=>({edge:e,kind:'stream'}))];
@@ -1082,7 +1122,7 @@
         ctx.fillStyle=color;ctx.beginPath();ctx.arc(c.x-w/2-6,top+h/2,Math.max(5,this.zoom*6),0,Math.PI*2);ctx.fill();ctx.restore();
       }
       // M6.169: visible, friendly-only supply overlay for ALL states, including normal supply.
-      if(this.showSupply&&friendly){
+      if((this.showSupply||rating<0)&&friendly){
         const connected=this.supplyAvailability?.get(d.id);
         const out=connected===false;
         const color=rating<=-6?'#ffffff':rating<=-3?'#ff351f':rating<0?'#ffdb00':out?'#c000ff':'#00d94e';
