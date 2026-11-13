@@ -189,7 +189,7 @@ async function refresh(){
  results.forEach((r,i)=>{if(r.status==='fulfilled'){snapshot[r.value.key]=r.value.value;if(i===2)snapshot.saveCatalogOk=true;}else{if(i===2)snapshot.saveCatalogOk=false;errors.push(['Active games','My games','Autosaves'][i]+' request failed: '+(r.reason?.message||'network or CORS error'));}});snapshot.errors=errors;render();
 }
 refresh();setInterval(()=>{if(!document.hidden)refresh()},10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
-</script><script src="src/version.js?v=6.248"></script><script src="how-to-play.js?v=6.208" defer></script></body></html>
+</script><script src="src/version.js?v=6.249"></script><script src="how-to-play.js?v=6.208" defer></script></body></html>
 <script>/* M6.229: new-game transition is an explicit voluntary departure. */
 (function(){
  const start=document.getElementById('gtStartNewGame');if(!start)return;
