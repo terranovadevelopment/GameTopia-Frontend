@@ -195,7 +195,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
 </script><script src="src/march.js?v=6.192"></script>
   <script>
     if(new URLSearchParams(location.search).has("size")){
-      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.192"><\/script>');
+      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.243"><\/script>');
     }
   </script>
   <script>
@@ -1676,8 +1676,8 @@ window.armServerRequest=async function(path,options={}){
            const clear=anchoredReplayNotice(panel,title,renderer,advance.to);
            button.onclick=()=>{window.ARMAGEDDON_SOUND?.unlock?.();clear();panel.remove();resolve();};button.focus();
          });
-         // Movement SFX is a fallback until a dedicated advance.mp3 is chosen.
-         window.ARMAGEDDON_SOUND?.movement?.(u.type||'Infantry',{duration:3,volume:.8});
+         // Play the recorded Advance After Combat MP3 when the unit begins its advance.
+         window.ARMAGEDDON_SOUND?.advance?.();
          trace('advance-after-combat',{unitId:u.id,from:advance.from,to:advance.to,durationSeconds:3});
          const base=renderer.baseSize;
          const world=h=>({x:base*Math.sqrt(3)*(h.col-Math.floor(h.row/2)+h.row/2),y:base*1.5*h.row});
@@ -2122,7 +2122,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.242"></script>
+<script src="src/version.js?v=6.243"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>
