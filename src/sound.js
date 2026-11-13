@@ -57,7 +57,7 @@ function unlockMedia(){
  });
  for(const kind of Object.keys(movementRecordings))prepareRecording(kind).catch(()=>{});
  for(const kind of Object.keys(combatRecordings))prepareCombat(kind).catch(()=>{});
- for(const kind of ['retreat','surrender'])preloadEvent(kind).catch(e=>console.warn('Event audio preload:',kind,e));
+ for(const kind of ['retreat','surrender','advance'])preloadEvent(kind).catch(e=>console.warn('Event audio preload:',kind,e));
 }
 function bufferedMovement(kind,duration,volume=1){
  const c=audio();
@@ -187,7 +187,7 @@ function recordedEvent(file,volume){
 }
 // One shared, user-unlocked AudioContext avoids a new HTMLAudio autoplay
 // permission request when the server replays a delayed retreat/surrender.
-const eventSamples={retreat:'sounds/retreat.mp3',surrender:'sounds/surrender.mp3'};
+const eventSamples={retreat:'sounds/retreat.mp3',surrender:'sounds/surrender.mp3',advance:'sounds/move-forward.mp3'};
 const eventBuffers=new Map(),eventBufferLoads=new Map();
 function preloadEvent(kind){
  if(eventBuffers.has(kind))return Promise.resolve(eventBuffers.get(kind));
@@ -211,7 +211,9 @@ function playRecordedEvent(kind){
 }
 function retreat(){playRecordedEvent('retreat');}
 function surrender(){playRecordedEvent('surrender');}
+// Advance After Combat uses the dedicated move-forward.mp3 recording.
+function advance(){playRecordedEvent('advance');}
 // Sound is cosmetic: never let an audio-device or scheduling failure interrupt a game turn.
 function nonBlocking(fn){return function(...args){try{return fn(...args);}catch(error){console.warn('ARMAGEDDON audio skipped:',error);}};}
-global.ARMAGEDDON_SOUND={uiCue:nonBlocking(uiCue),movement:nonBlocking(movement),combat:nonBlocking(combat),blocked:nonBlocking(blocked),retreat:nonBlocking(retreat),surrender:nonBlocking(surrender),unlock:nonBlocking(audio),unlockMedia:nonBlocking(unlockMedia),status:movementStatus,setEnabled(v){enabled=!!v;if(!enabled){for(const player of recordedFirePlayers)player.pause();recordedFirePlayers=[];for(const player of eventAudioPlayers)player.pause();eventAudioPlayers.length=0;}if(!enabled&&vehicleAudio){vehicleAudio.pause();vehicleAudio=null;if(vehicleStop)clearTimeout(vehicleStop);vehicleStop=null;}if(!enabled&&marchingAudio){marchingAudio.pause();if(marchingStop)clearTimeout(marchingStop);marchingStop=null;}if(!enabled&&infantryFireAudio){infantryFireAudio.pause();if(infantryFireStop)clearTimeout(infantryFireStop);infantryFireStop=null;}if(!enabled&&ctx)ctx.suspend();else if(enabled&&ctx)ctx.resume();},get enabled(){return enabled;}};
+global.ARMAGEDDON_SOUND={uiCue:nonBlocking(uiCue),movement:nonBlocking(movement),combat:nonBlocking(combat),blocked:nonBlocking(blocked),retreat:nonBlocking(retreat),surrender:nonBlocking(surrender),advance:nonBlocking(advance),unlock:nonBlocking(audio),unlockMedia:nonBlocking(unlockMedia),status:movementStatus,setEnabled(v){enabled=!!v;if(!enabled){for(const player of recordedFirePlayers)player.pause();recordedFirePlayers=[];for(const player of eventAudioPlayers)player.pause();eventAudioPlayers.length=0;}if(!enabled&&vehicleAudio){vehicleAudio.pause();vehicleAudio=null;if(vehicleStop)clearTimeout(vehicleStop);vehicleStop=null;}if(!enabled&&marchingAudio){marchingAudio.pause();if(marchingStop)clearTimeout(marchingStop);marchingStop=null;}if(!enabled&&infantryFireAudio){infantryFireAudio.pause();if(infantryFireStop)clearTimeout(infantryFireStop);infantryFireStop=null;}if(!enabled&&ctx)ctx.suspend();else if(enabled&&ctx)ctx.resume();},get enabled(){return enabled;}};
 })(window);
