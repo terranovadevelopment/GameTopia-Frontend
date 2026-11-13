@@ -1577,7 +1577,12 @@ window.armServerRequest=async function(path,options={}){
      trace('replay-authoritative-roster',{recorded:initialRoster.length,local:units.length});
    }else trace('replay-legacy-roster',{reason:'No server initial roster; legacy data may not replay correctly'});
    renderer.spottingPositions=renderer.spottingPositions||new Map();
-   const byId=new Map(units.map(u=>[String(u.id),u]));
+   const initialMilitia=(events||[]).find(e=>e.type==='ti-initial-militia')?.militia;
+   if(Array.isArray(initialMilitia)){
+     renderer.militia=initialMilitia.map(m=>({...m}));
+     window.ARMAGEDDON_CITY_MILITIA=renderer.militia;
+   }
+   const byId=new Map([...units,...(renderer.militia||[])].map(u=>[String(u.id),u]));
    // Hex offset coordinates are discrete: interpolate centers in pixels, never
    // fractional columns/rows (parity flips make diagonal moves jump sideways).
    const pixelTween=(from,to,f)=>{
@@ -1628,6 +1633,16 @@ window.armServerRequest=async function(path,options={}){
        for(const e of batch){const u=byId.get(String(e.unitId));renderer.visualPositions.set(u.id,{...e.to});renderer.spottingPositions.set(String(u.id),{...e.to})}
        const authoritative=tiPositions.get(ti);
        if(authoritative){for(const p of authoritative){const u=byId.get(String(p.id));if(!u)continue;renderer.spottingPositions.set(String(p.id),{col:p.col,row:p.row});renderer.visualPositions.set(u.id,{col:p.col,row:p.row});if(typeof p.active==='boolean')u.destroyed=!p.active;if(Number.isFinite(p.strength))u.strength=p.strength;if(Number.isFinite(p.effectiveness)&&p.effectiveness>=25)u.effectiveness=p.effectiveness;}trace('ti-authoritative-positions',{ti,count:authoritative.length});}
+       // Militia casualties are recorded at each TI and are not interpolated
+       // as movement; militia can never leave its assigned urban hex.
+       for(const ev of (events||[]).filter(e=>e.type==='ti-militia'&&e.ti===ti)){
+         for(const state of ev.militia||[]){
+           const m=byId.get(String(state.id));if(!m||!m.isMilitia)continue;
+           if(Number.isFinite(state.strength))m.strength=state.strength;
+           if(Number.isFinite(state.effectiveness))m.effectiveness=state.effectiveness;
+           m.destroyed=!!state.destroyed;
+         }
+       }
        renderer.refreshHexControl();
        // Recompute with authoritative positions and log any impossible adjacent-hidden enemy.
        for(const enemy of units){const observerSide=window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_SETUP?.playerSide||'Blue';if(enemy.side===observerSide||enemy.destroyed||enemy.strength<=0)continue;const ep=renderer.spottingPositions.get(String(enemy.id))||enemy;for(const friend of units){if(friend.side!==observerSide||friend.destroyed||friend.strength<=0)continue;const fp=renderer.spottingPositions.get(String(friend.id))||friend;if(renderer.spottingDistance(fp,ep)===1&&!renderer.visibleDivision(enemy))trace('CRITICAL-ADJACENT-HIDDEN',{ti,enemyId:enemy.id,friendlyId:friend.id,enemy:ep,friendly:fp,detail:renderer.visibilityInfo(enemy)});}}
@@ -1690,6 +1705,16 @@ window.armServerRequest=async function(path,options={}){
          renderer.visualPositions.set(u.id,{col:advance.to.col,row:advance.to.row});renderer.spottingPositions.set(String(u.id),{...advance.to});renderer.render();
        }
        for(const event of productions.filter(e=>e.ti===ti)){if(replaySkip)break;await showProductionReport(event,day,renderer);}
+       if(ti===10){
+         const militiaEnd=(events||[]).find(e=>e.type==='militia-state');
+         for(const state of militiaEnd?.militia||[]){const m=byId.get(String(state.id));if(!m||!m.isMilitia)continue;
+           if(Number.isFinite(state.strength))m.strength=state.strength;
+           if(Number.isFinite(state.experience))m.experience=state.experience;
+           if(Number.isFinite(state.effectiveness))m.effectiveness=state.effectiveness;
+           m.destroyed=!!state.destroyed;
+         }
+         renderer.render();
+       }
      }
    }finally{
      await applyServerPositions(day);renderer.visualPositions.clear();renderer.spottingPositions?.clear();renderer.refreshHexControl();renderer.render();
@@ -1733,6 +1758,9 @@ window.armServerRequest=async function(path,options={}){
    if(!game?.scenario?.divisions||!clock?.engine){trace('position-apply-blocked',{day,hasScenario:!!game?.scenario,hasDivisions:!!game?.scenario?.divisions,hasClock:!!clock?.engine});return;}
    const result=await api(base+'/positions?token='+encodeURIComponent(ident.token));
    trace('positions-response',{requestedDay:day,responseDay:result.day,divisions:result.divisions?.length});if(result.day!==day){trace('position-day-mismatch',{day,responseDay:result.day});return;}
+   // City-hex militia is server-owned and persists independently of divisions.
+   game.renderer.militia=Array.isArray(result.militia)?result.militia.map(m=>({...m})):[];
+   window.ARMAGEDDON_CITY_MILITIA=game.renderer.militia;
    const byId=new Map(result.divisions.map(d=>[String(d.id),d]));
    // M6.213: units produced after the initial battlefield was created must
    // be inserted, not ignored. This also restores them after reconnect/load.
