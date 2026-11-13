@@ -211,26 +211,24 @@
     else{
       const r=latestReport;
       document.getElementById('dayReportTitle').textContent=`Daily Situation Report — Day ${r.day}`;
-      const grid=make('div','report-stats');body.append(grid);
-      const stat=(label,value,kind='')=>{const card=make('div','report-stat '+kind);card.append(make('span','',label),make('strong','',value));grid.append(card);};
+      // M6.231: stable nation-by-nation report, left Bluenstein / right Redonia.
+      const summary=make('div','report-stats report-summary');body.append(summary);
+      const stat=(parent,label,value,kind='')=>{const card=make('div','report-stat '+kind);card.append(make('span','',label),make('strong','',value));parent.append(card);};
       const fmt=n=>Number(n||0).toLocaleString();
-      stat('Combat engagements',fmt(r.engagements));stat('Movement events',fmt(r.moves));
-      // M6.209: a nation's military statistics are private except in Both Sides playtest.
+      stat(summary,'Combat engagements',fmt(r.engagements));
+      stat(summary,'Movement events',fmt(r.moves));
       const reportBoth=window.ARMAGEDDON_VIEW_MODE==='Both';
       const reportSide=window.ARMAGEDDON_PLAYER_SIDE==='Red'?'Red':'Blue';
-      for(const side of ['Blue','Red']){
-        if(!reportBoth&&side!==reportSide)continue;
-        const title=side==='Blue'?'Bluenstein':'Redonia';
-        stat(title+' casualties',fmt(r.losses?.[side]),side.toLowerCase());
-        stat(title+' troops remaining',fmt(r.remaining?.[side]),side.toLowerCase());
-        // Military event totals are shown for both nations below, not 'divisions lost'.
-      }
-      // All players see event COUNTS for both nations; detailed force strengths,
-      // casualties, and RP figures still respect the side-visibility setting.
-      for(const side of ['Blue','Red']){
-        const nation=side==='Blue'?'Bluenstein':'Redonia';
-        stat(nation+' divisions retreated',fmt(r.retreated?.[side]),side.toLowerCase());
-        stat(nation+' divisions surrendered',fmt(r.surrendered?.[side]),side.toLowerCase());
+      const nations=make('div','report-nation-stats');body.append(nations);
+      for(const [side,name] of [['Blue','Bluenstein'],['Red','Redonia']]){
+        const group=make('section','report-nation-stat '+side.toLowerCase());nations.append(group);
+        group.append(make('h3','',name));
+        const showMilitary=reportBoth||side===reportSide;
+        stat(group,'Casualties',showMilitary?fmt(r.losses?.[side]):'Hidden',side.toLowerCase());
+        stat(group,'Troops remaining',showMilitary?fmt(r.remaining?.[side]):'Hidden',side.toLowerCase());
+        // Retreat and surrender totals are public even under fog of war.
+        stat(group,'Divisions retreated',fmt(r.retreated?.[side]),side.toLowerCase());
+        stat(group,'Divisions surrendered',fmt(r.surrendered?.[side]),side.toLowerCase());
       }
       const other=make('section','report-section');other.append(make('h3','','Operations & logistics'));body.append(other);
       const accountingDay=Number(r.accountingDay)||r.day+1;other.append(make('p','report-accounting-day','RP settlement for Day '+accountingDay+' Planning — income and maintenance posted before orders.'));const list=make('div','report-nations');other.append(list);
@@ -283,13 +281,27 @@
           target:target?.name||String(shot.targetId),role:shot.role||'Fire',damage:shot.casualtiesInflicted??shot.rawDamage??0});
       }
     }
-    const retreatedIds=new Set();
-    for(const ev of events)if(ev.type==='retreat'&&!ev.displaced&&!ev.advance){
-      const id=String(ev.unitId),side=ev.side||byId.get(id)?.side;
-      if(side in retreated&&!retreatedIds.has(id)){retreated[side]++;retreatedIds.add(id);}
+    // M6.222: count actual division IDs for both nations, regardless of
+    // normal fog-of-war. Combat outcomes are public even when strengths are not.
+    // Use explicit end-of-day events; accept nested combat records only as a
+    // compatibility fallback for older saved turns.
+    const retreatedIds=new Set(),surrenderedIds=new Set();
+    const recordOutcome=(ev,kind)=>{
+      const id=String(ev?.unitId??ev?.id??'');
+      if(!id||id==='undefined'||(kind==='retreat'&&(ev.displaced||ev.advance)))return;
+      const side=ev.side||byId.get(id)?.side;
+      const target=kind==='surrender'?surrendered:retreated;
+      const seen=kind==='surrender'?surrenderedIds:retreatedIds;
+      if((side==='Blue'||side==='Red')&&!seen.has(id)){target[side]++;seen.add(id);}
+    };
+    for(const ev of events){
+      if(ev.type==='retreat')recordOutcome(ev,'retreat');
+      if(ev.type==='surrender')recordOutcome(ev,'surrender');
     }
-    const surrenderedIds=new Set();
-    for(const ev of events)if(ev.type==='surrender'){const id=String(ev.unitId),side=ev.side||byId.get(id)?.side;if(side in surrendered&&!surrenderedIds.has(id)){surrendered[side]++;surrenderedIds.add(id);}}
+    for(const combat of events.filter(e=>e.type==='combat')){
+      for(const ev of combat.retreats||[])if(!ev.advance)recordOutcome(ev,'retreat');
+      for(const ev of combat.surrenders||[])recordOutcome(ev,'surrender');
+    }
     const finalPositions=[...events].reverse().find(e=>e.type==='ti-positions')?.positions||[];
     const finalById=new Map(finalPositions.map(u=>[String(u.id),u]));
     for(const unit of byId.values()){

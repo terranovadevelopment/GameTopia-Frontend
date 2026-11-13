@@ -11,9 +11,9 @@
   let handicap=document.getElementById('combinedHandicap');
   if(!handicap){
    handicap=document.createElement('fieldset');handicap.id='combinedHandicap';
-   handicap.innerHTML='<legend>Nation handicaps</legend><table><thead><tr><th>Setting</th><th>Bluenstein</th><th>Redonia</th></tr></thead><tbody><tr><th>Starting reinforcement (%)</th><td id="blueUnitsCell"></td><td id="redUnitsCell"></td></tr><tr><th>Starting RP balance</th><td id="blueRPCell"></td><td id="redRPCell"></td></tr><tr><th>Replacements per city hex/day</th><td id="blueReplacementRateCell"></td><td id="redReplacementRateCell"></td></tr></tbody></table>';
+   handicap.innerHTML='<legend>Nation handicaps</legend><table><thead><tr><th>Setting</th><th>Bluenstein</th><th>Redonia</th></tr></thead><tbody><tr><th>Starting reinforcement (%)</th><td id="blueUnitsCell"></td><td id="redUnitsCell"></td></tr><tr><th>Starting RP balance</th><td id="blueRPCell"></td><td id="redRPCell"></td></tr><tr><th>City RP income rate (%)</th><td id="blueCityRPCell"></td><td id="redCityRPCell"></td></tr><tr><th>Replacements per city hex/day</th><td id="blueReplacementRateCell"></td><td id="redReplacementRateCell"></td></tr></tbody></table>';
   }
-  for(const id of ['blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate']){
+  for(const id of ['blueUnits','redUnits','blueRP','redRP','blueCityRP','redCityRP','blueReplacementRate','redReplacementRate']){
    const el=document.getElementById(id),cell=handicap.querySelector('#'+id+'Cell');
    if(el&&cell){const lab=el.closest('label');cell.appendChild(lab||el);}
   }

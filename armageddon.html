@@ -103,7 +103,7 @@ if(location.protocol==='file:') {
           <tr><td>Starting reinforcement (%)</td><td><input id="blueUnits" type="number" min="0" max="300" step="1" value="100" style="width:90%;box-sizing:border-box" /></td><td><input id="redUnits" type="number" min="0" max="300" step="1" value="100" style="width:90%;box-sizing:border-box" /></td></tr>
           <tr><td>Starting RP balance</td><td><input id="blueRP" type="number" min="0" max="999999" value="0" style="width:90%;box-sizing:border-box" /></td><td><input id="redRP" type="number" min="0" max="999999" value="0" style="width:90%;box-sizing:border-box" /></td></tr>
           <tr><td>City RP income rate (%)</td><td><input id="blueCityRP" type="number" min="0" max="500" step="10" value="100" style="width:90%;box-sizing:border-box" /></td><td><input id="redCityRP" type="number" min="0" max="500" step="10" value="100" style="width:90%;box-sizing:border-box" /></td></tr>
-          <tr><td>Replacements per city hex/day</td><td><input id="blueReplacementRate" type="number" min="0" max="100" step="1" value="100" style="width:90%;box-sizing:border-box" /></td><td><input id="redReplacementRate" type="number" min="0" max="100" step="1" value="100" style="width:90%;box-sizing:border-box" /></td></tr>
+          <tr><td>Replacements per city hex/day</td><td><input id="blueReplacementRate" type="number" min="0" step="1" value="100" style="width:90%;box-sizing:border-box" /></td><td><input id="redReplacementRate" type="number" min="0" step="1" value="100" style="width:90%;box-sizing:border-box" /></td></tr>
           </tbody></table></fieldset>
         <p style="font-size:11px;color:#a8c2d3">Each eligible friendly city hex can generate up to the specified number of replacement soldiers per day (maximum 100).</p><p style="font-size:12px;color:#a8c2d3"><span id="forcePreview">Each side starts with 12 Infantry, 3 Motorized, 3 Mechanized, and 3 Armored divisions (21 total).</span></p>
         
@@ -931,7 +931,7 @@ window.armServerRequest=async function(path,options={}){
 /* M6.67: draggable player status and separate voice communications UI. */
 (function(){
  const id=new URLSearchParams(location.search).get('gameId');if(!id)return;
- let ident;try{ident=JSON.parse(sessionStorage.getItem('armageddon_identity_'+id)||'null')}catch(_){}
+ let ident;try{ident=JSON.parse(sessionStorage.getItem('armageddon_identity_'+id)||localStorage.getItem('armageddon_identity_'+id)||'null')}catch(_){}
  if(!ident?.token)return;
  const api=window.armServerRequest,base='/api/games/'+encodeURIComponent(id);
  const box=document.createElement('section');box.id='gtPlayersPanel';box.setAttribute('aria-label','Multiplayer player status');
@@ -2179,13 +2179,48 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 })();
 </script>
 
-<style>#readyButton{display:none!important}#tiLabel{display:none!important}</style>
+<style>/* M6.230: never hide the only backup Ready control. */
+#readyButton{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:36px!important;min-width:108px!important;line-height:normal!important}
+#readyButton[hidden]{display:none!important}
+#tiLabel{display:none!important}
+#gtPlayersPanel{visibility:visible!important}
+</style>
+<script>
+/* M6.230: independent top toolbar Ready recovery if a saved session was lost. */
+(function(){
+ const gameId=new URLSearchParams(location.search).get('gameId');
+ const button=document.getElementById('readyButton');
+ if(!button)return;
+ if(!gameId){button.hidden=true;return;}
+ button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');
+ button.style.setProperty('display','inline-flex','important');
+ button.title='Ready / Waiting. The Players panel also provides player status.';
+ const show=document.createElement('button');show.id='gtShowPlayersPanel';show.type='button';show.className='text-button';show.textContent='Players / Ready';show.title='Show or restore the draggable Players and Ready panel';
+ button.insertAdjacentElement('afterend',show);
+ show.addEventListener('click',()=>{
+  const panel=document.getElementById('gtPlayersPanel');
+  if(panel){panel.hidden=false;panel.style.setProperty('display','block','important');panel.style.left='12px';panel.style.bottom='12px';panel.style.top='auto';panel.style.zIndex='100600';panel.scrollIntoView({block:'nearest'});}
+  else{window.alert('Players panel is reconnecting. If it does not appear, return to Available Games and select Resume.');}
+ });
+ const key='armageddon_identity_'+gameId;
+ let saved=null;try{saved=JSON.parse(sessionStorage.getItem(key)||localStorage.getItem(key)||'null')}catch(_){}
+ if(saved?.token){sessionStorage.setItem(key,JSON.stringify(saved));return;}
+ // A registered player is permitted to recover the same permanent game slot.
+ let account=null;try{account=JSON.parse(sessionStorage.getItem('gt_account')||localStorage.getItem('gt_account')||'null')}catch(_){}
+ if(!account?.token){button.disabled=true;button.textContent='Resume Game';button.onclick=()=>location.assign('armageddon-lobby.html');return;}
+ button.disabled=true;button.textContent='Reconnecting…';
+ fetch('https://gametopia-backend.onrender.com/api/games/'+encodeURIComponent(gameId)+'/reconnect',{
+  method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accountToken:account.token})
+ }).then(async response=>{const result=await response.json();if(!response.ok||!result?.token)throw Error(result.error||'Could not reconnect');sessionStorage.setItem(key,JSON.stringify(result));sessionStorage.setItem('armageddon_active_game',gameId);location.reload();})
+ .catch(error=>{button.disabled=false;button.textContent='Resume Game';button.title=String(error.message||error);button.onclick=()=>location.assign('armageddon-lobby.html');});
+})();
+</script>
 
 <script>/* M6.59 personal-color roster for unit counter rendering */
 (async function(){const id=new URLSearchParams(location.search).get('gameId');if(!id)return;try{const r=await fetch('https://gametopia-backend.onrender.com/api/games',{cache:'no-store'});if(!r.ok)return;const g=(await r.json()).find(x=>x.id===id);if(!g)return;window.ARMAGEDDON_GAME_PLAYERS=g.players||[];window.ARMAGEDDON_DEBUG_RENDERER?.render();}catch(e){console.warn('Player colors unavailable',e);}})();
 </script>
 
-<style>/* M6.229: autosaves are accessed from Games screen, not setup */
+<style>/* M6.230: autosaves are accessed from Games screen, not setup */
 #mapSetupPanel [data-load-game],#setupActionBar [data-load-game]{display:none!important}
 /* Vertically center all roster/player acknowledgement controls */
 #gtPlayersPanel button,#gtMemberAlert button,#dayReportClose{display:inline-flex!important;align-items:center!important;justify-content:center!important;line-height:normal!important;min-height:38px!important}

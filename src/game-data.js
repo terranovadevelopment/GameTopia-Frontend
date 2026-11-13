@@ -12,7 +12,8 @@
   const playerSide=params.get('playerSide')==='Red'?'Red':'Blue';
   const handicap={Blue:{units:Math.max(0,Math.min(300,Number(params.get('blueUnits') ?? 100))),rp:Math.max(0,Math.min(9999,Number(params.get('blueRP'))||0))},Red:{units:Math.max(0,Math.min(300,Number(params.get('redUnits') ?? 100))),rp:Math.max(0,Math.min(9999,Number(params.get('redRP'))||0))}};
   global.ARMAGEDDON_PLAYER_SIDE=playerSide;
-  const replacementRates={Blue:Math.max(0,Math.min(100,Number(params.get('blueReplacementRate') ?? 100))),Red:Math.max(0,Math.min(100,Number(params.get('redReplacementRate') ?? 100)))};
+  const unlimitedReplacementRate=side=>{const raw=Number(params.get((side==='Blue'?'blue':'red')+'ReplacementRate')??100);return Number.isSafeInteger(raw)&&raw>=0?raw:100;};
+  const replacementRates={Blue:unlimitedReplacementRate('Blue'),Red:unlimitedReplacementRate('Red')};
   global.ARMAGEDDON_SETUP={replacementRates,size:sizeName,deployment:mobilized?'mobilized':'unmobilized',seed:mapSeed,playerSide,handicap};
   const cityIncomeRates={Blue:Math.max(0,Math.min(500,Number(params.get('blueCityRP')??100))),Red:Math.max(0,Math.min(500,Number(params.get('redCityRP')??100)))};
   global.ARMAGEDDON_SETUP.cityIncomeRates=cityIncomeRates;

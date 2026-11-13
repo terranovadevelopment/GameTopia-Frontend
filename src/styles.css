@@ -139,3 +139,11 @@
 #endDayOverlay .report-nation .report-operation span{font-size:13px;}
 #endDayOverlay .report-nation .report-operation strong{font-size:14px;font-variant-numeric:tabular-nums;}
 @media(max-width:630px){#endDayOverlay .report-nations{grid-template-columns:1fr;}}
+
+/* M6.231: the two nations occupy fixed left and right columns. */
+#endDayOverlay .report-nation-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 12px}
+#endDayOverlay .report-nation-stat{min-width:0}
+#endDayOverlay .report-nation-stat h3{margin:0 0 7px;font-size:17px;border-bottom:2px solid #547da9;padding:4px 0 7px;color:#83bcf0}
+#endDayOverlay .report-nation-stat.red h3{border-color:#ce6c73;color:#f09ca3}
+#endDayOverlay .report-nation-stat .report-stat{margin-bottom:6px}
+@media(max-width:520px){#endDayOverlay .report-nation-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}#endDayOverlay .report-nation-stat .report-stat{flex-wrap:wrap}#endDayOverlay .report-nation-stat .report-stat span{font-size:11px!important}#endDayOverlay .report-nation-stat .report-stat strong{font-size:14px!important}}

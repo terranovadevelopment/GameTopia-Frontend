@@ -9,7 +9,7 @@
     const existing=new URLSearchParams(location.search);
     seedControl.value=existing.get('seed')||String(Math.floor(Math.random()*4294967295)).padStart(10,'0');
     seedControl.addEventListener('click',async()=>{seedControl.select();try{await navigator.clipboard.writeText(seedControl.value);}catch(e){document.execCommand('copy');}seedControl.title='Copied: '+seedControl.value;});
-    for(const id of ['playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate']){if(existing.has(id))document.getElementById(id).value=existing.get(id);}
+    for(const id of ['playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','blueCityRP','redCityRP']){if(existing.has(id))document.getElementById(id).value=existing.get(id);}
     document.getElementById('unitSymbolStyle').value=existing.get('unitSymbolStyle')==='silhouettes'?'silhouettes':'nato';
     const sizeControl=document.getElementById('mapSize'),preview=document.getElementById('forcePreview');
     const standardDimensions={small:[30,20],medium:[42,28],large:[60,40],huge:[72,48]};
@@ -44,7 +44,7 @@
     }
     sizeControl.addEventListener('change',updateForces);for(const id of ['blueUnits','redUnits'])document.getElementById(id).addEventListener('input',updateForces);updateForces();
     const stage=document.getElementById('storyStage'),card=document.getElementById('storyCard');
-    const editableIds=['customWidth','customHeight','mapSize','deployment','playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','unitSymbolStyle'];
+    const editableIds=['customWidth','customHeight','mapSize','deployment','playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','blueCityRP','redCityRP','unitSymbolStyle'];
     let previousSettings=null;
     function openSetup(){
       if(document.body.classList.contains('pre-game'))return;
@@ -78,7 +78,7 @@
       const day=86400000;
       const offset=Math.floor(Math.random()*((last-first)/day+1));
       params.set('startDate',new Date(first+offset*day).toISOString().slice(0,10));
-      for(const id of ['playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate'])params.set(id,document.getElementById(id).value);
+      for(const id of ['playerSide','blueUnits','redUnits','blueRP','redRP','blueReplacementRate','redReplacementRate','blueCityRP','redCityRP'])params.set(id,document.getElementById(id).value);
       params.set('unitSymbolStyle',document.getElementById('unitSymbolStyle').value);
       for(const el of fields.querySelectorAll('select'))params.set(el.dataset.density,el.value);
       // M6.64: finish scenario setup before the host selects a personal color.
