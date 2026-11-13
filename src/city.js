@@ -72,9 +72,12 @@
       const militia=(renderer.militia||[]).filter(m=>m.cityName===String(s.city.name));
       if(militia.length){
         const friendly=side===(global.ARMAGEDDON_PLAYER_SIDE||'Blue')||global.ARMAGEDDON_VIEW_MODE==='Both';
-        line('City militia',friendly?
-          militia.reduce((n,m)=>n+Math.max(0,Number(m.strength)||0),0).toLocaleString()+' soldiers':
-          'Strength unknown until combat');
+        line('Militia hexes',String(militia.length));
+        line('Militia soldiers',friendly?
+          militia.reduce((n,m)=>n+Math.max(0,Number(m.strength)||0),0).toLocaleString()+
+          ' / '+(militia.length*5000).toLocaleString():
+          'Unknown until combat');
+        line('Militia recruitment',friendly?'Up to 100 per city hex / turn (adjusted by game settings)':'Not disclosed');
         for(const m of militia.sort((a,b)=>a.row-b.row||a.col-b.col)){
           line('Militia ('+m.col+','+m.row+')',friendly?
             ((Number(m.strength)<=0?'0 — recruiting when unoccupied':Number(m.strength).toLocaleString()+'/5,000')+
