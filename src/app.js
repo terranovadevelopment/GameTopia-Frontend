@@ -254,6 +254,45 @@
         item('Replacements',r.replacements?.[side]||'None');
       }
       const routesRow=make('div','report-operation report-routes');routesRow.append(make('span','','Unfinished movement routes'),make('strong','',fmt(r.routes)));other.append(routesRow);
+      // M6.236: Production purchases occur at the beginning of the completed
+      // game day, before execution. Do not confuse them with the Day+1 RP
+      // settlement displayed above (which precedes the NEXT planning phase).
+      const ledgers=Array.isArray(r.aiProductionLedgers)?r.aiProductionLedgers:[];
+      if(ledgers.length){
+        const aiSection=make('section','report-section report-ai-production');
+        aiSection.append(make('h3','','AI Production Accounting — Day '+r.day));
+        aiSection.append(make('p','report-accounting-day','AI purchases and cancellation refunds at the beginning of completed Day '+r.day+'. These figures precede the following day’s city income and maintenance.'));
+        const aiColumns=make('div','report-nations');aiSection.append(aiColumns);
+        for(const [side,nation] of [['Blue','Bluenstein'],['Red','Redonia']]){
+          const ledger=ledgers.find(entry=>entry.side===side);if(!ledger)continue;
+          const column=make('section','report-nation '+side.toLowerCase());aiColumns.append(column);
+          column.append(make('h4','',nation+' — AI'));
+          const item=(name,value)=>{const line=make('div','report-operation');line.append(make('span','',name),make('strong','',value));column.append(line);};
+          item('Available before purchases',fmtRPDecimal(ledger.opening));
+          item('Canceled production refunds','+'+fmtRPDecimal(ledger.refunds));
+          item('New production and relocations','−'+fmtRPDecimal(ledger.purchases));
+          item('Remaining after AI purchases',fmtRPDecimal(ledger.closing));
+          item('Production orders started',fmt(ledger.starts));
+          if(ledger.reconciled===false)item('Accounting check','Mismatch — investigate');
+          // City names and unit types are shown only to the controlling
+          // nation, or in explicitly enabled Both-Sides testing mode.
+          const orders=(r.aiProductionTransactions||[]).filter(ev=>ev.side===side);
+          if(orders.length && (reportBoth||side===reportSide)){
+            const details=make('details','report-supply');
+            details.append(make('summary','','Show production orders ('+orders.length+')'));
+            const entries=make('ul','');
+            for(const ev of orders){
+              const line=make('li','');
+              const description=ev.type==='ai-production-started'?'Started':ev.type==='ai-production-relocated'?'Relocated':ev.type==='ai-production-canceled'?'Canceled':'Changed';
+              const from=ev.fromCity?' from '+ev.fromCity:'';
+              line.textContent=description+' '+(ev.unitType||'division')+' — '+(ev.cityName||'city')+from+' · '+(ev.type==='ai-production-canceled'?'refund +'+fmtRPDecimal(ev.refund):'cost −'+fmtRPDecimal(ev.cost))+(ev.remaining!=null?' · '+ev.remaining+' days to produce':'');
+              entries.append(line);
+            }
+            details.append(entries);column.append(details);
+          }
+        }
+        other.after(aiSection);
+      }
       // M6.192: per-shot details remain in Battle Summary, not the Daily Situation Report.
     }
     document.getElementById('dayCombatDetail').textContent=latestCombatDetail;
@@ -314,7 +353,9 @@
     latestReport={day,engagements:events.filter(e=>e.type==='combat').length,
       moves:events.filter(e=>e.type==='move').length,losses,remaining,destroyed,retreated,surrendered,fireLines,
       accountingDay:economy?.accountingDay||day+1,opening:economy?.opening||null,maintenance:upkeep,income:economy?.income||null,net:economy?.net||null,balances:economy?.balances||null,supplyVerified:!!supply?.verified,outOfSupply:supply?.outOfSupply||{Blue:[],Red:[]},negativeSupply:supply?.negativeSupply||{Blue:[],Red:[]},
-      replacements:{Blue:'See replacement overlay',Red:'See replacement overlay'},routes:0};
+      replacements:{Blue:'See replacement overlay',Red:'See replacement overlay'},routes:0,
+      aiProductionLedgers:events.filter(e=>e.type==='ai-production-accounting'&&Number(e.day)===day),
+      aiProductionTransactions:events.filter(e=>['ai-production-started','ai-production-canceled','ai-production-relocated'].includes(e.type)&&Number(e.day)===day)};
     latestCombatDetail='Server-recorded combat and movement for completed Day '+day;
   };
   let lastAutomaticDailyReportDay=0;
