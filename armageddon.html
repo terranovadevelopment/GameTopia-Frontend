@@ -6,7 +6,7 @@
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.260</title>
+  <title>ARMAGEDDON — M6.261</title>
   <link rel="stylesheet" href="src/styles.css">
 <script src="how-to-play.js?v=6.208" defer></script>
 <style>
@@ -195,7 +195,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
 </script><script src="src/march.js?v=6.192"></script>
   <script>
     if(new URLSearchParams(location.search).has("size")){
-      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.260"><\/script>');
+      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.261"><\/script>');
     }
   </script>
   <script>
@@ -1143,6 +1143,9 @@ window.armServerRequest=async function(path,options={}){
  }
 
  let lastAppliedDay=1;
+ // M6.261: a newly opened/restored game starts at its saved Planning checkpoint;
+ // only an actual transition observed in this open browser replays the past day.
+ let hasObservedServerState=false,observedRestoreEpoch=null;
  // Server-authored events are immutable. Playback changes only renderer.visualPositions.
  let replayBusy=false, replayPaused=false, replaySkip=false, replaySpeed=1;
  const replayBar=document.createElement('section');replayBar.id='gtMovementReplay';replayBar.hidden=true;
@@ -1980,7 +1983,11 @@ window.armServerRequest=async function(path,options={}){
   const action=document.createElement('button');action.type='button';action.textContent='Return to Game List';action.style.cssText='padding:12px 18px;background:#246fa9;border:1px solid white;color:white;border-radius:7px;cursor:pointer';action.onclick=()=>{location.href='armageddon-lobby.html';};
   panel.append(heading,detail,action);shield.append(panel);document.body.append(shield);action.focus();
  }
- async function refresh(){if(membershipRevoked)return;try{const st=await api(base+'/state?token='+encodeURIComponent(ident.token));current=st;showMemberNotices(st);applyEconomyUpdate(st);if(!window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC){window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC=true;modeSync=modeSync.then(syncPlaytestMode).catch(err=>trace('playtest-init-error',{error:err.message}));}const localPlayer=st.players.find(p=>p.id===ident.playerId);if(localPlayer){if(!window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_VIEW_MODE==='None')window.ARMAGEDDON_VIEW_MODE=localPlayer.side;window.ARMAGEDDON_SETUP=window.ARMAGEDDON_SETUP||{};window.ARMAGEDDON_SETUP.playerSide=localPlayer.side;}if(replayBusy){showPacificationNotices(st)}
+ async function refresh(){if(membershipRevoked)return;try{const st=await api(base+'/state?token='+encodeURIComponent(ident.token));
+   const firstServerState=!hasObservedServerState;
+   const restoredCheckpoint=st.executionStatus==='turn-start-restored'||(st.restoreEpoch!=null&&st.restoreEpoch!==observedRestoreEpoch);
+   hasObservedServerState=true;observedRestoreEpoch=st.restoreEpoch??null;
+   current=st;showMemberNotices(st);applyEconomyUpdate(st);if(!window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC){window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC=true;modeSync=modeSync.then(syncPlaytestMode).catch(err=>trace('playtest-init-error',{error:err.message}));}const localPlayer=st.players.find(p=>p.id===ident.playerId);if(localPlayer){if(!window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_VIEW_MODE==='None')window.ARMAGEDDON_VIEW_MODE=localPlayer.side;window.ARMAGEDDON_SETUP=window.ARMAGEDDON_SETUP||{};window.ARMAGEDDON_SETUP.playerSide=localPlayer.side;}if(replayBusy){showPacificationNotices(st)}
    else if(st.day<=lastAppliedDay) {pacificationRevealTi=10;showPacificationNotices(st)}
    else {pacificationRevealTi=0;pacPanel.hidden=true;pacCityHex=null;updatePacificationArrow();}
    if(st.day>1&&st.executionEvents?.length)window.ARMAGEDDON_SET_SERVER_REPORT?.(st.day-1,st.executionEvents,st.battlefield);
@@ -1997,7 +2004,27 @@ window.armServerRequest=async function(path,options={}){
    // Clear planned route overlays as soon as server leaves Planning.
    // Do not erase orders while waiting for other players to become Ready.
    if(st.phase!=='planning' && !replayBusy){window.ARMAGEDDON_CLOSE_EXECUTION_PANELS?.();window.ARMAGEDDON_M2?.planner?.routes?.clear();window.ARMAGEDDON_M2?.renderer?.render();}
-   if(st.day>lastAppliedDay&&!replayBusy){if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production'))playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));else {await applyServerPositions(st.day);showDaySplash(st.day,()=>{if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();});}}
+   if(!replayBusy&&restoredCheckpoint&&st.day===lastAppliedDay&&!firstServerState){
+     window.ARMAGEDDON_M2?.planner?.routes?.clear();
+     await applyServerPositions(st.day);
+     trace('turn-start-same-day-restore',{day:st.day});
+   }
+   // Initial reconnect/loaded autosaves are already authoritative turn START
+   // snapshots. Never force the viewer to replay a previous day's firing to
+   // reach the current Planning turn. A live turn transition remains replayable.
+   if(!replayBusy&&(st.day>lastAppliedDay||restoredCheckpoint&&st.day!==lastAppliedDay)){
+     if(firstServerState||restoredCheckpoint||st.day<lastAppliedDay){
+       window.ARMAGEDDON_M2?.planner?.routes?.clear();
+       await applyServerPositions(st.day);
+       trace('turn-start-direct-load',{day:st.day,firstServerState,restoredCheckpoint});
+       if(st.phase==='planning')showDaySplash(st.day,()=>{if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();});
+     }else if(st.executionEvents?.some(e=>e.type==='move'||e.type==='combat'||e.type==='production')){
+       playServerMovements(st.day,st.executionEvents).catch(e=>trace('replay-error',{error:e.message}));
+     }else{
+       await applyServerPositions(st.day);
+       if(st.phase==='planning')showDaySplash(st.day,()=>{if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();});
+     }
+   }
 if(st.phase==='planning'&&!replayBusy&&st.day===lastAppliedDay&&!st.victory?.side&&!st.players.find(p=>p.id===ident.playerId)?.ready)showDaySplash(st.day,()=>{if(st.day>1)window.ARMAGEDDON_SHOW_DAILY_REPORT?.();});
 const loginBadge=box.querySelector('#gtLoginStatus');if(loginBadge){const who=st.players.find(p=>p.id===ident.playerId);loginBadge.textContent=who?.accountId?'Signed in: '+who.name+' · Account ID '+who.accountId:'Guest: '+(who?.name||'Player')+' · Register / Log In via Games Underway';}
 window.ARMAGEDDON_ORDERS_LOCKED=!!st.players.find(p=>p.id===ident.playerId)?.ready||st.phase!=='planning'||replayBusy||daySplash.style.display!=='none';
@@ -2256,7 +2283,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.260"></script>
+<script src="src/version.js?v=6.261"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>
