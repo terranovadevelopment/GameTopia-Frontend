@@ -96,4 +96,31 @@ QUICK START CHECKLIST
 TIP: Start cautiously. Keep your divisions supplied, protect your
 capital, and coordinate attacks rather than sending divisions alone.
 
-This is a quick-start guide, not the complete rules reference.
+8. EXPERIENCE & BATTLE WARNINGS
+--------------------------------
+* Starting regular divisions and opening militia begin at experience 90.
+* Newly manufactured/produced reinforcement divisions enter at 80.
+* Replacement personnel joining an existing formation enter at 70;
+  the division's experience is weighted by veteran and recruit headcount.
+* Surviving divisions earn one experience point each completed day,
+  plus one additional point when they participate in a battle.
+* The natural defender protection is 20%; Improved Position (IP)
+  adds protection up to a maximum 30% reduction.
+* A failed morale check displays a visible red warning on eligible
+  friendly counters. AI units with FAILING morale try to withdraw
+  from nearby spotted enemies instead of initiating attacks.
+
+9. SAVE, REPORTS & PLAYTEST
+--------------------------
+* Every new Planning turn creates an authoritative autosave.
+* Loading an autosave skips the previous day's combat replay and
+  places you directly at the new turn's Planning phase.
+* The Daily Situation Report shows casualties, remaining troops,
+  retreats/surrenders, production, supplies and RP accounting.
+* In the Both Sides solo-playtest mode, reports include both armies.
+  Normal play keeps private enemy strength and production concealed.
+* Enemy militia presence is not the same as knowing its manpower.
+  Zero-strength or fractional ghost militia cannot block a captured hex.
+* Battle reports show Blue and Red casualty totals prominently.
+
+This is a quick-start guide; README.md is the expanded current reference.

@@ -28,7 +28,7 @@
       // Existing packets move up to three hexes toward their reassigned target per day.
       for(let i=packets.length-1;i>=0;i--){const p=packets[i],target=scenario.divisions.find(d=>d.id===p.targetId&&!d.destroyed&&d.strength>0);if(!target){continue;}
         let steps=3;while(steps--&&distance(p,target)>3){let best=null,bestDist=distance(p,target);for(const n of neighbors(p.col,p.row,scenario)){const dd=distance(n,target);if(dd<bestDist){best=n;bestDist=dd;}}if(!best)break;p.col=best.col;p.row=best.row;}
-        if(distance(p,target)<=3){const delivered=Math.min(p.soldiers,Math.max(0,10000-target.strength));const old=target.strength;target.strength+=delivered;target.totalReplacementsReceived=(target.totalReplacementsReceived||0)+delivered;target.experience=target.strength?((Number(target.experience)||75)*old+75*delivered)/target.strength:75;activity[p.side].received+=delivered;packets.splice(i,1);}
+        if(distance(p,target)<=3){const delivered=Math.min(p.soldiers,Math.max(0,10000-target.strength));const old=target.strength;target.strength+=delivered;target.totalReplacementsReceived=(target.totalReplacementsReceived||0)+delivered;target.experience=target.strength?((Number(target.experience)||90)*old+70*delivered)/target.strength:70;activity[p.side].received+=delivered;packets.splice(i,1);}
       }
       updateCounts();
       // Allocate each needy division to its nearest eligible friendly city.
