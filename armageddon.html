@@ -1774,7 +1774,10 @@ window.armServerRequest=async function(path,options={}){
    for(const unit of game.scenario.divisions){const updated=byId.get(String(unit.id));if(!updated)continue;
      unit.col=updated.col;unit.row=updated.row;unit.tis=updated.tis;
      if(Number.isFinite(updated.strength))unit.strength=updated.strength;
-     if(Number.isFinite(updated.effectiveness)&&updated.effectiveness>=25)unit.effectiveness=updated.effectiveness;
+     // Saved games may return an unset or numeric-string effectiveness.
+     // All active divisions start at 100 if no historical value exists.
+     const updatedMorale=Number(updated.effectiveness);
+     unit.effectiveness=updated.effectiveness!==null&&updated.effectiveness!==undefined&&updated.effectiveness!==''&&Number.isFinite(updatedMorale)?Math.max(25,Math.min(100,updatedMorale)):100;
      if(Number.isFinite(updated.experience))unit.experience=updated.experience;
      if(Number.isFinite(updated.supply))unit.supply=updated.supply;
      if(Number.isFinite(updated.totalCasualties))unit.totalCasualties=updated.totalCasualties;
@@ -1800,6 +1803,8 @@ window.armServerRequest=async function(path,options={}){
      game.planner.routes.set(String(order.unitId),order.route.map(p=>({col:p.col,row:p.row,pauseCount:Number(p.pauseCount)||0})));
    }
    game.renderer.visualPositions?.clear();game.renderer.spottingPositions?.clear();game.renderer.render();
+   // The report is a separate DOM panel; update it after authoritative sync.
+   game.refreshSelectedReport?.();
    const label=document.getElementById('tiLabel');if(label)label.textContent='Day '+day+' · Planning';
    const gameClock=document.getElementById('gameClock');if(gameClock)gameClock.textContent='Turn '+day+' 7:00';
    lastAppliedDay=day;trace('positions-applied',{day,matched:game.scenario.divisions.filter(d=>byId.has(String(d.id))).length});
