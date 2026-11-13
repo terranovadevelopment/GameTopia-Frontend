@@ -34,7 +34,7 @@ function resolve(scenario,terrainAt,day,ti,attackOrders=[],planner=null,movement
   d.ip=clamp(Number.isFinite(d.ip)?d.ip:0,0,50);
   if(attempted.has(d.id)||startingAttackers.has(d.id)||ongoingAttackers.has(d.id)){d.ip=0;continue;}
   // Stationary units prepare regardless of pending orders or combat activity.
-  d.ip=Math.min(40,d.ip+1.0);
+  d.ip=Math.min(30,d.ip+1.0);
  }
  // Clear completed-order guards once a unit changes or cancels its route.
  if(planner)for(const [id,signature] of completedOrders){const u=byId.get(id),next=planner.get(id)[0];if(!u||!next||`${u.col},${u.row}>${next.col},${next.row}`!==signature)completedOrders.delete(id);}
@@ -106,7 +106,7 @@ function resolve(scenario,terrainAt,day,ti,attackOrders=[],planner=null,movement
   const targetTerrain=terrainAt(target.col,target.row);
   const mod=isAttacker?terrain(A,targetTerrain,source.type):1;
   const matchup=1+(TYPES.indexOf(source.type)-TYPES.indexOf(target.type))*.1;
-  const ip=targetIsDefending(target) ? 1-clamp(target.ip,0,40)/100 : 1; // Only primary defenders receive IP protection against attacking fire.
+  const ip=targetIsDefending(target) ? 1-clamp(target.ip,0,30)/100 : 1; // Only primary defenders receive IP protection against attacking fire.
   const supply=Math.max(.5,1+Math.min(0,source.supply)*.1);
   // M5.64: every negative target SR point increases incoming damage by 5%.
   const incomingSupply=1+.05*Math.max(0,-(Number(target.supply)||0));
@@ -119,7 +119,7 @@ function resolve(scenario,terrainAt,day,ti,attackOrders=[],planner=null,movement
   const waterModifier=!isAttacker?1:(river||stream)?(bridge?(river?.80:.90):(river?.50:.80)):1;
   const random=rnd(); // Uniform 80%–120% of computed fire damage.
   const moraleFactor=Math.sqrt(clamp(morale,10,100)/100);
-  const finalRating=moraleFactor*supply*incomingSupply*mod*matchup*ip*waterModifier*random*(targetIsDefending(target)?0.70:1);
+  const finalRating=moraleFactor*supply*incomingSupply*mod*matchup*ip*waterModifier*random*(targetIsDefending(target)?0.80:1);
   const damage=.10*share*finalRating;
   const detail={unit:source.id,target:target.id,role:isAttacker?'Attacker':'Defender',strength:source.strength,committed:share,
     morale,moraleFactor,supply,incomingSupply,terrain:mod,
