@@ -187,7 +187,7 @@ function recordedEvent(file,volume){
 }
 // One shared, user-unlocked AudioContext avoids a new HTMLAudio autoplay
 // permission request when the server replays a delayed retreat/surrender.
-const eventSamples={retreat:'sounds/retreat.mp3',surrender:'sounds/surrender.mp3',advance:'sounds/army-marching.mp3'};
+const eventSamples={retreat:'sounds/retreat.mp3',surrender:'sounds/surrender.mp3',advance:'sounds/move-forward.mp3'};
 const eventBuffers=new Map(),eventBufferLoads=new Map();
 function preloadEvent(kind){
  if(eventBuffers.has(kind))return Promise.resolve(eventBuffers.get(kind));
@@ -211,7 +211,7 @@ function playRecordedEvent(kind){
 }
 function retreat(){playRecordedEvent('retreat');}
 function surrender(){playRecordedEvent('surrender');}
-// Advance After Combat uses a recorded marching MP3 as its dedicated replay cue.
+// Advance After Combat uses the dedicated move-forward.mp3 recording.
 function advance(){playRecordedEvent('advance');}
 // Sound is cosmetic: never let an audio-device or scheduling failure interrupt a game turn.
 function nonBlocking(fn){return function(...args){try{return fn(...args);}catch(error){console.warn('ARMAGEDDON audio skipped:',error);}};}
