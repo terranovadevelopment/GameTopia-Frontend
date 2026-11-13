@@ -93,7 +93,8 @@ class MovementEngine{
      const next=this.planner.get(d.id)[0];
      const occupant=occupancy.get(key(next));
      const cap=cost(d,this.terrainAt(next.col,next.row),d,next,this.terrainAt,Boolean(occupant&&occupant.side!==d.side));
-     // Retain full accumulated movement credit while reciprocal combat is pending.
+     // A reciprocal defender may hold at most the next-hex entry cost.
+     if(Number.isFinite(cap))d.tis=Math.min(d.tis,cap);
      continue;
    }
    if(!head)continue;
@@ -112,7 +113,9 @@ class MovementEngine{
      }
      creditCost=total;
    }
-   // Do not cap movement credit: excess carries into the next ordered hex.
+   // Credit is limited to the exact next payable entry cost, including atomic
+   // friendly pass-through. Excess hours are never banked for later hexes.
+   if(Number.isFinite(creditCost))d.tis=Math.min(d.tis,creditCost);
    const primaryAttack=Boolean(occupant&&occupant.side!==d.side);
    // Friendly pass-through: wait in the starting hex until the entire contiguous
    // occupied segment can be traversed and an empty, non-enemy-ZOC hex reached.
