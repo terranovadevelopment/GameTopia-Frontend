@@ -268,7 +268,10 @@ function endTurn(scenario,terrainAt,day,participantIds,planner){
  const candidates=u=>{
   const enemyZoc=zoc[Z().enemySide(u.side)];
   const friendlyCities=cityStates.filter(c=>c.pacification===0&&c.owner===u.side).map(c=>({col:c.city.c,row:c.city.r}));
-  const nearest=n=>friendlyCities.length?Math.min(...friendlyCities.map(c=>distance(c,n))):Infinity;
+  // M6.262: determine closest friendly city from original retreat position.
+  // Tie-break equally safe retreats toward that city, not away from it.
+  const home=friendlyCities.slice().sort((a,b)=>distance(u,a)-distance(u,b)||a.row-b.row||a.col-b.col)[0];
+  const nearest=n=>home?distance(home,n):Infinity;
   const options=[];
   for(const n of Z().neighbors(u,scenario)){
    if(!legal(n))continue;

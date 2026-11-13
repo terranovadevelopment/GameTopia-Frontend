@@ -6,7 +6,7 @@
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.261</title>
+  <title>ARMAGEDDON — M6.262</title>
   <link rel="stylesheet" href="src/styles.css">
 <script src="how-to-play.js?v=6.208" defer></script>
 <style>
@@ -195,7 +195,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
 </script><script src="src/march.js?v=6.192"></script>
   <script>
     if(new URLSearchParams(location.search).has("size")){
-      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.261"><\/script>');
+      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.262"><\/script>');
     }
   </script>
   <script>
@@ -1990,7 +1990,10 @@ window.armServerRequest=async function(path,options={}){
    current=st;showMemberNotices(st);applyEconomyUpdate(st);if(!window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC){window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC=true;modeSync=modeSync.then(syncPlaytestMode).catch(err=>trace('playtest-init-error',{error:err.message}));}const localPlayer=st.players.find(p=>p.id===ident.playerId);if(localPlayer){if(!window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_VIEW_MODE==='None')window.ARMAGEDDON_VIEW_MODE=localPlayer.side;window.ARMAGEDDON_SETUP=window.ARMAGEDDON_SETUP||{};window.ARMAGEDDON_SETUP.playerSide=localPlayer.side;}if(replayBusy){showPacificationNotices(st)}
    else if(st.day<=lastAppliedDay) {pacificationRevealTi=10;showPacificationNotices(st)}
    else {pacificationRevealTi=0;pacPanel.hidden=true;pacCityHex=null;updatePacificationArrow();}
-   if(st.day>1&&st.executionEvents?.length)window.ARMAGEDDON_SET_SERVER_REPORT?.(st.day-1,st.executionEvents,st.battlefield);
+   // M6.262: restored turn-start autosaves retain the completed day's report
+   // separately from replay events, so reporting never forces old animations.
+   const completedDayEvents=st.executionEvents?.length?st.executionEvents:st.dailyReportEvents;
+   if(st.day>1&&completedDayEvents?.length)window.ARMAGEDDON_SET_SERVER_REPORT?.(st.day-1,completedDayEvents,st.battlefield);
    trace('server-state',{day:st.day,phase:st.phase,status:st.executionStatus,ready:st.players.filter(p=>p.ready).length,events:st.executionEvents?.length,trace:st.executionTrace?.slice(-5)});
    // Route-owner colors must be current even if Delegation was never opened.
    window.ARMAGEDDON_ASSET_OWNERS=st.assetOwners||{};
@@ -2283,7 +2286,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.261"></script>
+<script src="src/version.js?v=6.262"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>

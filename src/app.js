@@ -234,6 +234,7 @@
         const showMilitary=reportBoth||side===reportSide;
         stat(group,'Casualties',showMilitary?fmt(r.losses?.[side]):'Hidden',side.toLowerCase());
         stat(group,'Troops remaining',showMilitary?fmt(r.remaining?.[side]):'Hidden',side.toLowerCase());
+        stat(group,'Divisions eliminated',showMilitary?fmt(r.destroyed?.[side]):'Hidden',side.toLowerCase());
         // Retreat and surrender totals are public even under fog of war.
         stat(group,'Divisions retreated',fmt(r.retreated?.[side]),side.toLowerCase());
         stat(group,'Divisions surrendered',fmt(r.surrendered?.[side]),side.toLowerCase());
@@ -301,7 +302,32 @@
         }
         other.after(aiSection);
       }
-      // M6.192: per-shot details remain in Battle Summary, not the Daily Situation Report.
+      // M6.262: In Both-Sides playtesting the daily report must show both
+      // nations' recorded firing, formations and completed production,
+      // without requiring replay of the completed turn.
+      const combatRecords=(r.fireLines||[]).filter(line=>reportBoth||line.side===reportSide);
+      if(combatRecords.length){
+        const details=make('details','report-supply report-firing');
+        details.append(make('summary','','Combat firing by division ('+combatRecords.length+' records)'));
+        const ul=make('ul','');
+        for(const line of combatRecords){
+          const li=make('li','');
+          li.textContent=(line.side==='Blue'?'Bluenstein':'Redonia')+' · TI '+line.hour+' · '+line.unit+
+           ' fired at '+line.target+' · '+line.role+' · '+Number(line.damage||0).toLocaleString('en-US',{maximumFractionDigits:1})+' casualties credited';
+          ul.append(li);
+        }
+        details.append(ul);body.append(details);
+      }
+      const completedProduction=(r.productionEvents||[]).filter(ev=>reportBoth||ev.side===reportSide);
+      if(completedProduction.length){
+        const details=make('details','report-supply report-production');
+        details.append(make('summary','','Divisions produced ('+completedProduction.length+')'));
+        const ul=make('ul','');
+        for(const ev of completedProduction)ul.append(make('li','',(ev.side==='Red'?'Redonia':'Bluenstein')+
+          ' · '+(ev.unitType||ev.typeName||'Division')+' at '+(ev.cityName||'city')));
+        details.append(ul);body.append(details);
+      }
+      // The separate battle-summary window retains full per-shot modifiers.
     }
     document.getElementById('dayCombatDetail').textContent=latestCombatDetail;
     dayOverlay.hidden=false;controlsOverlay.hidden=true;controlsButton.setAttribute('aria-pressed','false');
@@ -363,7 +389,8 @@
       accountingDay:economy?.accountingDay||day+1,opening:economy?.opening||null,maintenance:upkeep,income:economy?.income||null,net:economy?.net||null,balances:economy?.balances||null,supplyVerified:!!supply?.verified,outOfSupply:supply?.outOfSupply||{Blue:[],Red:[]},negativeSupply:supply?.negativeSupply||{Blue:[],Red:[]},
       replacements:{Blue:'See replacement overlay',Red:'See replacement overlay'},routes:0,
       aiProductionLedgers:events.filter(e=>e.type==='ai-production-accounting'&&Number(e.day)===day),
-      aiProductionTransactions:events.filter(e=>['ai-production-started','ai-production-canceled','ai-production-relocated'].includes(e.type)&&Number(e.day)===day)};
+      aiProductionTransactions:events.filter(e=>['ai-production-started','ai-production-canceled','ai-production-relocated'].includes(e.type)&&Number(e.day)===day),
+      productionEvents:events.filter(e=>e.type==='production')};
     latestCombatDetail='Server-recorded combat and movement for completed Day '+day;
   };
   let lastAutomaticDailyReportDay=0;
