@@ -998,7 +998,9 @@
         let from={col:d.col,row:d.row};
         for(const point of route){
           const stepCost=movement.cost(d,terrainAt(point.col,point.row),from,point,terrainAt);
-          elapsed+=stepCost;
+          // Pause on a waypoint delays entry into THAT hex, so its visible
+          // arrival label changes from 4 to 5 immediately after right-click.
+          elapsed+=(Number(point.pauseCount)||0)+(point.pause?1:0)+stepCost;
           const arrivalTI=Math.max(1,Math.ceil(elapsed-1e-9)); // Hours from now, not unspent movement credit
           const frozen=window.ARMAGEDDON_ROUTES_FROZEN?window.ARMAGEDDON_FROZEN_LABELS?.get(d.id+':'+point.col+','+point.row):null;
           const p=this.worldPixel(point.col,point.row);
@@ -1010,7 +1012,6 @@
           ctx.fillStyle='#111927';ctx.font=`bold ${Math.round(r*1.2)}px Arial`;
           const hour=frozen?frozen.hour:arrivalTI;
           ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(hour),cx,cy);
-          elapsed+=(point.pauseCount||0)+(point.pause?1:0);
           from=point;
         }
         // Each route hex contains an arrow toward the NEXT route hex.
