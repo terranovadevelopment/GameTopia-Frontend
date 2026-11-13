@@ -86,7 +86,15 @@
     document.body.append(panel);
   });
 
-  for(const d of data.scenario.divisions){d.stance='Hold';if(!Number.isFinite(d.experience))d.experience=90;}
+  for(const d of data.scenario.divisions){
+    d.stance='Hold';
+    if(!Number.isFinite(Number(d.experience)))d.experience=90;
+    // Legacy and restored rosters sometimes omit effectiveness entirely.
+    // The combat engine initializes missing effectiveness at 100; keep the
+    // Division Report and saved client model consistent with that rule.
+    const value=Number(d.effectiveness);
+    d.effectiveness=d.effectiveness!==null&&d.effectiveness!==undefined&&d.effectiveness!==''&&Number.isFinite(value)?Math.max(25,Math.min(100,value)):100;
+  }
   // M5.52: Daily morale recovery = 10 - 0.06 * current morale,
   // followed by a penalty of 1 per negative supply-rating point.
   // Apply at the start of the day; do not alter experience.
@@ -472,7 +480,8 @@
     // Multiplayer national allegiance is authoritative in the joined game
     // roster; the early setup default can otherwise hide our own morale.
     const playerSide=window.ARMAGEDDON_SETUP?.playerSide||window.ARMAGEDDON_PLAYER_SIDE||'Blue';
-    const showSensitive=window.ARMAGEDDON_VIEW_MODE==='Both'||d.side===playerSide;
+    const displaySide=window.ARMAGEDDON_VIEW_MODE==='Red'?'Red':window.ARMAGEDDON_VIEW_MODE==='Blue'?'Blue':playerSide;
+    const showSensitive=window.ARMAGEDDON_VIEW_MODE==='Both'||d.side===displaySide;
     for(const el of document.querySelectorAll('.sensitive-stat'))el.hidden=!showSensitive;
     const moraleLabel=document.getElementById('divisionMoraleLabel');
     const moraleFailing=showSensitive&&d.lastMoraleCheck==='failed';
@@ -482,7 +491,9 @@
     // Do not show a dash for a valid owned division's real morale value.
     const morale=Number(d.effectiveness);
     const validMorale=d.effectiveness!==null&&d.effectiveness!==undefined&&d.effectiveness!==''&&Number.isFinite(morale);
-    document.getElementById('divisionEffectiveness').textContent=showSensitive&&validMorale?morale.toFixed(1):'—';
+    // An unset value means the division is still at its initial 100 morale.
+    // The server uses the same initial default; do not render an empty dash.
+    document.getElementById('divisionEffectiveness').textContent=showSensitive?(validMorale?Math.max(25,Math.min(100,morale)):100).toFixed(1):'—';
     document.getElementById('divisionExperience').textContent=showSensitive?(Number.isFinite(d.experience)?d.experience.toFixed(1):'—'):'—';
     // Show actual accumulated movement credit, not the 10-hour daily allowance.
     // A negative balance is a genuine movement deficit (e.g. after retreat).
@@ -1436,5 +1447,5 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
 
   // Initial camera centers the map once layout dimensions are available.
   requestAnimationFrame(()=>{renderer.centerMap();renderer.render();});
-  window.ARMAGEDDON_M2={planner,renderer,replacements,scenario:data.scenario,select:id=>{const d=byId(id);if(!d)throw new Error('Unknown division '+id);selectedId=id;renderer.setSelection(id);updateReport(d);refreshChoices();},clearSelection:()=>{selectedId=null;renderer.setSelection(null);updateReport(null);}};
+  window.ARMAGEDDON_M2={planner,renderer,replacements,scenario:data.scenario,refreshSelectedReport:()=>updateReport(selectedId?byId(selectedId):null),select:id=>{const d=byId(id);if(!d)throw new Error('Unknown division '+id);selectedId=id;renderer.setSelection(id);updateReport(d);refreshChoices();},clearSelection:()=>{selectedId=null;renderer.setSelection(null);updateReport(null);}};
 })();
