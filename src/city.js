@@ -66,6 +66,18 @@
         method:'POST',body:JSON.stringify({token:ident.token,cityName,action,type,hex})});
     }
     function render(){onChange();if(!active||panel.hidden)return;const s=active,side=owner(s);title.textContent=s.city.name+(s.city.isCapital?' ★':'');title.style.color=side==='Blue'?'#64b0ff':'#ff7474';body.replaceChildren();const ownerId=global.ARMAGEDDON_ASSET_OWNERS?.['city:'+s.city.name];const ownerName=ownerId?global.ARMAGEDDON_PLAYER_NAMES?.[ownerId]:null;const controller=ownerName||((side==='Blue'?'Bluenstein':'Redonia')+' AI');line('Controlled by',controller);const controllerValue=body.lastElementChild?.querySelector('strong');if(controllerValue)controllerValue.style.color=global.ARMAGEDDON_PLAYER_COLORS?.[ownerId]||(side==='Blue'?'#64b0ff':'#ff7474');line('Pacification',s.occupier?`${s.pacification}/5 (${s.occupier} controlling)`:'None');if(canManage(s)&&!s.occupier)line('Resource Points (RP)',treasury[side].toFixed(1));line('City hexes',String(cityHexCount(s)));
+      // One militia per city hex, with permanent destruction and local replacements.
+      // The city report displays only militia currently visible to this player.
+      const militia=(renderer.militia||[]).filter(m=>m.cityName===String(s.city.name));
+      if(militia.length){
+        const visible=militia.filter(m=>m.side===(global.ARMAGEDDON_PLAYER_SIDE||'Blue')||global.ARMAGEDDON_VIEW_MODE==='Both'||renderer.visibleDivision(m));
+        line('City militia',visible.length===militia.length?visible.filter(m=>m.strength>0&&!m.destroyed).reduce((n,m)=>n+Number(m.strength),0).toLocaleString()+' soldiers':'Partially concealed');
+        for(const m of visible.sort((a,b)=>a.row-b.row||a.col-b.col)){
+          line('Militia ('+m.col+','+m.row+')',
+            (m.destroyed||m.strength<=0?'ELIMINATED — permanent':Number(m.strength).toLocaleString()+'/5,000')+
+            ' · EXP '+Number(m.experience||75));
+        }
+      }
       if(!showEnemyProduction(s)){line('Production','Unknown');}
       else {
         const paused=Number(s.pacification)>0||!!s.occupier;
