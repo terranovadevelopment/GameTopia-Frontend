@@ -1985,7 +1985,7 @@ window.armServerRequest=async function(path,options={}){
  }
  async function refresh(){if(membershipRevoked)return;try{const st=await api(base+'/state?token='+encodeURIComponent(ident.token));
    const firstServerState=!hasObservedServerState;
-   const restoredCheckpoint=st.executionStatus==='turn-start-restored'||(st.restoreEpoch!=null&&st.restoreEpoch!==observedRestoreEpoch);
+   const restoredCheckpoint=(firstServerState&&st.executionStatus==='turn-start-restored')||(st.restoreEpoch!=null&&st.restoreEpoch!==observedRestoreEpoch);
    hasObservedServerState=true;observedRestoreEpoch=st.restoreEpoch??null;
    current=st;showMemberNotices(st);applyEconomyUpdate(st);if(!window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC){window.ARMAGEDDON_PLAYTEST_INITIAL_SYNC=true;modeSync=modeSync.then(syncPlaytestMode).catch(err=>trace('playtest-init-error',{error:err.message}));}const localPlayer=st.players.find(p=>p.id===ident.playerId);if(localPlayer){if(!window.ARMAGEDDON_VIEW_MODE||window.ARMAGEDDON_VIEW_MODE==='None')window.ARMAGEDDON_VIEW_MODE=localPlayer.side;window.ARMAGEDDON_SETUP=window.ARMAGEDDON_SETUP||{};window.ARMAGEDDON_SETUP.playerSide=localPlayer.side;}if(replayBusy){showPacificationNotices(st)}
    else if(st.day<=lastAppliedDay) {pacificationRevealTi=10;showPacificationNotices(st)}
