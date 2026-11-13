@@ -72,14 +72,18 @@
       const militia=(renderer.militia||[]).filter(m=>m.cityName===String(s.city.name));
       if(militia.length){
         const friendly=side===(global.ARMAGEDDON_PLAYER_SIDE||'Blue')||global.ARMAGEDDON_VIEW_MODE==='Both';
+        // The server's enemy presence marker (strength=1) is NOT a
+        // one-soldier garrison. Treat any unknownStrength flag as unknown,
+        // including when Both mode is selected in a multiplayer game.
+        const exactMilitia=friendly&&militia.every(m=>!m.unknownStrength);
         line('Militia hexes',String(militia.length));
-        line('Militia soldiers',friendly?
+        line('Militia soldiers',exactMilitia?
           militia.reduce((n,m)=>n+Math.max(0,Number(m.strength)||0),0).toLocaleString()+
           ' / '+(militia.length*5000).toLocaleString():
-          'Unknown until combat');
+          'Strength unknown until combat');
         line('Militia recruitment',friendly?'Up to 100 per city hex / turn (adjusted by game settings)':'Not disclosed');
         for(const m of militia.sort((a,b)=>a.row-b.row||a.col-b.col)){
-          line('Militia ('+m.col+','+m.row+')',friendly?
+          line('Militia ('+m.col+','+m.row+')',friendly&&!m.unknownStrength?
             ((Number(m.strength)<=0?'0 — recruiting when unoccupied':Number(m.strength).toLocaleString()+'/5,000')+
             ' · EXP '+Number(m.experience||75)):
             'Strength unknown — engage to reveal');

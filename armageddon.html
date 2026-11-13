@@ -6,7 +6,7 @@
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.262</title>
+  <title>ARMAGEDDON — M6.263</title>
   <link rel="stylesheet" href="src/styles.css">
 <script src="how-to-play.js?v=6.208" defer></script>
 <style>
@@ -195,7 +195,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
 </script><script src="src/march.js?v=6.192"></script>
   <script>
     if(new URLSearchParams(location.search).has("size")){
-      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.262"><\/script>');
+      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.263"><\/script>');
     }
   </script>
   <script>
@@ -1568,7 +1568,7 @@ window.armServerRequest=async function(path,options={}){
    const game=window.ARMAGEDDON_M2;
    if(!game?.scenario?.divisions||!event.unitId)return false;
    try{
-     const result=await api(base+'/positions?token='+encodeURIComponent(ident.token));
+     const result=await api(base+'/positions?token='+encodeURIComponent(ident.token)+(window.ARMAGEDDON_VIEW_MODE==='Both'?'&both=1':''));
      if(Number(result.day)!==Number(day))throw Error('Server day differs from replay day');
      const updated=(result.divisions||[]).find(d=>String(d.id)===String(event.unitId));
      if(!updated)throw Error('Production event unit not in authoritative roster');
@@ -1860,7 +1860,7 @@ window.armServerRequest=async function(path,options={}){
  async function applyServerPositions(day){
    const game=window.ARMAGEDDON_M2,clock=window.ARMAGEDDON_M3;
    if(!game?.scenario?.divisions||!clock?.engine){trace('position-apply-blocked',{day,hasScenario:!!game?.scenario,hasDivisions:!!game?.scenario?.divisions,hasClock:!!clock?.engine});return;}
-   const result=await api(base+'/positions?token='+encodeURIComponent(ident.token));
+   const result=await api(base+'/positions?token='+encodeURIComponent(ident.token)+(window.ARMAGEDDON_VIEW_MODE==='Both'?'&both=1':''));
    trace('positions-response',{requestedDay:day,responseDay:result.day,divisions:result.divisions?.length});if(result.day!==day){trace('position-day-mismatch',{day,responseDay:result.day});return;}
    // City-hex militia is server-owned and persists independently of divisions.
    game.renderer.militia=Array.isArray(result.militia)?result.militia.map(m=>({...m})):[];
@@ -2286,7 +2286,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.262"></script>
+<script src="src/version.js?v=6.263"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>
