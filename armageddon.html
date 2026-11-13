@@ -892,6 +892,18 @@ window.armServerRequest=async function(path,options={}){
  const defaults=[12,3,3,3];
  const params=new URLSearchParams(location.search);
  const values={},manual=new Set();let writing=false;
+ // M6.232: an explicitly loaded per-type count is a manual override; otherwise
+ // the displayed count follows the live nation starting-force percentage.
+ for(const side of ['Blue','Red'])for(const type of types){
+  const k=side.toLowerCase()+type;
+  if(params.has(k)){manual.add(k);values[k]=params.get(k);}
+ }
+ const forceScale=()=>({small:2/3,medium:1,large:2,huge:3}[document.getElementById('mapSize')?.value]||1);
+ function suggested(side,index){
+  const raw=Number(document.getElementById(side.toLowerCase()+'Units')?.value);
+  const pct=Number.isFinite(raw)?Math.max(0,raw):100;
+  return Math.round(defaults[index]*forceScale()*pct/100);
+ }
  function draw(){
   const tbody=document.getElementById('setupForceRows');if(!tbody||writing)return;
   writing=true;tbody.replaceChildren();
@@ -900,7 +912,7 @@ window.armServerRequest=async function(path,options={}){
    for(const side of ['Blue','Red']){
     const key=side.toLowerCase()+types[i];const td=document.createElement('td'),input=document.createElement('input');
     input.type='number';input.min='0';input.max='500';input.step='1';input.style.cssText='width:76px;text-align:center;padding:4px';
-    input.value=values[key]??params.get(key)??Math.round(defaults[i]*({small:2/3,medium:1,large:2,huge:3}[document.getElementById('mapSize')?.value]||1)*(Number(document.getElementById(side.toLowerCase()+'Units')?.value||100)/100));
+    input.value=manual.has(key)?values[key]:suggested(side,i);
     values[key]=input.value;
     input.addEventListener('input',()=>{manual.add(key);values[key]=input.value;totals();});td.append(input);tr.append(td);
    }tbody.append(tr);
@@ -909,9 +921,19 @@ window.armServerRequest=async function(path,options={}){
  function totals(){const sum=side=>types.reduce((n,type)=>n+Math.max(0,Number(values[side.toLowerCase()+type])||0),0);const el=document.getElementById('setupForceTotal');if(el)el.textContent=`${sum('Blue')} Blue / ${sum('Red')} Red`;}
  document.addEventListener('DOMContentLoaded',()=>{
   const tbody=document.getElementById('setupForceRows');if(!tbody)return;
-  const observer=new MutationObserver(()=>{if(!writing&&tbody.querySelector('input')===null)draw();});observer.observe(tbody,{childList:true});draw();document.getElementById('mapSize')?.addEventListener('change',()=>{for(const type of types)for(const side of ['Blue','Red']){const k=side.toLowerCase()+type;if(!manual.has(k))delete values[k];}draw();});
-
+  const observer=new MutationObserver(()=>{if(!writing&&tbody.querySelector('input')===null)draw();});observer.observe(tbody,{childList:true});draw();
+  document.getElementById('mapSize')?.addEventListener('change',draw);
+  for(const side of ['Blue','Red']){
+   const handicap=document.getElementById(side.toLowerCase()+'Units');
+   handicap?.addEventListener('input',draw);handicap?.addEventListener('change',draw);
+  }
   document.getElementById('applyMapSetup')?.addEventListener('click',()=>{
+   // Run during capture, before the map-setup handler serializes exact counts.
+   // Keep hand-edited figures, and recalculate every other figure from the
+   // current side handicap and map size, never from stale initial values.
+   for(let i=0;i<types.length;i++)for(const side of ['Blue','Red']){
+    const key=side.toLowerCase()+types[i];if(!manual.has(key))values[key]=suggested(side,i);
+   }
    const url=new URL(location.href);for(const [key,val] of Object.entries(values))url.searchParams.set(key,String(Math.max(0,Math.min(500,Math.floor(Number(val)||0)))));
    // setup submission may build a new URL; persist fields for its existing handler.
    window.ARMAGEDDON_EXACT_FORCES_SELECTED=Object.fromEntries(Object.entries(values).map(([key,val])=>[key,Math.max(0,Math.min(500,Math.floor(Number(val)||0)))]));

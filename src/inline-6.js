@@ -28,8 +28,8 @@
     }else syncMapDimensions();
     sizeControl.addEventListener('change',syncMapDimensions);
     function updateForces(){
-      const scale={small:.5,medium:1,large:2,huge:3}[sizeControl.value]||1;
-      const types=[['Infantry',16],['Motorized',4],['Mechanized',4],['Armored',4]];
+      const scale={small:2/3,medium:1,large:2,huge:3}[sizeControl.value]||1;
+      const types=[['Infantry',12],['Motorized',3],['Mechanized',3],['Armored',3]];
       const counts={};
       for(const side of ['Blue','Red']){
         const pct=Math.max(0,Number(document.getElementById(side==='Blue'?'blueUnits':'redUnits').value)||0)/100;
