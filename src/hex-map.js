@@ -19,7 +19,7 @@
   function offsetFromAxial(q,r){return {col:q+Math.floor(r/2),row:r};}
   function terrainStyle(name){return ({Plains:{fill:"#778e63",detail:"#91a777"},Forest:{fill:"#496c4c",detail:"#67865b"},Hills:{fill:"#938765",detail:"#b3a47c"},River:{fill:"#507e91",detail:"#7db0c0"}})[name]||{fill:"#778e63",detail:"#91a777"};}
   class HexMapRenderer{
-    constructor(canvas,scenario,terrainAt){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.scenario=scenario;this.terrainAt=terrainAt;this.baseSize=35;this.zoom=1;this.pan={x:0,y:0};this.selectedId=null;this.unitSymbolStyle='nato';this.unitArt={};for(const side of ['blue','red'])for(const type of ['infantry','motorized','mechanized','armored']){const key=side+'_'+type,img=new Image();img.onload=()=>this.render();img.src='src/unit_'+key+'.png';this.unitArt[key]=img;}this.hoverCell=null;this.selectedCityHex=null;this.routes=null;this.allyRoutes=new Map();this.showZoc=false;this.showControl=false;this.showCities=false;this.showSupply=false;this.cityStates=null;this.showTerrainTypes=false;this.showWaterCrossings=false;this.playtest=false;this.visualPositions=new Map();this.spottingPositions=new Map();this.satelliteLayer=null;this.cityTexture=null;this.lakeTexture=null;this.extraTextures={};this.hillHexes=[];this.approvedTerrain={};this.terrainVariants={};for(const [name,ext] of [['clear','jpg'],['forest','jpg'],['rough','jpg'],['swamp','jpg'],['mountains','jpg'],['city','jpg'],['lake','png']]){this.terrainVariants[name]=Array.from({length:(name==='clear'||name==='forest'||name==='swamp'||name==='rough'||name==='mountains'||name==='city')?5:4},(_,i)=>{const im=new Image();im.onload=()=>{this.satelliteLayer=null;this.render();};im.src='src/'+name+'_'+(i+1)+'.'+ext+'?asset=m650';return im;});}
+    constructor(canvas,scenario,terrainAt){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.scenario=scenario;this.terrainAt=terrainAt;this.baseSize=35;this.zoom=1;this.pan={x:0,y:0};this.selectedId=null;this.unitSymbolStyle='nato';this.unitArt={};for(const side of ['blue','red'])for(const type of ['infantry','motorized','mechanized','armored']){const key=side+'_'+type,img=new Image();img.onload=()=>this.render();img.src='src/unit_'+key+'.png';this.unitArt[key]=img;}this.hoverCell=null;this.selectedCityHex=null;this.routes=null;this.allyRoutes=new Map();this.showZoc=false;this.showControl=false;this.showCities=false;this.showSupply=false;this.cityStates=null;this.militia=[];this.showTerrainTypes=false;this.showWaterCrossings=false;this.playtest=false;this.visualPositions=new Map();this.spottingPositions=new Map();this.satelliteLayer=null;this.cityTexture=null;this.lakeTexture=null;this.extraTextures={};this.hillHexes=[];this.approvedTerrain={};this.terrainVariants={};for(const [name,ext] of [['clear','jpg'],['forest','jpg'],['rough','jpg'],['swamp','jpg'],['mountains','jpg'],['city','jpg'],['lake','png']]){this.terrainVariants[name]=Array.from({length:(name==='clear'||name==='forest'||name==='swamp'||name==='rough'||name==='mountains'||name==='city')?5:4},(_,i)=>{const im=new Image();im.onload=()=>{this.satelliteLayer=null;this.render();};im.src='src/'+name+'_'+(i+1)+'.'+ext+'?asset=m650';return im;});}
 
       const lakeImage=new Image();lakeImage.onload=()=>{this.lakeTexture=lakeImage;this.satelliteLayer=null;this.render();};lakeImage.src='src/lake_hex.png';for(const type of ['plains','hills','mountains']){const im=new Image();im.onload=()=>{this.extraTextures[type]=im;this.satelliteLayer=null;this.render();};im.src='src/'+type+'_texture.jpg';}for(let i=0;i<2;i++){const im=new Image();im.onload=()=>{this.hillHexes[i]=im;this.satelliteLayer=null;this.render();};im.src='src/hill_hex_'+(i?'b':'a')+'.png';}this.onSelect=()=>{};this.dpr=1;this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize();}
     resize(){const rect=this.canvas.getBoundingClientRect();this.dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));this.canvas.width=Math.max(1,Math.floor(rect.width*this.dpr));this.canvas.height=Math.max(1,Math.floor(rect.height*this.dpr));this.clampPan();this.render();}
@@ -427,6 +427,21 @@
       }
       if(this.showEndPositions)this.drawEndPositions(ctx);
       for(const d of this.scenario.divisions)if(this.visibleDivision(d))this.drawDivision(ctx,d);
+      // Militia belongs to an urban hex, not a mobile division. Draw a compact
+      // national shield at the edge of the hex so co-located regular divisions
+      // remain readable. Concealed enemy militia follows normal spotting.
+      for(const m of this.militia||[]){
+        if(m.destroyed||Number(m.strength)<=0||!this.visibleDivision(m))continue;
+        const p=this.worldPixel(m.col,m.row),radius=Math.max(7,Math.min(13,this.size*.28));
+        const x=p.x+this.size*.46,y=p.y-this.size*.47;
+        ctx.save();ctx.shadowColor='#000a';ctx.shadowBlur=3;
+        ctx.fillStyle=m.side==='Blue'?'#124d9c':'#a41f2d';ctx.strokeStyle='#fff5d7';
+        ctx.lineWidth=Math.max(1.1,this.zoom);ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.shadowBlur=0;ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.font='bold '+Math.max(9,Math.round(radius*1.15))+'px Arial,sans-serif';
+        ctx.fillText('M',x,y);
+        ctx.restore();
+      }
       // Route markers and arrows must appear ABOVE all unit counters.
       this.drawRoutes(ctx);
       // City selection is an independent, persistent highlight, not an inspection popup.
