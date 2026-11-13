@@ -1828,7 +1828,7 @@ window.armServerRequest=async function(path,options={}){
    const me=current.players.find(p=>p.id===ident.playerId);
    const mode=window.ARMAGEDDON_VIEW_MODE;
    const orders=game.scenario.divisions.filter(d=>d.side===me.side&&!d.destroyed&&current?.assetOwners?.['unit:'+String(d.id)]===ident.playerId&&game.planner.get(d.id).length)
-     .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row}))}));
+     .map(d=>({type:'move',unitId:String(d.id),route:game.planner.get(d.id).map(x=>({col:x.col,row:x.row,pauseCount:Math.max(0,Math.floor(Number(x.pauseCount)||0))}))}));
    trace('submitting-orders',{count:orders.length,units:orders.slice(0,20).map(o=>({id:o.unitId,route:o.route}))});await api(base+'/orders',{method:'POST',body:JSON.stringify({token:ident.token,orders})});trace('orders-accepted',{count:orders.length});
  }
   // M6.221: Publish each actual Planning route revision so allied humans can
