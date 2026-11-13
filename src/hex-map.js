@@ -182,6 +182,12 @@
         occupied.set(`${pos.col},${pos.row}`,d.side);
         if(zocApi)for(const n of zocApi.neighbors(pos,this.scenario))zocs[d.side].add(`${n.col},${n.row}`);
       }
+      // A surviving militia physically holds its own city hex, even if enemy
+      // ZOC covers it. Militia does not project mobile division ZOC.
+      for(const m of this.militia||[]){
+        if(m.destroyed||Number(m.strength)<=0)continue;
+        const k=`${m.col},${m.row}`;if(!occupied.has(k))occupied.set(k,m.side);
+      }
       for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
         const k=`${col},${row}`,i=row*cols+col;
         if(occupied.has(k)){this.hexOwners[i]=occupied.get(k);continue;}
