@@ -6,7 +6,7 @@
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.255</title>
+  <title>ARMAGEDDON — M6.256</title>
   <link rel="stylesheet" href="src/styles.css">
 <script src="how-to-play.js?v=6.208" defer></script>
 <style>
@@ -195,7 +195,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
 </script><script src="src/march.js?v=6.192"></script>
   <script>
     if(new URLSearchParams(location.search).has("size")){
-      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.255"><\/script>');
+      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.256"><\/script>');
     }
   </script>
   <script>
@@ -954,11 +954,44 @@ window.armServerRequest=async function(path,options={}){
 (function(){
  const id=new URLSearchParams(location.search).get('gameId');if(!id)return;
  let ident;try{ident=JSON.parse(sessionStorage.getItem('armageddon_identity_'+id)||localStorage.getItem('armageddon_identity_'+id)||'null')}catch(_){}
- if(!ident?.token)return;
  const api=window.armServerRequest,base='/api/games/'+encodeURIComponent(id);
  const box=document.createElement('section');box.id='gtPlayersPanel';box.setAttribute('aria-label','Multiplayer player status');
  box.innerHTML='<div class="gt-drag" id="gtDragHandle"><span>Players · Planning</span><span title="Drag to move">⠿</span></div><div class="gt-body"><div id="gtLoginStatus" style="font-size:12px;color:#bfe4ff;margin-bottom:5px">Checking account…</div><div id="gtTurnStatus">Connecting…</div><div id="gtPlayersList"></div><div class="gt-controls"><button id="gtReadyToggle" class="gt-notready">Click when ready</button><button id="gtCommToggle" title="Communications" aria-label="Communications">COMM</button></div><div class="gt-note" id="gtSyncNote"></div></div>';
  document.body.appendChild(box);
+ // M6.256: A permanent toolbar control restores the player panel even if
+ // its former screen position is offscreen after resizing or dragging.
+ const playersTopbar=document.querySelector('.topbar');
+ const playersButton=document.createElement('button');
+ playersButton.id='gtShowPlayers';playersButton.type='button';
+ playersButton.className='text-button';playersButton.textContent='PLAYERS';
+ playersButton.setAttribute('aria-controls','gtPlayersPanel');
+ playersButton.title='Show and recenter the player status / Ready window';
+ playersButton.style.cssText='margin-left:5px;white-space:nowrap;min-height:32px;padding:5px 10px;background:#235c8b;color:white;border:1px solid #a9c9e6;border-radius:5px;cursor:pointer';
+ if(playersTopbar)playersTopbar.append(playersButton);
+ function restorePlayersPanel(){
+   box.hidden=false;box.style.display='block';box.style.visibility='visible';
+   box.style.left='12px';box.style.top='auto';box.style.bottom='12px';
+   box.style.right='auto';
+   box.scrollIntoView?.({block:'nearest',inline:'nearest'});
+ }
+ playersButton.addEventListener('click',restorePlayersPanel);
+ window.ARMAGEDDON_SHOW_PLAYERS=restorePlayersPanel;
+ window.addEventListener('resize',()=>{
+   const rect=box.getBoundingClientRect();
+   if(rect.right<40||rect.bottom<40||rect.left>innerWidth-40||rect.top>innerHeight-40)restorePlayersPanel();
+ });
+ // Never silently omit the panel just because session storage was cleared.
+ if(!ident?.token){
+   const status=box.querySelector('#gtTurnStatus');
+   status.textContent='Game session missing. Reconnect through Games Underway to recover your player seat.';
+   box.querySelector('#gtLoginStatus').textContent='Reconnection required';
+   box.querySelector('#gtReadyToggle').disabled=true;
+   box.querySelector('#gtCommToggle').disabled=true;
+   const link=document.createElement('button');link.textContent='Reconnect through Games Underway';
+   link.onclick=()=>{location.href='armageddon-lobby.html';};
+   box.querySelector('#gtPlayersList').append(link);
+   return;
+ }
  // M6.197: Move the existing COMM control into the top bar. Keep its ID,
  // handler, and voice state; only its parent changes.
  const topComm=box.querySelector('#gtCommToggle');
@@ -989,7 +1022,7 @@ window.armServerRequest=async function(path,options={}){
  trace('diagnostic-initialized',{gameId:id,playerId:ident.playerId,version:'M6.198'});
  const handle=box.querySelector('#gtDragHandle');let drag=null;
  handle.addEventListener('pointerdown',e=>{if(e.button!==0)return;const r=box.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};handle.setPointerCapture(e.pointerId);e.preventDefault()});
- handle.addEventListener('pointermove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(innerWidth-box.offsetWidth,drag.left+e.clientX-drag.x))+'px';box.style.top=Math.max(0,Math.min(innerHeight-box.offsetHeight,drag.top+e.clientY-drag.y))+'px';box.style.bottom='auto'});
+ handle.addEventListener('pointermove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(Math.max(0,innerWidth-box.offsetWidth),drag.left+e.clientX-drag.x))+'px';box.style.top=Math.max(0,Math.min(Math.max(0,innerHeight-box.offsetHeight),drag.top+e.clientY-drag.y))+'px';box.style.bottom='auto'});
  for(const ev of ['pointerup','pointercancel'])handle.addEventListener(ev,()=>drag=null);
  const pacPanel=document.createElement('section');pacPanel.id='gtPacificationNotices';pacPanel.hidden=true;
  pacPanel.style.cssText='position:fixed;z-index:100020;left:50%;top:50%;transform:translate(-50%,-50%);width:min(430px,calc(100vw - 24px));background:#10283c;color:white;border:3px solid #e9b04c;border-radius:9px;padding:18px;font:15px/1.5 Arial;box-shadow:0 8px 30px #000b';
@@ -2222,7 +2255,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.255"></script>
+<script src="src/version.js?v=6.256"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>
