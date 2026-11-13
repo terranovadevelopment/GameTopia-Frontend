@@ -6,7 +6,7 @@
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.253</title>
+  <title>ARMAGEDDON — M6.254</title>
   <link rel="stylesheet" href="src/styles.css">
 <script src="how-to-play.js?v=6.208" defer></script>
 <style>
@@ -195,7 +195,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
 </script><script src="src/march.js?v=6.192"></script>
   <script>
     if(new URLSearchParams(location.search).has("size")){
-      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.253"><\/script>');
+      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.254"><\/script>');
     }
   </script>
   <script>
@@ -1552,6 +1552,44 @@ window.armServerRequest=async function(path,options={}){
    const desc=document.createElement('p');desc.textContent=(event.unitType||event.typeName||'Division')+' produced at '+(event.cityName||'city')+' · '+(event.controllerName||event.side||'Unknown controller')+' controls it.'+(displayed?' It is now on the map and will be available to order during Planning.':' The map has not yet confirmed its deployment; the game will retry synchronization.');
    const btn=document.createElement('button');btn.textContent='Acknowledge';btn.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:36px;line-height:1;padding:10px 18px;background:#235c8b;color:white;border:1px solid #bfd1df;border-radius:5px';btn.onclick=()=>{clear();panel.remove();resolve()};panel.append(h,desc,btn);document.body.append(panel);const clear=anchoredReplayNotice(panel,h,renderer,event.hex);});
  }
+ // M6.254: elimination is announced only AFTER its final firing animation.
+ // This is a local viewer acknowledgement; the authoritative battle is unchanged.
+ async function showDivisionEliminated(unit,loss,renderer){
+   const side=unit.side==='Red'?'Red':'Blue';
+   const nation=side==='Red'?'Redonia':'Bluenstein';
+   const friendly=side===(current?.players?.find(p=>p.id===ident.playerId)?.side||window.ARMAGEDDON_PLAYER_SIDE||'Blue');
+   const point=(loss?.to)||renderer.spottingPositions?.get(String(unit.id))||{col:unit.col,row:unit.row};
+   if(Number.isFinite(point?.col)&&Number.isFinite(point?.row))await centerCombat(renderer,point);
+   await new Promise(resolve=>{
+     const panel=document.createElement('section');
+     panel.setAttribute('role','alertdialog');panel.setAttribute('aria-modal','true');
+     panel.setAttribute('aria-label','Division eliminated - acknowledgment required');
+     panel.style.cssText='position:fixed;z-index:100100;width:min(430px,92vw);background:#10283c;color:#fff;border:3px solid #ff6666;border-radius:10px;padding:18px;box-shadow:0 16px 42px #000c;font:15px/1.5 Arial';
+     const heading=document.createElement('h2');
+     heading.textContent=nation+' — DIVISION ELIMINATED';
+     heading.style.cssText='margin:0 0 12px;font:700 20px Arial;color:#ffaaaa;cursor:move';
+     const name=document.createElement('p');
+     name.textContent=(unit.name||unit.designation||'Division')+' has been completely eliminated in combat.';
+     const notice=document.createElement('p');
+     notice.textContent=friendly?'Our division has been eliminated!':'Enemy division eliminated.';
+     notice.style.cssText='font-weight:bold;color:#fff';
+     const btn=document.createElement('button');
+     btn.type='button';btn.textContent='Acknowledge';
+     btn.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 20px;background:#245b86;border:1px solid #b2d5ef;border-radius:5px;color:#fff;cursor:pointer';
+     panel.append(heading,name,notice,btn);
+     document.body.append(panel);
+     const clear=anchoredReplayNotice(panel,heading,renderer,point);
+     if(friendly&&window.ARMAGEDDON_SOUND?.enabled!==false){
+       // The matching MP3 must exist in the deployed frontend sounds folder.
+       try{
+         const voice=new Audio(new URL('sounds/division-eliminated.mp3',document.baseURI).href);
+         voice.volume=.9;voice.play().catch(e=>trace('elimination-audio-unavailable',{error:String(e)}));
+       }catch(e){trace('elimination-audio-unavailable',{error:String(e)});}
+     }
+     btn.onclick=()=>{clear();panel.remove();resolve();};
+     btn.focus();
+   });
+ }
  function nextFrame(){return new Promise(resolve=>requestAnimationFrame(resolve))}
  async function playServerMovements(day,events){
    const game=window.ARMAGEDDON_M2,clock=window.ARMAGEDDON_M3;
@@ -1595,6 +1633,18 @@ window.armServerRequest=async function(path,options={}){
    const moves=(events||[]).filter(e=>e.type==='move'&&e.from&&e.to&&byId.has(String(e.unitId)));
    const tiPositions=new Map((events||[]).filter(e=>e.type==='ti-positions').map(e=>[Number(e.ti),e.positions]));
    const combats=(events||[]).filter(e=>e.type==='combat');const productions=(events||[]).filter(e=>e.type==='production');const moraleOutcomes=(events||[]).filter(e=>['retreat','retreat-blocked','surrender'].includes(e.type));
+   // The end-of-TI snapshot already knows which divisions were destroyed.
+   // Defer those removals until after the server-recorded firing animation.
+   const fireEliminationsByTI=new Map();
+   for(const battle of combats){
+     for(const loss of battle.losses||[]){
+       if(!(loss.destroyed||Number(loss.remaining)===0)||!(Number(battle.preCombat?.[String(loss.unitId)]?.strength)>0))continue;
+       const id=String(loss.unitId),u=byId.get(id);
+       if(!u||u.isMilitia)continue;
+       const ti=Number(battle.ti),ids=fireEliminationsByTI.get(ti)||new Set();
+       ids.add(id);fireEliminationsByTI.set(ti,ids);
+     }
+   }
    const start=new Map((initialRoster?.length?initialRoster:units).map(u=>[String(u.id),{col:u.col,row:u.row}]));
    // If the local map was already synchronized to final positions, reconstruct
    // the initial positions using the first movement event for each division.
@@ -1632,7 +1682,7 @@ window.armServerRequest=async function(path,options={}){
        }
        for(const e of batch){const u=byId.get(String(e.unitId));renderer.visualPositions.set(u.id,{...e.to});renderer.spottingPositions.set(String(u.id),{...e.to})}
        const authoritative=tiPositions.get(ti);
-       if(authoritative){for(const p of authoritative){const u=byId.get(String(p.id));if(!u)continue;renderer.spottingPositions.set(String(p.id),{col:p.col,row:p.row});renderer.visualPositions.set(u.id,{col:p.col,row:p.row});if(typeof p.active==='boolean')u.destroyed=!p.active;if(Number.isFinite(p.strength))u.strength=p.strength;if(Number.isFinite(p.effectiveness)&&p.effectiveness>=25)u.effectiveness=p.effectiveness;}trace('ti-authoritative-positions',{ti,count:authoritative.length});}
+       if(authoritative){for(const p of authoritative){const u=byId.get(String(p.id));if(!u)continue;renderer.spottingPositions.set(String(p.id),{col:p.col,row:p.row});renderer.visualPositions.set(u.id,{col:p.col,row:p.row});if(!fireEliminationsByTI.get(ti)?.has(String(p.id))){if(typeof p.active==='boolean')u.destroyed=!p.active;if(Number.isFinite(p.strength))u.strength=p.strength;}if(Number.isFinite(p.effectiveness)&&p.effectiveness>=25)u.effectiveness=p.effectiveness;}trace('ti-authoritative-positions',{ti,count:authoritative.length});}
        // Militia casualties are recorded at each TI and are not interpolated
        // as movement; militia can never leave its assigned urban hex.
        for(const ev of (events||[]).filter(e=>e.type==='ti-militia'&&e.ti===ti)){
@@ -1663,7 +1713,24 @@ window.armServerRequest=async function(path,options={}){
        renderer.render();
        if(current)showPacificationNotices(current);
        while(!pacPanel.hidden){await new Promise(r=>setTimeout(r,100));}
-       for(const battle of combats.filter(e=>e.ti===ti)){if(replaySkip)break;await showBattleReport(battle,day,byId,renderer);}
+       for(const battle of combats.filter(e=>e.ti===ti)){
+         if(replaySkip)break;
+         // Combatants eliminated by this volley remain alive on screen until
+         // the final firing animation, including when its TI snapshot is terminal.
+         await showBattleReport(battle,day,byId,renderer);
+         for(const loss of battle.losses||[]){
+           if(replaySkip)break;
+           const id=String(loss.unitId);
+           if(!fireEliminationsByTI.get(ti)?.has(id))continue;
+           const eliminated=byId.get(id);
+           if(!eliminated||eliminated.isMilitia||eliminated.destroyed)continue;
+           eliminated.destroyed=true;eliminated.strength=0;
+           renderer.visualPositions.delete(id);renderer.spottingPositions.delete(id);
+           renderer.refreshHexControl();renderer.render();
+           trace('division-eliminated',{day,ti,id,side:eliminated.side});
+           await showDivisionEliminated(eliminated,loss,renderer);
+         }
+       }
        // Surrender notification and map removal ALWAYS precede retreat/advance.
        for(const event of moraleOutcomes.filter(e=>e.type==='surrender'&&Number(e.ti||10)===ti)){
          if(replaySkip)break;
@@ -2155,7 +2222,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.253"></script>
+<script src="src/version.js?v=6.254"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>
