@@ -682,7 +682,7 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
       if(cities.deployment){if(hex&&!cities.deployAt(hex.col,hex.row))status.textContent='Invalid deployment: choose an empty, friendly-controlled city hex belonging to the producing city.';drag=null;down=null;canvas.classList.remove('dragging');return;}
       if(d){
         sound.uiCue('select');selectedCity=null;renderer.selectedCityHex=null;selectedId=d.id;stanceOffset=null;renderer.setSelection(selectedId);updateReport(d);refreshChoices();
-        status.textContent=(d.side===(window.ARMAGEDDON_PLAYER_SIDE||'Blue')||planner.playtest)?'Selected '+d.name+'. Left-click selects a unit; Shift+left-click an occupied city opens its city report. Right-click the selected division to pause; Shift + right-click pauses route waypoints.':'Enemy division selected.';
+        status.textContent=(d.side===(window.ARMAGEDDON_PLAYER_SIDE||'Blue')||planner.playtest)?'Selected '+d.name+'. Left-click selects a unit; Shift+left-click an occupied city opens its city report. Right-click the division or any plotted route hex to add a one-hour pause.':'Enemy division selected.';
       }else{
         sound.uiCue('open');selectedCity=null;renderer.selectedCityHex=null;selectedId=null;renderer.setSelection(null);closeDivisionPopup();status.textContent='Selection cleared.';
       }
@@ -704,13 +704,14 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
     if(window.ARMAGEDDON_ASSET_CONTROL&&!window.ARMAGEDDON_ASSET_CONTROL.owns('unit',String(selectedId))){status.textContent='Only the owning player may plot this division’s route.';return;}
     const onRoute=cell&&planner.get(selectedId).some(p=>p.col===cell.col&&p.row===cell.row);
     const onUnit=cell&&unit&&unit.col===cell.col&&unit.row===cell.row;
-    // On the selected division, ordinary right-click adds a 1-TI pause.
-    // Shift + right-click also pauses an existing route waypoint.
+    // Right-click a plotted route hex to add one hour of pause BEFORE
+    // entering that hex. Repeated clicks coordinate arrivals one TI at a time.
+    // Right-click empty terrain still plots movement normally.
     if(e.shiftKey && !(onRoute||onUnit)){
       status.textContent='Shift + right-click the selected division or a hex already on its route to add a 1-TI pause.';
       return;
     }
-    const result=(e.shiftKey||onUnit)?planner.addPause(selectedId,cell):planner.plotTo(selectedId,cell);
+    const result=(e.shiftKey||onRoute||onUnit)?planner.addPause(selectedId,cell):planner.plotTo(selectedId,cell);
     if(result.ok)sound.uiCue('destination');
     status.textContent=result.ok?(result.count?`Pause added: ${result.count} TI(s) at ${result.location}.`:`Route extended to ${planner.get(selectedId).length} hex(es).`):result.reason;
     renderer.render();closeDivisionPopup();if(typeof refreshChoices==='function')refreshChoices();
@@ -730,7 +731,8 @@ if(drag&&down&&Math.hypot(p.x-down.x,p.y-down.y)>4)moved=true;if(drag&&moved){re
     // Once a division is selected, right-click always retains normal movement plotting.
     if(!selectedId&&city){openCityFromHex(hex,true);return;}
     if(!selectedId&&unit){sound.uiCue('open');updateReport(unit);status.textContent='Division report: '+unit.name+'. Close it with X.';return;}
-    // Right-click plots a route; Shift + right-click adds a pause at the selected division or a route hex.
+    // A right-click on an existing plotted route adds a one-hour pause;
+    // right-clicking empty terrain continues plotting movement.
     plotAt(e);
   });
   document.getElementById('readyButton')?.addEventListener('click',e=>{
