@@ -1138,7 +1138,13 @@
       const number=String(d.name||d.id).match(/\d+/)?.[0]||String(d.id).match(/\d+/)?.[0]||'';
       if(number){ctx.font=`bold ${Math.max(11,11*this.zoom)}px Arial`;ctx.textBaseline='bottom';ctx.lineWidth=3;ctx.strokeStyle='#101820';ctx.strokeText(number,c.x,top-3);ctx.fillStyle='#fff';ctx.fillText(number,c.x,top-3);ctx.textBaseline='middle';}
       // Consecutive morale-failure retreat turns: show the count, not an X.
-      const retreatCount=Math.max(0,Number(d.moraleFailureStreak)||0);
+      // M6.260: a prior failed morale check is a persistent risk warning.
+      // Never expose an opponent's morale in ordinary single-side views.
+      const showMoraleIntel=d.side===(window.ARMAGEDDON_SETUP?.playerSide||window.ARMAGEDDON_PLAYER_SIDE||'Blue')
+        ||window.ARMAGEDDON_VIEW_MODE==='Both';
+      const failedMorale=d.failedMorale===true||d.moraleState==='FAILING'||d.moraleStatus==='FAILING'
+        ||Number(d.moraleFailureStreak)>0;
+      const retreatCount=showMoraleIntel?Math.max(0,Number(d.moraleFailureStreak)||0):0;
       if(retreatCount>0){
         const r=Math.max(8,Math.min(14,w*.20)),bx=c.x+w/2-1,by=top+1;
         ctx.fillStyle='#d92332';ctx.strokeStyle='#fff';ctx.lineWidth=2;
@@ -1147,10 +1153,24 @@
         ctx.font=`900 ${retreatCount>=10?Math.max(9,r*.95):Math.max(12,r*1.4)}px Arial`;
         ctx.fillText(String(retreatCount),bx,by+1);
       }
+      // Always visible warning (not dependent on the C/morale overlay).
+      // Red outline and top-right exclamation means the division failed its
+      // previous morale check, risking surrender after a further failure.
+      if(showMoraleIntel&&failedMorale){
+        ctx.save();ctx.strokeStyle='#ff3e4d';ctx.lineWidth=Math.max(3,this.zoom*3.2);
+        ctx.shadowColor='#ff283a';ctx.shadowBlur=Math.max(7,this.zoom*9);
+        ctx.strokeRect(c.x-w/2-4,top-4,w+8,h+8);
+        const x=c.x+w/2+2,y=top-5,r=Math.max(9,Math.min(14,w*.26));
+        ctx.fillStyle='#b5001e';ctx.strokeStyle='#fff';ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.font=`900 ${Math.max(13,r*1.6)}px Arial`;
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('!',x,y+1);
+        ctx.restore();
+      }
       // M6.134: morale overlay does not alter national/player counter colors.
       // Red is exclusively an actual recorded failed morale check.
-      if(this.showMorale&&d.side===(window.ARMAGEDDON_PLAYER_SIDE||window.ARMAGEDDON_SETUP?.playerSide||window.ARMAGEDDON_VIEW_MODE||'Blue')){
-        const failed=Number(d.moraleFailureStreak)>0||d.moraleState==='FAILING'||d.moraleStatus==='FAILING'||d.failedMorale===true;
+      if(this.showMorale&&showMoraleIntel){
+        const failed=failedMorale;
         const e=Number(d.effectiveness);
         const color=failed?'#c72e36':e>=90?'#27834c':e>=70?'#e5bf35':'#e47a26';
         ctx.save();ctx.strokeStyle=color;ctx.lineWidth=Math.max(4,this.zoom*5);ctx.shadowColor=color;ctx.shadowBlur=7;

@@ -6,7 +6,7 @@
 </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARMAGEDDON — M6.259</title>
+  <title>ARMAGEDDON — M6.260</title>
   <link rel="stylesheet" href="src/styles.css">
 <script src="how-to-play.js?v=6.208" defer></script>
 <style>
@@ -195,7 +195,7 @@ document.getElementById('readyButton')?.addEventListener('click',function(){
 </script><script src="src/march.js?v=6.192"></script>
   <script>
     if(new URLSearchParams(location.search).has("size")){
-      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.259"><\/script>');
+      for(const name of ["game-data", "hex-map", "routes", "zoc", "movement", "combat", "sound", "supply", "city", "replacements", "strategic-ai", "ai-operations", "recovery-state", "app"]) document.write('<script src="src/'+name+'.js?v=6.260"><\/script>');
     }
   </script>
   <script>
@@ -1358,7 +1358,8 @@ window.armServerRequest=async function(path,options={}){
      const close=document.createElement('button');close.textContent='✕';close.setAttribute('aria-label','Close division report');close.style.cssText='pointer-events:auto;cursor:pointer;position:relative;z-index:1;min-width:30px;min-height:30px';close.addEventListener('pointerdown',e=>e.stopPropagation());close.onclick=()=>{inspectPanel.hidden=true;inspectedUnitId=null;inspectedSource=null;inspectedTarget=null;inspectedSourcePoint=null;inspectedBattleShots=[];inspectedShotId=null;selectShotTarget=null;cycleShotTarget=null;updateBattlePointer()};heading.append(title,close);inspectPanel.append(heading);
      const preUnit=event.preCombat?.[String(unit.id)];
      const morale=Number(preUnit?.effectiveness??event.endingMorale?.[String(unit.id)]??unit.effectiveness);
-     const failed=Number(unit.moraleFailureStreak)>0||unit.moraleState==='FAILING'||unit.moraleStatus==='FAILING'||unit.failedMorale===true;
+     const showEnemyMorale=window.ARMAGEDDON_VIEW_MODE==='Both'||unit.side===(window.ARMAGEDDON_SETUP?.playerSide||window.ARMAGEDDON_PLAYER_SIDE||'Blue');
+     const failed=showEnemyMorale&&(Number(unit.moraleFailureStreak)>0||unit.moraleState==='FAILING'||unit.moraleStatus==='FAILING'||unit.failedMorale===true);
      const classification=failed?'Failed':morale>=90?'Good':morale>=70?'Shaken':'Failing';
      const moraleColor=failed?'#ff6262':morale>=90?'#66d78c':morale>=70?'#ffe16b':'#ffad55';
      const firingShots=(event.shots||[]).filter(shot=>String(shot.sourceId)===String(unit.id));
@@ -1881,7 +1882,7 @@ window.armServerRequest=async function(path,options={}){
      if(Number.isFinite(updated.experience))unit.experience=updated.experience;
      if(Number.isFinite(updated.supply))unit.supply=updated.supply;
      if(Number.isFinite(updated.totalCasualties))unit.totalCasualties=updated.totalCasualties;
-     unit.destroyed=!!updated.destroyed;unit.failedMorale=!!updated.failedMorale;unit.moraleState=updated.moraleState||'NORMAL';unit.replacementsOnWay=updated.replacementsOnWay||0;unit.totalReplacementsReceived=updated.totalReplacementsReceived||0;
+     unit.destroyed=!!updated.destroyed;unit.failedMorale=!!updated.failedMorale;unit.moraleState=updated.moraleState||'NORMAL';unit.moraleFailureStreak=Number(updated.moraleFailureStreak)||0;unit.replacementsOnWay=updated.replacementsOnWay||0;unit.totalReplacementsReceived=updated.totalReplacementsReceived||0;
    }
    if(Array.isArray(result.replacementPackets)){game.replacements?.restore?.({packets:result.replacementPackets,serial:Math.max(0,...result.replacementPackets.map(p=>Number(p.id)||0)),lastDay:day});game.renderer.replacementPackets=game.replacements?.packets||result.replacementPackets;}
    if(Array.isArray(result.cities)&&game.renderer.cityStates){
@@ -2255,7 +2256,7 @@ status.textContent='Day '+st.day+' · '+st.phase+' · '+st.players.filter(p=>p.r
 #storyStage.setup #setupMusicToggle{display:none!important}
 @media(max-width:680px){#storyStage.setup #mapSetupPanel{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:7px!important}#storyStage.setup{padding:6px!important}#storyStage.setup #gtSetupFooter{flex-wrap:wrap!important}}
 </style>
-<script src="src/version.js?v=6.259"></script>
+<script src="src/version.js?v=6.260"></script>
 <style>/* M6.198: vertically centered button captions in game notifications. */
 #gtPlayersPanel button,#gtVoiceWindow button,#gtBattleReport button,#gtPacificationNotices button,section[role="dialog"] button{display:inline-flex;align-items:center;justify-content:center;line-height:1.15;vertical-align:middle;}
 </style>

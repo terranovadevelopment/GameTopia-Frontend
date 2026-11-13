@@ -484,8 +484,8 @@
     const showSensitive=window.ARMAGEDDON_VIEW_MODE==='Both'||d.side===displaySide;
     for(const el of document.querySelectorAll('.sensitive-stat'))el.hidden=!showSensitive;
     const moraleLabel=document.getElementById('divisionMoraleLabel');
-    const moraleFailing=showSensitive&&d.lastMoraleCheck==='failed';
-    moraleLabel.textContent=moraleFailing?'Morale — FAILING':'Morale';
+    const moraleFailing=showSensitive&&(d.failedMorale===true||d.moraleState==='FAILING'||d.lastMoraleCheck==='failed');
+    moraleLabel.textContent=moraleFailing?'Morale — FAILING (at risk)':'Morale';
     moraleLabel.classList.toggle('morale-failing',moraleFailing);
     // Old/saved positions can contain a numeric string instead of a number.
     // Do not show a dash for a valid owned division's real morale value.
