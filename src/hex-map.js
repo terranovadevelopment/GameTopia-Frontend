@@ -110,6 +110,22 @@
       if(mode==='Both')return {visible:true,reason:'both-playtest'};
       const side=mode==='Red'?'Red':mode==='Blue'?'Blue':(window.ARMAGEDDON_SETUP?.playerSide||'Blue');
       if(d.side===side)return {visible:true,reason:'friendly',side};
+      // A friendly, pacified city is an independent adjacent-hex observer.
+      // This check is deliberately before division-based spotting: no nearby
+      // friendly division, LOS or terrain clearance is required at distance 1.
+      const friendlyCityObservers=(this.cityStates||[]).filter(entry=>{
+        const city=entry.city||entry;
+        const owner=entry.owner||city.side;
+        return owner===side && !(Number(entry.pacification)>0) &&
+          !(entry.occupier && entry.occupier!==side);
+      });
+      for(const entry of friendlyCityObservers){
+        const city=entry.city||entry;
+        const station={col:city.c??city.col,row:city.r??city.row};
+        if(Number.isInteger(station.col)&&Number.isInteger(station.row)&&
+           this.spottingDistance(station,target)===1)
+          return {visible:true,reason:'adjacent-friendly-city',side};
+      }
       // M6.192: civilian intelligence from controlled countryside. An enemy
       // division next to ANY hex controlled by the viewing nation is visible,
       // regardless of terrain or friendly division proximity. Enemy-controlled,
@@ -134,11 +150,9 @@
       }
       // M6.219: friendly fully controlled cities spot enemy divisions like a
       // friendly combat division; they have no omniscient sight in concealment.
-      const friendlyCities=this.cityStates||[];
-      for(const entry of friendlyCities){
+      for(const entry of friendlyCityObservers){
         const c=entry.city||entry;
         const owner=entry.owner||c.side;
-        if(owner!==side||Number(entry.pacification)>0||entry.occupier)continue;
         const station={col:c.c??c.col,row:c.r??c.row};
         if(!Number.isInteger(station.col)||!Number.isInteger(station.row))continue;
         const distance=this.spottingDistance(station,target);
