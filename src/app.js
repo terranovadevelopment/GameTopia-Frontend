@@ -469,13 +469,20 @@
     document.getElementById('sideBadge').textContent=d.side.toUpperCase();document.getElementById('sideBadge').className='side-badge '+(d.side==='Blue'?'blue-badge':'red-badge');
     document.getElementById('divisionName').textContent=d.name;
     document.getElementById('divisionStrength').textContent=d.strength.toLocaleString('en-US');document.getElementById('divisionLosses').textContent=(d.totalCasualties||0).toLocaleString('en-US');
-    const showSensitive=window.ARMAGEDDON_VIEW_MODE==='Both'||d.side===(window.ARMAGEDDON_PLAYER_SIDE||'Blue');
+    // Multiplayer national allegiance is authoritative in the joined game
+    // roster; the early setup default can otherwise hide our own morale.
+    const playerSide=window.ARMAGEDDON_SETUP?.playerSide||window.ARMAGEDDON_PLAYER_SIDE||'Blue';
+    const showSensitive=window.ARMAGEDDON_VIEW_MODE==='Both'||d.side===playerSide;
     for(const el of document.querySelectorAll('.sensitive-stat'))el.hidden=!showSensitive;
     const moraleLabel=document.getElementById('divisionMoraleLabel');
     const moraleFailing=showSensitive&&d.lastMoraleCheck==='failed';
     moraleLabel.textContent=moraleFailing?'Morale — FAILING':'Morale';
     moraleLabel.classList.toggle('morale-failing',moraleFailing);
-    document.getElementById('divisionEffectiveness').textContent=showSensitive?(Number.isFinite(d.effectiveness)&&d.effectiveness>=25?d.effectiveness.toFixed(1):'—'):'—';
+    // Old/saved positions can contain a numeric string instead of a number.
+    // Do not show a dash for a valid owned division's real morale value.
+    const morale=Number(d.effectiveness);
+    const validMorale=d.effectiveness!==null&&d.effectiveness!==undefined&&d.effectiveness!==''&&Number.isFinite(morale);
+    document.getElementById('divisionEffectiveness').textContent=showSensitive&&validMorale?morale.toFixed(1):'—';
     document.getElementById('divisionExperience').textContent=showSensitive?(Number.isFinite(d.experience)?d.experience.toFixed(1):'—'):'—';
     // Show actual accumulated movement credit, not the 10-hour daily allowance.
     // A negative balance is a genuine movement deficit (e.g. after retreat).
